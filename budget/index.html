@@ -25,8 +25,14 @@ nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);b
 .up{color:var(--red)}.dn{color:#2f7a3a}.tip{margin-top:10px;background:#fff3e6;border:1.5px dashed var(--red);border-radius:10px;padding:8px;font-size:14px;text-align:left}
 .warn{background:var(--red);color:#fff;border-radius:10px;padding:8px 10px;font-size:13px;margin-bottom:12px;font-weight:700}.tag{font-size:11px;border:1px solid var(--mut);color:var(--mut);border-radius:6px;padding:0 4px;margin-left:4px}
 .hold{border-bottom:1px dashed #d9c38f;padding:6px 0}.hold svg{vertical-align:middle}li{cursor:pointer}nav button{font-size:12px;padding:6px 0 12px}button.x{border:0;background:none;color:var(--red);font-size:18px}
+header .bell{margin-left:auto;position:relative;font-size:24px;border:0;background:none;cursor:pointer}header .bell i{position:absolute;top:-2px;right:-4px;background:#e07b39;color:#fff;font-style:normal;font-size:11px;border-radius:9px;padding:0 5px}
+.cheer{margin-top:10px;background:#fff6dc;border:1.5px dashed #c9a24a;border-radius:10px;padding:8px;font-size:14px;text-align:left}.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.badges span{background:#fff;border:1px solid #e3d2a4;border-radius:14px;padding:3px 9px;font-size:12px}
+.mark{background:linear-gradient(transparent 62%,rgba(200,50,30,.55) 62%,rgba(200,50,30,.35) 88%,transparent 88%);padding:0 2px}
+.kw{display:inline-flex;align-items:center;justify-content:center;width:84px;height:84px;font-size:52px;font-weight:900;color:var(--ink);font-family:serif}.kw.circ{border:4px solid var(--red);border-radius:50%;transform:rotate(-4deg);box-shadow:inset 0 0 0 2px rgba(200,50,30,.25)}
+.star{color:#c9a24a;letter-spacing:1px}.zs{display:grid;grid-template-columns:1fr 1fr;gap:6px}.zs div{background:#fff;border:1px solid #e3d2a4;border-radius:10px;padding:6px 8px;font-size:13px}.zs div.me{border:2px solid var(--red);background:#fff3e6}.zs small{display:block;color:var(--mut);font-size:11px}
+.quote{font-size:20px;font-weight:800;text-align:center;font-family:serif;margin:6px 0}.hd{font-size:12px;color:var(--mut);letter-spacing:2px}
 </style></head><body>
-<header><img src="assets/stamp.png" alt=""><div><b>月光存股模擬人生</b><small>聯邦調財局 @wuji_fbi</small></div></header>
+<header><img src="assets/stamp.png" alt=""><div><b>月光存股模擬人生</b><small>聯邦調財局 @wuji_fbi</small></div><button class="bell" id="bell" onclick="bellMsg()">🔔</button></header>
 <main id="app"></main>
 <footer>僅供參考娛樂，非投資建議｜模擬學習用，本站不推薦任何個股<br>資料只存在你的手機｜行情：臺灣證券交易所、證券櫃檯買賣中心 公開資料</footer>
 <nav id="nav"></nav>
@@ -73,13 +79,13 @@ function spark(code,w=120,h=34){const i=HI&&HI.c[code];if(!i)return'<span class=
  const mn=Math.min(...v),mx=Math.max(...v),r=mx-mn||1,pts=v.map((y,k)=>(k/(v.length-1)*w).toFixed(1)+','+(h-2-(y-mn)/r*(h-4)).toFixed(1)).join(' ');
  return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline fill="none" stroke="#7a5a1e" stroke-width="1.6" points="${pts}"/></svg>`}
 // ---------- 畫面 ----------
-let tab=new URLSearchParams(location.search).get('tab')||'home',cat='餐飲',bk='n',lm=null,q='',pick=null;
-function nav(){$('#nav').innerHTML=[['home','🏠','首頁'],['add','✏️','記帳'],['book','📒','帳本'],['inv','📈','存股'],['draw','🎋','抽籤'],['set','⚙️','設定']].map(([k,i,l])=>`<button class="${tab==k?'on':''}" onclick="go('${k}')">${i}<br>${l}</button>`).join('')}
+let tab=(new URLSearchParams(location.search).get('tab')||'home').replace('tianji','draw'),cat='餐飲',bk='n',lm=null,q='',pick=null;
+function nav(){$('#nav').innerHTML=[['home','🏠','首頁'],['add','✏️','記帳'],['book','📒','帳本'],['inv','📈','存股'],['draw','🔮','天機'],['set','⚙️','設定']].map(([k,i,l])=>`<button class="${tab==k?'on':''}" onclick="go('${k}')">${i}<br>${l}</button>`).join('')}
 function go(k){tab=S.setup?k:'set';scrollTo(0,0);render()}
-function render(){nav();const A=$('#app');if(!S.setup||tab=='set')return A.innerHTML=setupV();({home,add,book,inv,draw})[tab](A)}
+function render(){nav();bell();const A=$('#app');if(!S.setup||tab=='set')return A.innerHTML=setupV();({home,add,book,inv,draw})[tab](A)}
 function setupV(){const st=S.setup||{salary:'',payday:5,rule:[60,30,10],fixed:DEF_FIXED.map(([n,a])=>({n,a}))};
  return`<div class="card"><h3>💰 發薪日設定</h3><label>每月薪資（實領）<input id="sal" type="number" inputmode="numeric" value="${st.salary}" placeholder="例如 35000"></label>
- <label>每月發薪日<input id="pd" type="number" min="1" max="31" value="${st.payday}"></label>
+ <label>每月發薪日<input id="pd" type="number" min="1" max="31" value="${st.payday}"></label><label>每日便當錢（必要生存吃喝，預設 300）<input id="food" type="number" inputmode="numeric" value="${st.food||300}"></label><label>生日（選填，天機頁會標出你的星座）<input id="bd" type="date" value="${st.bd||''}"></label>
  <h3 style="margin-top:12px">📐 分配法則</h3><div class="chips"><button class="chip" onclick="setR(50,30,20)">532 法則</button><button class="chip" onclick="setR(60,30,10)">631 法則</button></div>
  <div class="grid3"><label>必要開銷 %<input id="r0" type="number" value="${st.rule[0]}"></label><label>儲蓄投資 %<input id="r1" type="number" value="${st.rule[1]}"></label><label>娛樂彈性 %<input id="r2" type="number" value="${st.rule[2]}"></label></div>
  <p class="note">建議：必要 50–60%、儲蓄投資 20–30%（擺脫月光族的核心）、娛樂 10–20%，合計 100%。</p></div>
@@ -91,19 +97,26 @@ function setR(a,b,c){$('#r0').value=a;$('#r1').value=b;$('#r2').value=c}
 function doSetup(){const sal=+$('#sal').value,r=[+$('#r0').value,+$('#r1').value,+$('#r2').value];if(!(sal>0))return alert('請輸入薪資');if(r[0]+r[1]+r[2]!=100)return alert('三個比例加起來要等於 100%');
  const fixed=[...document.querySelectorAll('#fx .q')].map(d=>({n:d.querySelector('.fn').value.trim(),a:+d.querySelector('.fa').value||0})).filter(f=>f.n);
  if(fixed.reduce((a,f)=>a+f.a,0)>sal*r[0]/100&&!confirm('固定扣款超過必要開銷預算，超出的部分會從儲蓄扣。確定嗎？'))return;
- S.setup={salary:sal,payday:Math.min(31,Math.max(1,+$('#pd').value||5)),rule:r,fixed,start:S.setup?S.setup.start:ds(today())};save();tab='home';render()}
-function home(A){const c=calc(),P=c.P,leak=c.necLeft<0||c.funLeft<0,days=Math.max(1,Math.round((c.n-today())/864e5));
- const tips=['先停一下非必要消費，把想買的東西放三天再決定','超出的部分已從儲蓄先補上，下週少一次外食就追回來了','打開帳本看看哪個分類花最多，小改變就有大差別'];
- A.innerHTML=`<div class="card big">${leak?'<div class="alarm">漏財警報</div>':''}<div class="lbl">本月剩餘存款</div><div class="amt">${fmt(c.remain)}</div>
- <div class="note">${ds(c.s)} ～ ${ds(new Date(c.n-864e5))}・距下次發薪 ${days} 天</div>
- <div class="grid2" style="margin-top:10px"><div class="mini"><small>🎉 本月娛樂可花</small><b>${fmt(Math.max(0,c.funLeft))}</b></div><div class="mini"><small>🏠 必要開銷餘額</small><b>${fmt(Math.max(0,c.necLeft))}</b></div></div>
- ${leak?`<div class="tip">🔔 ${c.necLeft<0?'必要開銷':'娛樂花費'}有點超出預算了，別擔心！💡 ${tips[new Date().getDate()%3]}</div>`:''}</div>
+ S.setup={salary:sal,payday:Math.min(31,Math.max(1,+$('#pd').value||5)),rule:r,fixed,start:S.setup?S.setup.start:ds(today()),food:Math.max(0,+$('#food').value||300),bd:$('#bd').value||''};save();tab='home';render()}
+function foodOf(c){const days=Math.max(1,Math.round((c.n-today())/864e5)),per=S.setup.food==null?300:+S.setup.food;return{days,per,food:per*days}}
+function bell(){if(!S.setup){$('#bell').innerHTML='🔔';return}const c=calc(),F=foodOf(c),hungry=F.food>c.remain;$('#bell').innerHTML='🔔'+(hungry?'<i>1</i>':'');return{c,F,hungry}}
+function bellMsg(){const b=bell();if(!b)return;alert(b.hungry?`🍱 月底準備吃土囉，先顧好便當錢！\n剩下 ${b.F.days} 天的便當錢要 ${fmt(b.F.food)}，目前存款 ${fmt(b.c.remain)}。\n今天起帶便當、少一杯飲料，就能撐到發薪日 💪`:'🔔 目前沒有通知，便當錢顧得穩穩的 👍')}
+function home(A){const c=calc(),P=c.P,F=foodOf(c),fun=Math.max(0,c.remain-F.food),st=streak(),hungry=F.food>c.remain;
+ const cheers=['有存到錢就值得慶祝 🎉 月光族能留下一塊錢都是勝利！','每記一筆帳，就是幫未來的自己存一點底氣 💪','今天也沒把錢花光光，你超棒 ✨','存款像種樹，慢慢長、不用急 🌱','小小一筆也算數，積少成多就是財庫 🏦'];
+ const tips=['把想買的東西放進清單三天，還想要再買','自備水壺，一天省一杯飲料錢','發薪日先存再花，比月底剩多少存多少更容易','整理一下訂閱服務，沒在用的就退掉','零錢丟撲滿，月底給自己一個驚喜'];
+ const dd=new Date().getDate(),bd=[st>=1&&'🔥 記帳新手',st>=3&&'🥉 連續 3 天',st>=7&&'🥈 連續 7 天',st>=30&&'🥇 連續 30 天',c.remain>0&&'💰 本月有存款',P.rows.length&&'📈 存股學徒',P.divc>0&&'🧧 領到股利'].filter(Boolean);
+ A.innerHTML=`<div class="card big"><div class="lbl">本月剩餘存款</div><div class="amt">${fmt(c.remain)}</div>
+ <div class="note">${ds(c.s)} ～ ${ds(new Date(c.n-864e5))}・距下次發薪 ${F.days} 天（含今天）</div>
+ <div class="grid2" style="margin-top:10px"><div class="mini"><small>🍱 必要生存吃喝費用</small><b>${fmt(F.food)}</b><small>${fmt(F.per)}／天 × ${F.days} 天</small></div><div class="mini"><small>🎉 本月娛樂可花</small><b>${fmt(fun)}</b><small>存款 − 吃喝費用</small></div></div>
+ <div class="cheer">${hungry?`🍱 月底準備吃土囉，先顧好便當錢～娛樂先暫停，撐過去就是贏家！💡 ${tips[dd%5]}`:`${cheers[dd%5]}<br>💡 小提醒：${tips[(dd+2)%5]}`}</div>
+ ${bd.length?`<div class="badges">${bd.map(x=>`<span>${x}</span>`).join('')}</div>`:''}</div>
  <div class="card"><h3>📈 模擬存股（學習用）</h3><div class="grid2"><div class="mini"><small>總市值</small><b>${fmt(P.mv)}</b></div><div class="mini"><small>累積股利</small><b>${fmt(P.divc)}</b></div>
  <div class="mini"><small>未實現損益</small><b class="${P.pl>=0?'up':'dn'}">${P.pl>=0?'+':''}${fmt(P.pl).replace('$-','-$')}</b></div><div class="mini"><small>可投入模擬資金</small><b>${fmt(c.cashAvail)}</b></div></div>
  <div class="mini wide"><small>💎 累積存款＋模擬存股 總資產</small><b>${fmt(c.cashAvail+P.mv)}</b></div>
- ${P.rows.length?`<ul style="margin-top:8px">${P.rows.map(r=>`<li><span><b>${esc(r.name)}</b> <span class="note">${r.code}・${f2(r.sh)} 股</span></span><span>${fmt(r.v)}</span></li>`).join('')}</ul>`:'<p class="note">還沒有模擬持股，到「存股」頁自己搜尋想學習的標的。</p>'}
- <p class="note">模擬學習用，非投資建議，本站不推薦任何個股</p></div>
- <div class="card"><div class="row"><b>🔥 連續記帳 ${streak()} 天</b><span>${S.draw[c.T]?'今日已抽籤 ✅':'<a href="#" onclick="go(\'draw\')">去抽今日籤 →</a>'}</span></div></div>`}
+ ${P.rows.length?`<ul style="margin-top:8px">${P.rows.map(r=>`<li><span><b>${esc(r.name)}</b> <span class="note">${r.code}・${f2(r.sh)} 股</span></span><span>${fmt(r.v)}</span></li>`).join('')}</ul>`:'<p class="note">還沒有模擬持股，下面自己搜尋想學習的標的。</p>'}
+ <div id="invBox"></div></div>
+ <div class="card"><div class="row"><b>🔥 連續記帳 ${st} 天</b><span><a href="#" onclick="go('draw');return false">看今日天機 →</a></span></div></div>`;
+ const box=document.createElement('div');inv(box,1);$('#invBox').innerHTML=box.innerHTML}
 function add(A){const T=ds(today()),list=S.entries.filter(e=>e.d==T).reverse();
  A.innerHTML=`<div class="card"><h3>✏️ 記一筆支出</h3><input id="amt" type="number" inputmode="numeric" placeholder="金額">
  <div class="chips">${CATS.map(([k,b])=>`<button class="chip ${cat==k?'on':''}" onclick="cat='${k}';bk='${b}';render()">${k}</button>`).join('')}</div>
@@ -121,34 +134,61 @@ function book(A){const ms=[...new Set(S.entries.map(e=>e.d.slice(0,7)).concat(ds
  ${Object.entries(bc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="row"><span>${k}</span><span>${fmt(v)}・${Math.round(v/tot*100)}%</span></div><div class="bar"><i style="width:${v/mx*100}%"></i></div>`).join('')||'<p class="note">這個月還沒有紀錄</p>'}
  <p class="note">💡 常回來看帳本，找出最常漏財的分類，是增加存款最快的方法。</p></div>
  ${Object.keys(days).sort().reverse().map(d=>`<div class="card"><div class="row"><b>${d}</b><span>${fmt(days[d].reduce((a,e)=>a+e.a,0))}</span></div><ul>${days[d].map(li).join('')}</ul></div>`).join('')}`}
-function inv(A){const c=calc(),P=c.P,ql=q.trim().toUpperCase();let res=[];
+function inv(A,emb){const c=calc(),P=c.P,ql=q.trim().toUpperCase();let res=[];
  if(ql&&PR)res=Object.entries(PR.stocks).filter(([k,v])=>k.startsWith(ql)||v.n.toUpperCase().includes(ql)).sort((a,b)=>a[0]<b[0]?-1:1).slice(0,20);
  const p=pick&&stk(pick);
- A.innerHTML=`<div class="warn">⚠️ 模擬學習用，非投資建議，本站不推薦任何個股。價格為公開資料最近收盤價，可能延遲。</div>
+ A.innerHTML=(emb?'':`<div class="warn">⚠️ 模擬學習用，非投資建議，本站不推薦任何個股。價格為公開資料最近收盤價，可能延遲。</div>
  <div class="card"><div class="grid2"><div class="mini"><small>可投入模擬資金</small><b>${fmt(c.cashAvail)}</b></div><div class="mini"><small>持股總市值</small><b>${fmt(P.mv)}</b></div>
  <div class="mini"><small>累積股利（現金）</small><b>${fmt(P.divc)}</b></div><div class="mini"><small>未實現損益</small><b class="${P.pl>=0?'up':'dn'}">${P.pl>=0?'+':''}${fmt(P.pl).replace('$-','-$')}</b></div></div>
- <p class="note">可投入資金＝每月「儲蓄投資」＋沒花完的必要開銷＋已領現金股利，減去已買入金額。存股模式：只能買、不能賣。</p></div>
+ <p class="note">可投入資金＝每月「儲蓄投資」＋沒花完的必要開銷＋已領現金股利，減去已買入金額。存股模式：只能買、不能賣。</p></div>`)+(emb?'<p class="note">⚠️ 模擬學習用，非投資建議，本站不推薦任何個股。存股模式：只能買、不能賣。</p>':'')+`
  <div class="card"><h3>🔍 自己搜尋上市櫃股票 / ETF</h3><input id="qs" value="${esc(q)}" placeholder="輸入代號或名稱" oninput="q=this.value;clearTimeout(window._t);window._t=setTimeout(()=>{render();const e=$('#qs');e.focus();e.setSelectionRange(99,99)},250)">
  ${!PR?'<p class="note">資料載入中…</p>':ql?`<ul>${res.map(([k,v])=>`<li onclick="pick='${k}';q='';render()"><span>${k} ${esc(v.n)} <span class="note">${v.m}</span></span><span>${f2(v.c)}</span></li>`).join('')||'<p class="note">找不到符合的代號或名稱</p>'}</ul>`:'<p class="note">本站不提供熱門或推薦清單，請自行輸入。</p>'}</div>
  ${p?`<div class="card"><h3>${pick} ${esc(p.n)}</h3><div class="row"><span>最近收盤（${p.d}）</span><b>${f2(p.c)}</b></div>${spark(pick,300,60)}<p class="note">近 ${HI?HI.dates.length:0} 個交易日收盤走勢</p>
  <label>買入股數（可零股，1 張＝1000 股）<input id="sh" type="number" inputmode="numeric" min="1" placeholder="例如 10" oninput="$('#est').textContent=fmt((+this.value||0)*${p.c})"></label>
  <div class="row"><span>預估金額（未含手續費）</span><b id="est">$0</b></div><button class="btn" onclick="buy()">模擬買入（存股，不能賣出）</button><button class="btn sec" onclick="pick=null;render()">取消</button></div>`:''}
- <div class="card"><h3>📦 我的模擬持股</h3>${P.rows.length?P.rows.map(r=>`<div class="hold"><div class="row"><b>${r.code} ${esc(r.name)}</b><span>${fmt(r.v)}</span></div>
+ ${emb?'':`<div class="card"><h3>📦 我的模擬持股</h3>${P.rows.length?P.rows.map(r=>`<div class="hold"><div class="row"><b>${r.code} ${esc(r.name)}</b><span>${fmt(r.v)}</span></div>
  <div class="row note"><span>${f2(r.sh)} 股・現價 ${f2(r.px)}・成本 ${fmt(r.c0)}</span><span class="${r.pl>=0?'up':'dn'}">${r.pl>=0?'+':''}${fmt(r.pl).replace('$-','-$')}</span></div>
  <div class="row note"><span>現金股利 ${fmt(r.dc)}${r.ds?`・配股 ${r.ds} 股`:''}</span>${spark(r.code)}</div></div>`).join(''):'<p class="note">還沒有持股</p>'}
- <p class="note">除權息日依證交所／櫃買中心公告自動入帳：現金股利進模擬資金，股票股利增加股數。資料更新：${PR&&PR.updated||'—'}</p></div>`}
+ <p class="note">除權息日依證交所／櫃買中心公告自動入帳：現金股利進模擬資金，股票股利增加股數。資料更新：${PR&&PR.updated||'—'}</p></div>`}`}
 function buy(){const sh=Math.floor(+$('#sh').value),p=stk(pick);if(!(sh>0))return alert('請輸入股數');const amt=Math.round(sh*p.c),c=calc();
  if(amt>c.cashAvail)return alert(`模擬資金不足：需要 ${fmt(amt)}，目前可用 ${fmt(c.cashAvail)}。\n每月存下來的錢才能拿來存股喔！`);
  if(!confirm(`模擬買入 ${pick} ${p.n} ${sh} 股，約 ${fmt(amt)}？\n存股模式買了就不能賣喔。`))return;
  S.buys.push({id:Date.now(),d:ds(today()),code:pick,n:p.n,sh,px:p.c,amt});save();pick=null;render()}
 
-const LV=[['大吉','金龜守庫，財氣東來','金色','花錢前先默數十秒，今天守得住就是賺'],['中吉','細水長流，涓滴成河','米黃','把零錢存進撲滿，小錢也是財庫磚'],['小吉','財不露白，福在心田','翠綠','午餐自帶，省下的錢記在存錢目標'],['吉','一分耕耘，一分收穫','藏青','今天適合整理訂閱，砍掉沒在用的'],['末吉','欲速不達，守成為上','杏色','衝動購物前，放進想買清單冷靜三天'],['平','風平浪靜，帳目分明','灰白','記帳不漏一筆，就是今天的功課'],['凶','錢如流水，堤防要高','硃砂紅','今日漏財警戒，非必要不刷卡']];
+const LV=[['大吉','金龜守庫，財氣東來','金色','花錢前先默數十秒，今天守得住就是賺'],['中吉','細水長流，涓滴成河','米黃','把零錢存進撲滿，小錢也是財庫磚'],['小吉','財不露白，福在心田','翠綠','午餐自帶，省下的錢記在存錢目標'],['吉','一分耕耘，一分收穫','藏青','今天適合整理訂閱，砍掉沒在用的'],['末吉','欲速不達，守成為上','杏色','衝動購物前，放進想買清單冷靜三天'],['平','風平浪靜，帳目分明','灰白','記帳不漏一筆，就是今天的功課'],['凶','錢如流水，堤防要高','硃砂紅','今天適合守成，非必要不刷卡，守住就是賺']];
 function rng(s){let h=2166136261;for(const ch of s)h=Math.imul(h^ch.charCodeAt(0),16777619);return()=>((h=Math.imul(h^h>>>15,2246822507)^Math.imul(h^h>>>13,3266489909))>>>0)/4294967296}
-function draw(A){const T=ds(today()),r=rng('wuji'+T),i=Math.floor(r()*LV.length),nums=[1+Math.floor(r()*49),1+Math.floor(r()*49)],L=LV[i],got=S.draw[T];
-A.innerHTML=`<div class="card stick">${got?`<div class="note">${T} 今日籤</div><div class="lv">${L[0]}</div><div class="poem">「${L[1]}」</div><div class="row"><span>幸運色：${L[2]}</span><span>幸運數字：${nums.join('、')}</span></div><div class="card" style="margin-top:8px">💡 今日財運提醒：${L[3]}</div>`:`<div style="font-size:64px">🎋</div><p>每天一支籤，明天再來！</p><button class="btn" onclick="S.draw['${T}']=1;save();render()">搖籤</button>`}<p class="note">籤詩僅供娛樂</p></div>`}
+const TG='甲乙丙丁戊己庚辛壬癸',DZ='子丑寅卯辰巳午未申酉戌亥',TGW='木木火火土土金金水水',DZW='水土木木土火火土金金土水';
+const GEN={木:'火',火:'土',土:'金',金:'水',水:'木'},KE={木:'土',土:'水',水:'火',火:'金',金:'木'};
+const WX_TIP={生:['上生下，順勢而為','財氣順流，適合把計畫往前推一步'],洩:['下洩上，力氣外放','容易手鬆，花錢前先想一下'],剋:['上剋下，壓力較大','今天適合守成，先顧好基本盤'],被剋:['下剋上，阻力在前','別硬衝，把預算抓緊就好'],比:['同氣相扶，比和','穩定日，適合整理帳本、檢查存款']};
+const ZW=[['守','守住財庫，不衝動就是贏','今日宜：非必要消費先擱著'],['開','新的開始，先訂目標再出手','今日宜：寫下本月存錢目標'],['聚','小錢聚成大錢','今日宜：零錢丟進撲滿'],['穩','穩紮穩打，按計畫走','今日宜：照預算花，不加碼'],['藏','財不露白，低調累積','今日宜：別炫富，默默存'],['理','理清帳目，財路自明','今日宜：花 5 分鐘看帳本'],['省','省一分就多一分底氣','今日宜：自備午餐或水壺'],['進','有進帳的機會，記得先存','今日宜：意外之財先存一半'],['學','投資自己最划算','今日宜：讀一篇理財文章'],['和','人和財和，合作有利','今日宜：和家人聊聊存錢計畫'],['靜','靜觀其變，不追高不躁進','今日宜：放下想買的衝動三天'],['定','定下規則，讓錢聽話','今日宜：設定自動轉帳存款'],['收','收心整頓，回到正軌','今日宜：取消用不到的訂閱'],['積','積少成多，時間是朋友','今日宜：記下今天每一筆'],['謹','謹慎簽約、謹慎刷卡','今日宜：大額支出多比價'],['旺','人氣旺，財氣跟著來','今日宜：好心情別變成亂花'],['勤','勤記帳，財自來','今日宜：連續記帳不中斷'],['惜','惜物惜福，錢用在刀口','今日宜：修好舊東西再用'],['捨','捨掉不需要的開銷','今日宜：清掉一個沒在用的會員'],['算','精打細算，帳要算清楚','今日宜：算算這月還能存多少'],['緩','緩一緩，好事不急','今日宜：大決定延到明天'],['築','一磚一瓦築財庫','今日宜：存下一筆固定金額']];
+const ZOD=['牡羊','金牛','雙子','巨蟹','獅子','處女','天秤','天蠍','射手','摩羯','水瓶','雙魚'],ZC=['紅','金','黃','白','橘','米','粉','黑','紫','咖啡','藍','綠'];
+const ZT=[['小心衝動消費，購物車先放著','手滑風險高，信用卡先收好','別被限時優惠牽著走'],['照計畫走，小有收穫','穩穩來，記帳會有成就感','適合檢查存款進度'],['財運平穩，順手記一筆帳','花小錢換好心情可以，但別過頭','整理發票可能有小驚喜'],['財運亨通，記得先存再花','有進帳的味道，先存一半','貴人運佳，聊天有好點子'],['財星高照，守住就是賺','今天最旺，但別請客請太大','好運日，把好運存起來']];
+const IND=['水資源','航運','教育培訓','綠能','半導體','觀光旅遊','餐飲連鎖','電動車','生技醫療','長照銀髮','電商物流','遊戲娛樂','運動健身','寵物經濟','智慧家居','雲端服務','資安','農業科技','食品加工','建材營建','金融科技','文創設計','通訊網通','機器人','儲能','再生紙材','冷鏈物流','美妝保養','影音串流','二手循環'];
+const QT=['先存再花，月光變月亮','守得住，才留得住','先訂目標再花錢','小錢不漏，大錢自來','記帳不是限制，是自由','今天省下的，是明天的底氣','財庫是一磚一瓦蓋起來的','慢慢存，比較快','想要和需要，分清楚就是賺','不亂花就是在賺錢','存款是給未來自己的情書','錢會流向有計畫的人','一杯飲料，也是一塊磚','複利最愛有耐心的人','花錢前，先問三秒','月底不吃土，從今天做起','財不露白，福在心田','帳本清楚，心就清楚','先顧便當，再談夢想','能存一塊，就是贏一塊','時間是存股最好的朋友','少一次衝動，多一份安心','你的存款，正在長大','穩穩的，就是最快的','今天也是存錢的好日子','錢要花在讓你笑的地方','財富來自習慣，不是運氣','守住小錢，大錢才會來','先付錢給自己','理財就是理生活','不比較，才存得到','知足是最大的財富','一步一腳印，財庫自然滿','計畫趕得上變化，預算要留彈性','今天記帳了嗎？','存錢不是苦，是一種選擇','不貪快，才走得遠','把錢變成習慣，而不是情緒','先求不漏，再求增加','好運留給有準備的錢包'];
+const jdn=d=>Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5)+2440588;
+function zodOf(bd){if(!bd)return-1;const[,m,d]=bd.split('-').map(Number),cut=[20,19,21,20,21,21,23,23,23,23,22,22];/*Jan..Dec start of next sign*/
+ const md=m*100+d,b=[[321,0],[420,1],[521,2],[621,3],[723,4],[823,5],[923,6],[1023,7],[1122,8],[1222,9],[120,10],[219,11]];let z=9;for(const[x,i]of[[120,10],[219,11],[321,0],[420,1],[521,2],[621,3],[723,4],[823,5],[923,6],[1023,7],[1122,8],[1222,9]])if(md>=x)z=i;return z}
+function tianji(t){const T=ds(t),r=rng('tj'+T),g=(jdn(t)+49)%60,s=g%10,b=g%12,ws=TGW[s],wb=DZW[b];
+ const rel=ws==wb?'比':GEN[ws]==wb?'生':GEN[wb]==ws?'洩':KE[ws]==wb?'剋':'被剋';
+ const zwI=Math.floor(r()*ZW.length),zw=ZW[(zwI+Math.floor(jdn(t)/3))%ZW.length];
+ const st=ZOD.map((n,i)=>{const v=1+Math.floor(r()*5);return{n,c:ZC[i],v,tip:ZT[v-1][Math.floor(r()*3)]}});
+ const sh=IND.map((x,i)=>[x,r()]).sort((a,b)=>a[1]-b[1]),ind=[sh[0][0],sh[1][0]];
+ return{T,gz:TG[s]+DZ[b],ws,wb,rel,zw,st,ind,qt:QT[(jdn(t)*7+Math.floor(r()*3))%QT.length]}}
+function draw(A){const t=today(),D=tianji(t),T=D.T,r=rng('wuji'+T),i=Math.floor(r()*LV.length),nums=[1+Math.floor(r()*49),1+Math.floor(r()*49)],L=LV[i],got=S.draw[T],me=zodOf(S.setup&&S.setup.bd),W=WX_TIP[D.rel];
+ const wk='日一二三四五六'[t.getDay()],top=[...D.st].sort((a,b)=>b.v-a.v),stars=v=>'🪙'.repeat(v)+'<span style="opacity:.25">'+'🪙'.repeat(5-v)+'</span>';
+ A.innerHTML=`<div class="card big"><div class="hd">聯邦調財局｜${t.getMonth()+1}/${t.getDate()}（${wk}）</div><h2 style="margin:4px 0">🔮 本日財運調查報告</h2><div class="note">紫微 × 八字 × 星座</div></div>
+ <div class="card"><h3>八字｜今日干支</h3><div class="row"><b style="font-size:28px;font-family:serif"><span class="mark">${D.gz}日</span></b><span class="note">天干${D.gz[0]}${D.ws}＋地支${D.gz[1]}${D.wb}</span></div>
+ <p>${D.ws}${D.rel=='比'?'與':D.rel=='生'||D.rel=='剋'?'→':'←'}${D.wb}：${W[0]}。<span class="mark">${W[1]}</span>。</p></div>
+ <div class="card" style="display:flex;gap:12px;align-items:center"><div class="kw ${D.zw[0]=='守'?'circ':''}">${D.zw[0]}</div><div><h3>紫微｜流日重點</h3><div><span class="mark">${D.zw[1]}</span></div><div class="note" style="margin-top:4px">${D.zw[2]}</div></div></div>
+ <div class="card"><h3>星座｜財運指數</h3><p class="note">今日最穩：${top.filter(x=>x.v==top[0].v).map(x=>x.n).join('、')}${me>=0?`｜你是 <b>${ZOD[me]}座</b>`:'｜到設定填生日，會標出你的星座'}</p>
+ <div class="zs">${D.st.map((z,k)=>`<div class="${k==me?'me':''}"><b>${z.n}</b> <span class="star">${stars(z.v)}</span><small>幸運色 ${z.c}｜${z.tip}</small></div>`).join('')}</div></div>
+ <div class="card"><h3>可留意的產業話題</h3><p style="font-size:18px">${D.ind.map(x=>`<span class="mark">${x}</span>`).join('、')}</p><p class="note">僅為話題，非推薦任何標的</p></div>
+ <div class="card"><h3>💬 今日金句</h3><div class="quote"><span class="mark">${D.qt}</span></div></div>
+ <div class="card stick"><h3>🎋 今日一籤</h3>${got?`<div class="lv">${L[0]}</div><div class="poem">「${L[1]}」</div><div class="row"><span>幸運色：${L[2]}</span><span>幸運數字：${nums.join('、')}</span></div><div class="cheer">💡 ${L[3]}</div>`:`<div style="font-size:56px">🎋</div><p>每天一支籤，明天再來！</p><button class="btn" onclick="S.draw['${T}']=1;save();render()">搖籤</button>`}</div>
+ <p class="note" style="text-align:center">⚠️ 僅供參考娛樂，非投資建議。本站不推薦任何個股或基金。</p>`}
 
 function demo(){const t=today(),m=new Date(t);m.setMonth(m.getMonth()-2);
- S={setup:{salary:38000,payday:5,rule:[60,30,10],fixed:[{n:'房租',a:9000},{n:'伙食',a:6000},{n:'水電瓦斯',a:1200},{n:'家庭支出',a:3000},{n:'交通費',a:1500}],start:ds(m)},entries:[],buys:[],draw:{}};
+ S={setup:{salary:38000,payday:5,rule:[60,30,10],fixed:[{n:'房租',a:9000},{n:'伙食',a:6000},{n:'水電瓦斯',a:1200},{n:'家庭支出',a:3000},{n:'交通費',a:1500}],start:ds(m)},entries:[],buys:[],draw:{[ds(t)]:1}};
  const C=[['餐飲','n',120,'早午餐'],['交通','n',60,'公車'],['娛樂','f',350,'電影'],['餐飲','n',95,'便當'],['購物','f',290,'文具'],['日用','n',180,'洗衣精']];
  for(let i=0;i<20;i++){const d=new Date(t);d.setDate(d.getDate()-i);const e=C[i%C.length];S.entries.push({id:i+1,d:ds(d),a:e[2],c:e[0],b:e[1],note:e[3]})}
  // 範例持股：依資料隨機抽 2 檔有走勢的代號，純示意，非推薦
