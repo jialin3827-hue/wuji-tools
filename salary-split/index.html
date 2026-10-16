@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>小資族薪水分配計算機｜聯邦調財局</title>
+  <meta name="description" content="輸入月薪，一秒算出生活、儲蓄、投資學習怎麼分。支援 6:3:1、50/30/20 與自訂比例。聯邦調財局 × 僅供參考娛樂。" />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#C8321E" />
+  <link rel="canonical" href="./index.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="zh_TW" />
+  <meta property="og:site_name" content="聯邦調財局" />
+  <meta property="og:title" content="小資族薪水分配計算機｜聯邦調財局" />
+  <meta property="og:description" content="輸入月薪，一秒算出生活、儲蓄、投資學習怎麼分。支援 6:3:1、50/30/20 與自訂比例。" />
+  <meta property="og:image" content="./assets/stamp.png" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="小資族薪水分配計算機｜聯邦調財局" />
+  <meta name="twitter:description" content="輸入月薪，一秒算出生活、儲蓄、投資學習怎麼分。" />
+  <meta name="twitter:image" content="./assets/stamp.png" />
+
+  <style>
+    :root {
+      --cinnabar: #C8321E;
+      --cinnabar-dark: #9E2414;
+      --mustard: #D4A017;
+      --mustard-soft: #E8C547;
+      --beige: #F5E6C8;
+      --beige-deep: #E8D4A8;
+      --paper: #FFF8EB;
+      --ink: #2A1F14;
+      --ink-soft: #5C4A38;
+      --line: #D9C4A0;
+      --ok: #2F6B3A;
+      --shadow: 0 8px 24px rgba(42, 31, 20, 0.12);
+      --radius: 18px;
+      --font: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #fff2d2 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, #f7d9c4 0%, transparent 50%),
+        linear-gradient(180deg, #FBF3E0 0%, var(--beige) 40%, #EEDDB8 100%);
+      min-height: 100dvh;
+      line-height: 1.55;
+    }
+
+    .wrap {
+      width: min(440px, 100%);
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    /* Header */
+    header.brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .stamp {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: var(--shadow);
+      background: #fff;
+      flex-shrink: 0;
+    }
+    .brand-text h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: 0.04em;
+      color: var(--cinnabar);
+    }
+    .brand-text p {
+      margin: 2px 0 0;
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+    }
+    .handle {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 0.78rem;
+      color: var(--cinnabar);
+      background: rgba(200, 50, 30, 0.08);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--paper);
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card h2 .num {
+      display: inline-flex;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--cinnabar);
+      color: #fff;
+      font-size: 0.75rem;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    label.field {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      border: 2px solid var(--beige-deep);
+      border-radius: 12px;
+      padding: 10px 12px;
+      transition: border-color 0.2s;
+    }
+    .input-row:focus-within { border-color: var(--cinnabar); }
+    .input-row .prefix {
+      font-weight: 700;
+      color: var(--mustard);
+      font-size: 0.95rem;
+    }
+    .input-row input {
+      flex: 1;
+      border: 0;
+      outline: none;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--ink);
+      background: transparent;
+      font-family: inherit;
+      min-width: 0;
+      width: 100%;
+    }
+    .hint {
+      margin: 8px 0 0;
+      font-size: 0.75rem;
+      color: var(--ink-soft);
+    }
+
+    /* Mode tabs */
+    .modes {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    .mode-btn {
+      appearance: none;
+      border: 2px solid var(--beige-deep);
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 6px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--ink-soft);
+      cursor: pointer;
+      transition: all 0.18s;
+      line-height: 1.3;
+    }
+    .mode-btn small {
+      display: block;
+      font-weight: 500;
+      font-size: 0.68rem;
+      opacity: 0.85;
+      margin-top: 2px;
+    }
+    .mode-btn.active {
+      border-color: var(--cinnabar);
+      background: rgba(200, 50, 30, 0.08);
+      color: var(--cinnabar);
+    }
+
+    /* Custom sliders */
+    #customPanel {
+      display: none;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--line);
+    }
+    #customPanel.show { display: block; }
+    .slider-row {
+      margin-bottom: 12px;
+    }
+    .slider-row:last-child { margin-bottom: 0; }
+    .slider-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .slider-head .pct {
+      color: var(--cinnabar);
+      font-variant-numeric: tabular-nums;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--cinnabar);
+      height: 6px;
+    }
+    .sum-warn {
+      display: none;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: var(--cinnabar);
+      font-weight: 600;
+    }
+    .sum-warn.show { display: block; }
+
+    /* Chart */
+    .chart-wrap {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 14px;
+      align-items: center;
+    }
+    @media (max-width: 360px) {
+      .chart-wrap { grid-template-columns: 1fr; justify-items: center; }
+    }
+    .donut-box {
+      position: relative;
+      width: 140px;
+      height: 140px;
+    }
+    .donut-box canvas {
+      width: 140px;
+      height: 140px;
+      display: block;
+    }
+    .donut-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      text-align: center;
+      padding: 28px;
+    }
+    .donut-center .label {
+      font-size: 0.65rem;
+      color: var(--ink-soft);
+      line-height: 1.2;
+    }
+    .donut-center .value {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+      word-break: break-all;
+    }
+
+    .buckets { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+    .bucket {
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--beige-deep);
+    }
+    .bucket-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .bucket-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .bucket-amt {
+      font-size: 0.95rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+    }
+    .bucket-pct {
+      font-size: 0.72rem;
+      color: var(--ink-soft);
+      font-weight: 600;
+    }
+    .bar {
+      height: 8px;
+      background: var(--beige);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar > i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Yearly */
+    .year-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .stat {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid var(--beige-deep);
+      text-align: center;
+    }
+    .stat .k {
+      font-size: 0.72rem;
+      color: var(--ink-soft);
+      font-weight: 600;
+    }
+    .stat .v {
+      margin-top: 4px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--cinnabar);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat.alt .v { color: var(--ok); }
+    .year-note {
+      margin: 10px 0 0;
+      font-size: 0.75rem;
+      color: var(--ink-soft);
+    }
+
+    /* Fortune tip */
+    .tip {
+      background: linear-gradient(135deg, rgba(200, 50, 30, 0.08), rgba(212, 160, 23, 0.15));
+      border: 1.5px dashed var(--cinnabar);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .tip .badge {
+      display: inline-block;
+      background: var(--cinnabar);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+    .tip p {
+      margin: 0;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .tip button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      appearance: none;
+      border: 0;
+      background: rgba(255,255,255,0.7);
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 0.72rem;
+      font-family: inherit;
+      color: var(--cinnabar);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    footer {
+      text-align: center;
+      padding: 8px 8px 0;
+      font-size: 0.72rem;
+      color: var(--ink-soft);
+    }
+    footer .brand-line {
+      font-weight: 700;
+      color: var(--cinnabar);
+      margin-bottom: 4px;
+    }
+    footer a {
+      color: var(--cinnabar);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0);
+      white-space: nowrap; border: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="brand">
+      <img class="stamp" src="./assets/stamp.png" width="72" height="72" alt="聯邦調財局印章標誌" />
+      <div class="brand-text">
+        <h1>聯邦調財局</h1>
+        <p>小資族薪水分配計算機</p>
+        <span class="handle">@wuji_fbi</span>
+      </div>
+    </header>
+
+    <section class="tip" aria-live="polite">
+      <span class="badge">今日財運小提醒</span>
+      <button type="button" id="tipRefresh" aria-label="換一句提醒">換一句</button>
+      <p id="tipText">先把「守」住的錢鎖進帳戶，財運才跟得上。</p>
+    </section>
+
+    <section class="card">
+      <h2><span class="num">1</span>輸入每月實領薪資</h2>
+      <label class="field" for="salary">月薪（新台幣）</label>
+      <div class="input-row">
+        <span class="prefix">NT$</span>
+        <input
+          id="salary"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          value="45,000"
+          aria-describedby="salaryHint"
+        />
+      </div>
+      <p class="hint" id="salaryHint">建議填「實領」金額（已扣勞健保／所得稅）。</p>
+    </section>
+
+    <section class="card">
+      <h2><span class="num">2</span>選擇分配方式</h2>
+      <div class="modes" role="tablist" aria-label="分配方式">
+        <button type="button" class="mode-btn active" data-mode="631" role="tab" aria-selected="true">
+          6 : 3 : 1
+          <small>生活／儲蓄／學習</small>
+        </button>
+        <button type="button" class="mode-btn" data-mode="503020" role="tab" aria-selected="false">
+          50 / 30 / 20
+          <small>需要／想要／存錢</small>
+        </button>
+        <button type="button" class="mode-btn" data-mode="custom" role="tab" aria-selected="false">
+          自訂
+          <small>拉動比例</small>
+        </button>
+      </div>
+
+      <div id="customPanel" aria-hidden="true">
+        <div class="slider-row">
+          <div class="slider-head">
+            <span id="c1Label">生活開銷</span>
+            <span class="pct"><span id="c1Pct">60</span>%</span>
+          </div>
+          <input type="range" id="c1" min="0" max="100" value="60" />
+        </div>
+        <div class="slider-row">
+          <div class="slider-head">
+            <span id="c2Label">儲蓄備用</span>
+            <span class="pct"><span id="c2Pct">30</span>%</span>
+          </div>
+          <input type="range" id="c2" min="0" max="100" value="30" />
+        </div>
+        <div class="slider-row">
+          <div class="slider-head">
+            <span id="c3Label">投資學習</span>
+            <span class="pct"><span id="c3Pct">10</span>%</span>
+          </div>
+          <input type="range" id="c3" min="0" max="100" value="10" />
+        </div>
+        <p class="sum-warn" id="sumWarn">三項加總需為 100%（目前 <span id="sumNow">100</span>%）</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span class="num">3</span>本月怎麼分</h2>
+      <div class="chart-wrap">
+        <div class="donut-box">
+          <canvas id="donut" width="280" height="280" aria-hidden="true"></canvas>
+          <div class="donut-center">
+            <span class="label">月薪</span>
+            <span class="value" id="centerSalary">45,000</span>
+          </div>
+        </div>
+        <div class="buckets" id="buckets"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span class="num">4</span>一年存下多少？</h2>
+      <div class="year-grid">
+        <div class="stat">
+          <div class="k">每月「守」住</div>
+          <div class="v" id="monthSave">NT$ 18,000</div>
+        </div>
+        <div class="stat alt">
+          <div class="k">一年預估累積</div>
+          <div class="v" id="yearSave">NT$ 216,000</div>
+        </div>
+      </div>
+      <p class="year-note" id="yearNote">以「儲蓄＋投資學習」合計推估，不含利息與報酬（僅示意）。</p>
+    </section>
+
+    <footer>
+      <div class="brand-line">聯邦調財局 · @wuji_fbi</div>
+      <div>僅供參考娛樂，非投資建議</div>
+      <div style="margin-top:6px">喜歡命理就喜歡發大財</div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var COLORS = {
+        a: "#C8321E",
+        b: "#D4A017",
+        c: "#2F6B3A"
+      };
+
+      var PRESETS = {
+        "631": {
+          labels: ["生活開銷", "儲蓄備用", "投資學習"],
+          ratios: [0.6, 0.3, 0.1],
+          tips: ["日常吃住行", "緊急預備金", "技能／資產累積"]
+        },
+        "503020": {
+          labels: ["必要開支", "想要享樂", "儲蓄投資"],
+          ratios: [0.5, 0.3, 0.2],
+          tips: ["房租、食、交通", "娛樂、興趣", "存錢與學習"]
+        }
+      };
+
+      var TIPS = [
+        "先把「守」住的錢鎖進帳戶，財運才跟得上。",
+        "薪水進帳當天就先分帳，比月底再省更有效。",
+        "今天少一杯手搖，一年多一個小金庫。",
+        "儲蓄不是犧牲生活，是幫未來的自己加薪。",
+        "投資學習的 10%，往往是翻身最快的一筆。",
+        "帳本寫清楚，錢才不會偷偷溜走。",
+        "有緊急預備金，遇事才不會動用本金。",
+        "想發大財，先把小錢管好。",
+        "固定比例勝過多變情緒，紀律就是財庫。",
+        "「守」比「衝」更重要，先穩再旺。",
+        "把想要跟需要分開，錢包會對你微笑。",
+        "小資也能大器，從分配開始。"
+      ];
+
+      var salaryEl = document.getElementById("salary");
+      var bucketsEl = document.getElementById("buckets");
+      var canvas = document.getElementById("donut");
+      var ctx = canvas.getContext("2d");
+      var centerSalary = document.getElementById("centerSalary");
+      var monthSave = document.getElementById("monthSave");
+      var yearSave = document.getElementById("yearSave");
+      var yearNote = document.getElementById("yearNote");
+      var customPanel = document.getElementById("customPanel");
+      var tipText = document.getElementById("tipText");
+      var sumWarn = document.getElementById("sumWarn");
+      var sumNow = document.getElementById("sumNow");
+      var modeBtns = document.querySelectorAll(".mode-btn");
+      var c1 = document.getElementById("c1");
+      var c2 = document.getElementById("c2");
+      var c3 = document.getElementById("c3");
+      var c1Pct = document.getElementById("c1Pct");
+      var c2Pct = document.getElementById("c2Pct");
+      var c3Pct = document.getElementById("c3Pct");
+      var c1Label = document.getElementById("c1Label");
+      var c2Label = document.getElementById("c2Label");
+      var c3Label = document.getElementById("c3Label");
+
+      var mode = "631";
+      var anim = { ratios: [0, 0, 0], target: [0.6, 0.3, 0.1], raf: 0 };
+
+      function parseSalary(raw) {
+        var n = String(raw || "").replace(/[^\d]/g, "");
+        return n ? parseInt(n, 10) : 0;
+      }
+
+      function formatN(n) {
+        return Math.round(n).toLocaleString("zh-TW");
+      }
+
+      function setSalaryDisplay(n) {
+        var pos = salaryEl.selectionStart;
+        var oldLen = salaryEl.value.length;
+        var formatted = n ? formatN(n) : "";
+        salaryEl.value = formatted;
+        if (document.activeElement === salaryEl && typeof pos === "number") {
+          var newLen = salaryEl.value.length;
+          var next = Math.max(0, pos + (newLen - oldLen));
+          try { salaryEl.setSelectionRange(next, next); } catch (e) {}
+        }
+      }
+
+      function getCustomRatios() {
+        var a = Number(c1.value) || 0;
+        var b = Number(c2.value) || 0;
+        var c = Number(c3.value) || 0;
+        var sum = a + b + c;
+        sumNow.textContent = String(sum);
+        if (sum !== 100) {
+          sumWarn.classList.add("show");
+        } else {
+          sumWarn.classList.remove("show");
+        }
+        if (sum <= 0) return [0, 0, 0];
+        return [a / sum, b / sum, c / sum];
+      }
+
+      function currentPlan() {
+        if (mode === "custom") {
+          return {
+            labels: ["生活開銷", "儲蓄備用", "投資學習"],
+            ratios: getCustomRatios(),
+            tips: ["你自訂的生活費", "你自訂的儲蓄", "你自訂的學習投資"],
+            displayPct: [Number(c1.value), Number(c2.value), Number(c3.value)]
+          };
+        }
+        var p = PRESETS[mode];
+        return {
+          labels: p.labels,
+          ratios: p.ratios.slice(),
+          tips: p.tips,
+          displayPct: p.ratios.map(function (r) { return Math.round(r * 100); })
+        };
+      }
+
+      function drawDonut(ratios) {
+        var w = canvas.width;
+        var h = canvas.height;
+        var cx = w / 2;
+        var cy = h / 2;
+        var rOut = Math.min(w, h) * 0.42;
+        var rIn = rOut * 0.62;
+        ctx.clearRect(0, 0, w, h);
+
+        // track
+        ctx.beginPath();
+        ctx.arc(cx, cy, (rOut + rIn) / 2, 0, Math.PI * 2);
+        ctx.strokeStyle = "#E8D4A8";
+        ctx.lineWidth = rOut - rIn;
+        ctx.stroke();
+
+        var colors = [COLORS.a, COLORS.b, COLORS.c];
+        var start = -Math.PI / 2;
+        var total = ratios.reduce(function (s, x) { return s + x; }, 0) || 1;
+        for (var i = 0; i < 3; i++) {
+          var slice = (ratios[i] / total) * Math.PI * 2;
+          if (slice <= 0.0001) continue;
+          ctx.beginPath();
+          ctx.arc(cx, cy, (rOut + rIn) / 2, start, start + slice);
+          ctx.strokeStyle = colors[i];
+          ctx.lineWidth = rOut - rIn;
+          ctx.lineCap = "butt";
+          ctx.stroke();
+          start += slice;
+        }
+      }
+
+      function renderBuckets(plan, salary) {
+        var colors = [COLORS.a, COLORS.b, COLORS.c];
+        var html = "";
+        for (var i = 0; i < 3; i++) {
+          var amt = salary * plan.ratios[i];
+          var pct = plan.displayPct[i];
+          html +=
+            '<div class="bucket">' +
+              '<div class="bucket-top">' +
+                '<span class="bucket-name"><span class="dot" style="background:' + colors[i] + '"></span>' +
+                  plan.labels[i] +
+                  ' <span class="bucket-pct">' + pct + '%</span></span>' +
+                '<span class="bucket-amt">NT$ ' + formatN(amt) + '</span>' +
+              '</div>' +
+              '<div class="bar"><i style="background:' + colors[i] + ';width:' + Math.min(100, Math.max(0, pct)) + '%"></i></div>' +
+            '</div>';
+        }
+        bucketsEl.innerHTML = html;
+      }
+
+      function updateYear(plan, salary) {
+        var saveMonthly;
+        if (mode === "503020") {
+          // bucket 3 is 儲蓄投資
+          saveMonthly = salary * plan.ratios[2];
+          yearNote.textContent = "以「儲蓄投資」推估，不含利息與報酬（僅示意）。";
+        } else {
+          // 儲蓄 + 投資學習
+          saveMonthly = salary * (plan.ratios[1] + plan.ratios[2]);
+          yearNote.textContent = "以「儲蓄＋投資學習」合計推估，不含利息與報酬（僅示意）。";
+        }
+        monthSave.textContent = "NT$ " + formatN(saveMonthly);
+        yearSave.textContent = "NT$ " + formatN(saveMonthly * 12);
+      }
+
+      function animateTo(target) {
+        anim.target = target.slice();
+        if (anim.raf) cancelAnimationFrame(anim.raf);
+        function step() {
+          var done = true;
+          for (var i = 0; i < 3; i++) {
+            var diff = anim.target[i] - anim.ratios[i];
+            if (Math.abs(diff) > 0.001) {
+              anim.ratios[i] += diff * 0.18;
+              done = false;
+            } else {
+              anim.ratios[i] = anim.target[i];
+            }
+          }
+          drawDonut(anim.ratios);
+          if (!done) anim.raf = requestAnimationFrame(step);
+        }
+        anim.raf = requestAnimationFrame(step);
+      }
+
+      function recalc() {
+        var salary = parseSalary(salaryEl.value);
+        setSalaryDisplay(salary);
+        centerSalary.textContent = salary ? formatN(salary) : "0";
+        var plan = currentPlan();
+        renderBuckets(plan, salary);
+        updateYear(plan, salary);
+        animateTo(plan.ratios);
+      }
+
+      function setMode(next) {
+        mode = next;
+        modeBtns.forEach(function (btn) {
+          var on = btn.getAttribute("data-mode") === mode;
+          btn.classList.toggle("active", on);
+          btn.setAttribute("aria-selected", on ? "true" : "false");
+        });
+        if (mode === "custom") {
+          customPanel.classList.add("show");
+          customPanel.setAttribute("aria-hidden", "false");
+          c1Label.textContent = "生活開銷";
+          c2Label.textContent = "儲蓄備用";
+          c3Label.textContent = "投資學習";
+        } else {
+          customPanel.classList.remove("show");
+          customPanel.setAttribute("aria-hidden", "true");
+        }
+        recalc();
+      }
+
+      function pickTip(avoid) {
+        var pool = TIPS.filter(function (t) { return t !== avoid; });
+        if (!pool.length) pool = TIPS;
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      // events
+      salaryEl.addEventListener("input", function () {
+        recalc();
+      });
+      salaryEl.addEventListener("blur", function () {
+        var n = parseSalary(salaryEl.value);
+        setSalaryDisplay(n);
+      });
+
+      modeBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          setMode(btn.getAttribute("data-mode"));
+        });
+      });
+
+      function onSlider() {
+        c1Pct.textContent = c1.value;
+        c2Pct.textContent = c2.value;
+        c3Pct.textContent = c3.value;
+        if (mode === "custom") recalc();
+      }
+      c1.addEventListener("input", onSlider);
+      c2.addEventListener("input", onSlider);
+      c3.addEventListener("input", onSlider);
+
+      document.getElementById("tipRefresh").addEventListener("click", function () {
+        tipText.textContent = pickTip(tipText.textContent);
+      });
+
+      // init
+      tipText.textContent = pickTip("");
+      setMode("631");
+    })();
+  </script>
+</body>
+</html>
