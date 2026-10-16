@@ -1,0 +1,93 @@
+<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>調財局記帳｜聯邦調財局</title><meta name="theme-color" content="#E2C77E">
+<style>
+:root{--bg:#F3E6C4;--card:#FFFAEE;--mus:#E2C77E;--ink:#3a2a14;--red:#C8321E;--mut:#8a7650}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;background:var(--bg);color:var(--ink);padding-bottom:84px}
+header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--mus);border-bottom:3px solid var(--red)}
+header img{width:40px;height:40px}header b{font-size:18px}header small{display:block;color:var(--mut);font-size:12px}
+main{padding:12px 14px;max-width:480px;margin:auto}.card{background:var(--card);border:1.5px solid #d9c38f;border-radius:14px;padding:14px;margin-bottom:12px;position:relative;overflow:hidden}
+.big{text-align:center}.big .lbl{font-size:15px;color:var(--mut)}.big .amt{font-size:52px;font-weight:900;color:var(--red);line-height:1.1;margin:4px 0}
+.row{display:flex;justify-content:space-between;font-size:14px;margin:4px 0}.bar{height:10px;background:#eadbb3;border-radius:6px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:var(--red)}
+.bar.g i{background:#6b8e3d}h3{margin:0 0 8px;font-size:16px}
+input,select{font:inherit;padding:10px;border:1.5px solid #cdb67f;border-radius:10px;background:#fff;width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chip{padding:6px 12px;border-radius:20px;border:1.5px solid var(--red);background:#fff;color:var(--red);font-size:14px}.chip.on{background:var(--red);color:#fff}
+button.btn{font:inherit;font-weight:700;background:var(--red);color:#fff;border:0;border-radius:10px;padding:11px;width:100%;margin-top:8px}button.sec{background:#fff;color:var(--red);border:1.5px solid var(--red)}
+ul{list-style:none;padding:0;margin:0}li{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed #d9c38f;font-size:14px}li .x{border:0;background:none;color:var(--red);font-size:18px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:2px solid var(--red)}nav button{flex:1;border:0;background:none;padding:10px 0 14px;font:inherit;font-size:13px;color:var(--mut)}nav button.on{color:var(--red);font-weight:800}
+.alarm{position:absolute;right:8px;top:8px;border:3px solid var(--red);color:var(--red);font-weight:900;padding:4px 10px;border-radius:8px;transform:rotate(-12deg);font-size:18px;animation:st .5s ease-out;background:rgba(255,250,238,.85)}
+@keyframes st{0%{transform:scale(3) rotate(-12deg);opacity:0}70%{transform:scale(.9) rotate(-12deg);opacity:1}100%{transform:scale(1) rotate(-12deg)}}
+.stick{text-align:center}.stick .lv{font-size:40px;font-weight:900;color:var(--red)}.poem{font-size:17px;letter-spacing:2px;margin:8px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.q{display:flex;justify-content:space-between;align-items:center;margin:6px 0;font-size:14px;gap:6px}.q span{flex:1}
+.score{font-size:34px;font-weight:900;color:var(--red);text-align:center}footer{text-align:center;font-size:12px;color:var(--mut);margin:10px 0}.hide{display:none}.note{font-size:12px;color:var(--mut)}
+</style></head><body>
+<header><img src="assets/stamp.png" alt=""><div><b>調財局記帳</b><small>聯邦調財局 @wuji_fbi</small></div></header>
+<main id="app"></main>
+<footer>僅供參考娛樂，非投資建議｜資料只存在你的手機</footer>
+<nav id="nav"></nav>
+<script>
+const K='wuji_budget_v1',$=s=>document.querySelector(s),fmt=n=>'$'+Math.round(n).toLocaleString('zh-TW');
+const CATS=['餐飲','交通','購物','娛樂','其他'];
+let S=JSON.parse(localStorage.getItem(K)||'null')||{setup:null,entries:[],saved:0,wish:[],draw:{}};
+const save=()=>localStorage.setItem(K,JSON.stringify(S));
+const ds=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+function payOn(y,m,p){const last=new Date(y,m+1,0).getDate();return new Date(y,m,Math.min(p,last))}
+function cycle(){const t=today(),p=S.setup.payday;let s=payOn(t.getFullYear(),t.getMonth(),p);if(s>t)s=payOn(t.getFullYear(),t.getMonth()-1,p);const n=payOn(s.getFullYear(),s.getMonth()+1,p);return{s,n}}
+function calc(){const st=S.setup,{s,n}=cycle(),t=today(),T=ds(t);
+ const inC=S.entries.filter(e=>e.d>=ds(s)&&e.d<ds(n));
+ const exp=inC.filter(e=>e.t=='x'),inc=inC.filter(e=>e.t=='i');
+ const living=st.salary*st.split[0]/100,sav=st.salary*st.split[1]/100,inv=st.salary*st.split[2]/100;
+ const extra=inc.reduce((a,e)=>a+e.a,0),spentBefore=exp.filter(e=>e.d<T).reduce((a,e)=>a+e.a,0),spentToday=exp.filter(e=>e.d==T).reduce((a,e)=>a+e.a,0);
+ const days=Math.max(1,Math.round((n-t)/864e5)),total=Math.round((n-s)/864e5),daily=(living+extra-spentBefore)/days;
+ const byCat={};exp.forEach(e=>byCat[e.c]=(byCat[e.c]||0)+e.a);
+ return{s,n,living,sav,inv,extra,spentToday,spentAll:spentBefore+spentToday,days,total,daily,left:daily-spentToday,remain:living+extra-spentBefore-spentToday,byCat,T}}
+function streak(){const set=new Set(S.entries.map(e=>e.d));let d=today(),c=0;if(!set.has(ds(d)))d.setDate(d.getDate()-1);while(set.has(ds(d))){c++;d.setDate(d.getDate()-1)}return c}
+let tab='home',cat='餐飲',etype='x';
+function nav(){$('#nav').innerHTML=[['home','🏠 今天'],['add','✏️ 記帳'],['draw','🎋 抽籤'],['wish','🛒 想買'],['set','⚙️ 設定']].map(([k,l])=>`<button class="${tab==k?'on':''}" onclick="go('${k}')">${l}</button>`).join('')}
+function go(k){tab=S.setup?k:'set';render()}
+function render(){nav();const A=$('#app');if(!S.setup||tab=='set')return A.innerHTML=setupV();({home,add,draw,wish})[tab](A)}
+function setupV(){const st=S.setup||{salary:'',payday:5,split:[60,30,10],goal:100000};return `<div class="card"><h3>📅 發薪日設定</h3>
+<label>每月薪水</label><input id="sal" type="number" inputmode="numeric" value="${st.salary}" placeholder="例如 45000">
+<label>發薪日（每月幾號）</label><input id="pd" type="number" min="1" max="31" value="${st.payday}">
+<label>分配方式（生活費 / 存錢 / 可投資學習）</label><div class="chips">${[[60,30,10,'6:3:1'],[50,30,20,'50/30/20']].map(o=>`<button class="chip" onclick="setSp(${o[0]},${o[1]},${o[2]})">${o[3]}</button>`).join('')}</div>
+<div class="grid2" style="grid-template-columns:1fr 1fr 1fr"><input id="s0" type="number" value="${st.split[0]}"><input id="s1" type="number" value="${st.split[1]}"><input id="s2" type="number" value="${st.split[2]}"></div>
+<label>存錢目標</label><input id="goal" type="number" value="${st.goal}">
+<button class="btn" onclick="doSetup()">開始調查我的錢包</button>
+${S.setup?'<button class="btn sec" onclick="if(confirm(\'確定清除所有資料？\')){localStorage.removeItem(K);location.reload()}">清除所有資料</button>':''}</div>`}
+function setSp(a,b,c){$('#s0').value=a;$('#s1').value=b;$('#s2').value=c}
+function doSetup(){const sal=+$('#sal').value,sp=[+$('#s0').value,+$('#s1').value,+$('#s2').value];if(!sal)return alert('請輸入薪水');if(sp[0]+sp[1]+sp[2]!=100)return alert('比例加總要 100%');S.setup={salary:sal,payday:Math.min(31,Math.max(1,+$('#pd').value||1)),split:sp,goal:+$('#goal').value||0,saved:S.setup?S.setup.saved:0};save();tab='home';render()}
+function home(A){const c=calc(),over=c.left<0,pct=Math.min(100,c.spentAll/(c.living+c.extra)*100),mp=Math.min(100,(c.total-c.days)/c.total*100),g=S.setup.goal?Math.min(100,S.saved/S.setup.goal*100):0;
+A.innerHTML=`<div class="card big">${over?'<div class="alarm">漏財警報</div>':''}<div class="lbl">今天還能花</div><div class="amt" style="${over?'':'color:#3a2a14'}">${fmt(c.left)}</div>
+<div class="row"><span>今日已花 ${fmt(c.spentToday)}</span><span>每日額度 ${fmt(c.daily)}</span></div><div class="note">距離下次發薪還有 ${c.days} 天（${c.n.getMonth()+1}/${c.n.getDate()}）</div></div>
+<div class="card"><h3>本期生活費</h3><div class="row"><span>已花 ${fmt(c.spentAll)}</span><span>剩下 <b>${fmt(c.remain)}</b></span></div><div class="bar"><i style="width:${pct}%"></i></div>
+<div class="row note"><span>本月進度（時間）</span><span>${Math.round(mp)}%</span></div><div class="bar g"><i style="width:${mp}%"></i></div>
+<div class="row note"><span>可投資／學習：${fmt(c.inv)}</span><span>額外收入：${fmt(c.extra)}</span></div></div>
+<div class="card"><h3>🐷 存錢目標 ${fmt(S.saved)} / ${fmt(S.setup.goal)}</h3><div class="bar g"><i style="width:${g}%"></i></div><button class="btn sec" onclick="S.saved+=${c.sav};save();render()">存入本期存錢 ${fmt(c.sav)}</button></div>
+<div class="card"><div class="row"><b>🔥 連續記帳 ${streak()} 天</b><span>${S.draw[c.T]?'今日已抽籤 ✅':'<a href="#" onclick="go(\'draw\')">去抽今日籤 →</a>'}</span></div></div>
+<div class="card"><h3>本期分類小結</h3>${CATS.map(k=>{const v=c.byCat[k]||0;return `<div class="row"><span>${k}</span><span>${fmt(v)}</span></div><div class="bar"><i style="width:${c.spentAll?v/c.spentAll*100:0}%"></i></div>`}).join('')}</div>`}
+function add(A){const c=calc(),list=S.entries.filter(e=>e.d==c.T);
+A.innerHTML=`<div class="card"><div class="chips"><button class="chip ${etype=='x'?'on':''}" onclick="etype='x';render()">支出</button><button class="chip ${etype=='i'?'on':''}" onclick="etype='i';render()">額外收入</button></div>
+<input id="amt" type="number" inputmode="numeric" placeholder="金額" style="font-size:24px">
+${etype=='x'?`<div class="chips">${CATS.map(k=>`<button class="chip ${cat==k?'on':''}" onclick="cat='${k}';document.querySelectorAll('.cc').forEach(b=>b.classList.toggle('on',b.textContent=='${k}'))" class="cc">${k}</button>`).join('').replace(/class="chip/g,'class="cc chip')}</div>`:''}
+<input id="note" placeholder="備註（選填）" style="margin-top:8px"><button class="btn" onclick="addE()">記下來</button></div>
+<div class="card"><h3>今天的紀錄</h3><ul>${list.map(e=>`<li><span>${e.t=='i'?'💰 收入':e.c} ${e.n||''}</span><span>${e.t=='i'?'+':'-'}${fmt(e.a)} <button class="x" onclick="delE(${e.id})">✕</button></span></li>`).join('')||'<li class="note">今天還沒記帳</li>'}</ul></div>`}
+function addE(){const a=+$('#amt').value;if(!(a>0))return alert('請輸入金額');S.entries.push({id:Date.now(),d:ds(today()),t:etype,a,c:etype=='x'?cat:'收入',n:$('#note').value.trim()});save();render()}
+function delE(id){S.entries=S.entries.filter(e=>e.id!=id);save();render()}
+const LV=[['大吉','金龜守庫，財氣東來','金色','花錢前先默數十秒，今天守得住就是賺'],['中吉','細水長流，涓滴成河','米黃','把零錢存進撲滿，小錢也是財庫磚'],['小吉','財不露白，福在心田','翠綠','午餐自帶，省下的錢記在存錢目標'],['吉','一分耕耘，一分收穫','藏青','今天適合整理訂閱，砍掉沒在用的'],['末吉','欲速不達，守成為上','杏色','衝動購物前，放進想買清單冷靜三天'],['平','風平浪靜，帳目分明','灰白','記帳不漏一筆，就是今天的功課'],['凶','錢如流水，堤防要高','硃砂紅','今日漏財警戒，非必要不刷卡']];
+function rng(s){let h=2166136261;for(const ch of s)h=Math.imul(h^ch.charCodeAt(0),16777619);return()=>((h=Math.imul(h^h>>>15,2246822507)^Math.imul(h^h>>>13,3266489909))>>>0)/4294967296}
+function draw(A){const T=ds(today()),r=rng('wuji'+T),i=Math.floor(r()*LV.length),nums=[1+Math.floor(r()*49),1+Math.floor(r()*49)],L=LV[i],got=S.draw[T];
+A.innerHTML=`<div class="card stick">${got?`<div class="note">${T} 今日籤</div><div class="lv">${L[0]}</div><div class="poem">「${L[1]}」</div><div class="row"><span>幸運色：${L[2]}</span><span>幸運數字：${nums.join('、')}</span></div><div class="card" style="margin-top:8px">💡 今日財運提醒：${L[3]}</div>`:`<div style="font-size:64px">🎋</div><p>每天一支籤，明天再來！</p><button class="btn" onclick="S.draw['${T}']=1;save();render()">搖籤</button>`}<p class="note">籤詩僅供娛樂</p></div>`}
+const QS=['這筆錢是閒錢嗎？（不是生活費、不是借來的）','緊急預備金夠 3 個月生活費嗎？','如果它價值少一半，你睡得著嗎？','買了不會影響本月生活費嗎？'];
+let wq=null;
+function wish(A){A.innerHTML=`<div class="card"><h3>🛒 想買清單・準備度檢查</h3><p class="note">這裡檢查的是「你的財務準備度」，不是評價商品或任何股票好壞。本工具不提供任何個股推薦。</p>
+<input id="wn" placeholder="想買什麼？（任何東西）"><input id="wc" type="number" placeholder="金額" style="margin-top:8px">
+${QS.map((q,i)=>`<div class="q"><span>${q}</span><select id="q${i}"><option value="">—</option><option value="1">是</option><option value="0">否</option></select></div>`).join('')}
+<button class="btn" onclick="chk()">檢查我的準備度</button></div>
+${S.wish.slice().reverse().map(w=>`<div class="card"><div class="row"><b>${w.n.replace(/[<>&]/g,'')}</b><span>${fmt(w.c)}</span></div><div class="score">${w.s} 分</div><p>${adv(w.s)}</p><p class="note">分數只反映你目前的財務準備度，與商品本身好壞無關。</p><button class="btn sec" onclick="S.wish=S.wish.filter(x=>x.id!=${w.id});save();render()">刪除</button></div>`).join('')}`}
+function adv(s){return s>=100?'財務準備度很充足。仍請自行判斷，量力而為。':s>=75?'大致準備好了，補上不足的那一項會更安心。':s>=50?'準備度普通，建議先冷靜幾天、先補預備金。':'準備度不足，先把生活費與緊急預備金顧好，再考慮。'}
+function chk(){const n=$('#wn').value.trim(),c=+$('#wc').value,a=QS.map((_,i)=>$('#q'+i).value);if(!n||!c)return alert('請填品項與金額');if(a.includes(''))return alert('請回答全部問題');S.wish.push({id:Date.now(),n,c,s:a.filter(x=>x=='1').length*25});save();render()}
+if(location.search.includes('demo')&&!S.setup){const t=today(),d=k=>{const x=new Date(t);x.setDate(x.getDate()-k);return ds(x)};
+ S={setup:{salary:45000,payday:5,split:[60,30,10],goal:100000},saved:27000,wish:[],draw:{},entries:[[0,'x',120,'餐飲','午餐便當'],[0,'x',85,'餐飲','手搖飲'],[0,'x',60,'交通','捷運'],[0,'x',820,'購物','網購'],[1,'x',350,'餐飲',''],[1,'x',300,'娛樂','電影'],[2,'x',210,'餐飲',''],[2,'x',1200,'購物',''],[3,'x',150,'交通',''],[4,'x',2400,'其他','房租分攤'],[3,'i',1500,'收入','接案']].map((e,i)=>({id:i+1,d:d(e[0]),t:e[1],a:e[2],c:e[3],n:e[4]}))};save()}
+tab=S.setup?'home':'set';render();
+</script></body></html>
