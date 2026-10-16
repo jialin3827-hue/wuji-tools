@@ -25,7 +25,7 @@ nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);b
 .up{color:var(--red)}.dn{color:#2f7a3a}.tip{margin-top:10px;background:#fff3e6;border:1.5px dashed var(--red);border-radius:10px;padding:8px;font-size:14px;text-align:left}
 .warn{background:var(--red);color:#fff;border-radius:10px;padding:8px 10px;font-size:13px;margin-bottom:12px;font-weight:700}.tag{font-size:11px;border:1px solid var(--mut);color:var(--mut);border-radius:6px;padding:0 4px;margin-left:4px}
 .hold{border-bottom:1px dashed #d9c38f;padding:6px 0}.hold svg{vertical-align:middle}li{cursor:pointer}nav button{font-size:12px;padding:6px 0 12px}button.x{border:0;background:none;color:var(--red);font-size:18px}
-header .bell{margin-left:auto;position:relative;font-size:24px;border:0;background:none;cursor:pointer}header .bell i{position:absolute;top:-2px;right:-4px;background:#e07b39;color:#fff;font-style:normal;font-size:11px;border-radius:9px;padding:0 5px}
+header .bell{margin-left:auto;position:relative;font-size:24px;border:0;background:none;cursor:pointer;transform-origin:50% 8%}header .bell.shake{animation:wob 3s ease-in-out infinite}@keyframes wob{0%,14%,100%{transform:rotate(0)}2%{transform:rotate(18deg)}4%{transform:rotate(-16deg)}6%{transform:rotate(12deg)}8%{transform:rotate(-8deg)}10%{transform:rotate(4deg)}}@media (prefers-reduced-motion:reduce){header .bell.shake{animation:none}}header .bell i{position:absolute;top:-2px;right:-4px;background:#e07b39;color:#fff;font-style:normal;font-size:11px;border-radius:9px;padding:0 5px}
 .cheer{margin-top:10px;background:#fff6dc;border:1.5px dashed #c9a24a;border-radius:10px;padding:8px;font-size:14px;text-align:left}.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.badges span{background:#fff;border:1px solid #e3d2a4;border-radius:14px;padding:3px 9px;font-size:12px}
 .mark{background:linear-gradient(transparent 62%,rgba(200,50,30,.55) 62%,rgba(200,50,30,.35) 88%,transparent 88%);padding:0 2px}
 .kw{display:inline-flex;align-items:center;justify-content:center;width:84px;height:84px;font-size:52px;font-weight:900;color:var(--ink);font-family:serif}.kw.circ{border:4px solid var(--red);border-radius:50%;transform:rotate(-4deg);box-shadow:inset 0 0 0 2px rgba(200,50,30,.25)}
@@ -82,7 +82,58 @@ function spark(code,w=120,h=34){const i=HI&&HI.c[code];if(!i)return'<span class=
 let tab=(new URLSearchParams(location.search).get('tab')||'home').replace('tianji','draw'),cat='餐飲',bk='n',lm=null,q='',pick=null;
 function nav(){$('#nav').innerHTML=[['home','🏠','首頁'],['add','✏️','記帳'],['book','📒','帳本'],['inv','📈','存股'],['draw','🔮','天機'],['set','⚙️','設定']].map(([k,i,l])=>`<button class="${tab==k?'on':''}" onclick="go('${k}')">${i}<br>${l}</button>`).join('')}
 function go(k){tab=S.setup?k:'set';scrollTo(0,0);render()}
-function render(){nav();bell();const A=$('#app');if(!S.setup||tab=='set')return A.innerHTML=setupV();({home,add,book,inv,draw})[tab](A)}
+// ===== AA 分帳 =====
+let aaId=null;
+const aaG=()=>(S.aa=S.aa||[]).find(g=>g.id==aaId);
+function aaCalc(g){const bal={};g.people.forEach(p=>bal[p]=0);const share={};g.people.forEach(p=>share[p]=0);
+ g.ex.forEach(x=>{const sh=x.sh||{};let ws=Object.keys(sh).filter(p=>g.people.includes(p));if(!ws.length)return;
+  const custom=x.custom;ws.forEach(p=>{const v=custom?(+sh[p]||0):x.a/ws.length;share[p]+=v;bal[p]-=v});if(g.people.includes(x.p))bal[x.p]+=x.a});
+ const cr=[],db=[];Object.entries(bal).forEach(([p,v])=>{v=Math.round(v);if(v>0)cr.push([p,v]);else if(v<0)db.push([p,-v])});
+ cr.sort((a,b)=>b[1]-a[1]);db.sort((a,b)=>b[1]-a[1]);const st=[];let i=0,j=0;
+ while(i<db.length&&j<cr.length){const m=Math.min(db[i][1],cr[j][1]);if(m>0)st.push([db[i][0],cr[j][0],m]);db[i][1]-=m;cr[j][1]-=m;if(!db[i][1])i++;if(!cr[j][1])j++}
+ return{bal,share,st,tot:g.ex.reduce((a,x)=>a+x.a,0)}}
+function aa(A){S.aa=S.aa||[];const g=aaG();
+ if(!g){A.innerHTML=`<div class="card"><h3>👥 AA 分帳</h3><p class="note">跟朋友出去玩，誰先付都沒關係，最後幫你算清楚，還會自動記進帳本 ✨</p>
+ <input id="gn" placeholder="這次出遊的名字，例如：週末燒肉"><input id="gd" type="date" value="${ds(today())}"><input id="gp" placeholder="朋友名字（用逗號分開），例如：小美,阿凱">
+ <button class="btn" onclick="aaNew()">＋ 建立分帳</button><button class="btn sec" onclick="go('add')">← 回記帳</button></div>
+ <div class="card"><h3>📜 分帳紀錄</h3><ul>${S.aa.slice().reverse().map(g=>{const c=aaCalc(g),ow=aaOwed(g,c);return`<li onclick="aaId=${g.id};render()"><span>${esc(g.name)} <span class="note">${g.d}・${g.people.length} 人</span>${g.done?'<span class="tag">已記帳</span>':''}${ow?`<span class="tag">待收 ${fmt(ow)}</span>`:''}</span><span>${fmt(c.tot)} ›</span></li>`}).join('')||'<p class="note">還沒有分帳紀錄，下次聚餐試試看！</p>'}</ul></div>`;return}
+ const c=aaCalc(g),me='我';
+ A.innerHTML=`<div class="card"><div class="row"><h3>👥 ${esc(g.name)}</h3><span class="note">${g.d}</span></div>
+ <div class="chips">${g.people.map(p=>`<span class="chip">${esc(p)}</span>`).join('')}</div>
+ ${g.done?'':`<div class="q"><input id="np" placeholder="再加一位朋友"><button class="btn sec" style="width:auto;margin:0" onclick="aaAddP()">加入</button></div>`}</div>
+ ${g.done?'':`<div class="card"><h3>🧾 新增一筆花費</h3><input id="xt" placeholder="項目，例如：晚餐"><input id="xa" type="number" inputmode="numeric" placeholder="金額">
+ <label>誰付的<select id="xp">${g.people.map(p=>`<option>${esc(p)}</option>`).join('')}</select></label>
+ <p class="note">誰要分（預設全部平分）<label style="display:inline"><input type="checkbox" id="xc" onchange="document.querySelectorAll('.xsa').forEach(e=>e.style.display=this.checked?'':'none')" style="width:auto"> 自訂金額</label></p>
+ ${g.people.map((p,i)=>`<div class="q"><label style="flex:1"><input type="checkbox" class="xs" data-p="${esc(p)}" checked style="width:auto"> ${esc(p)}</label><input class="xsa" data-p="${esc(p)}" type="number" inputmode="numeric" placeholder="金額" style="width:100px;display:none"></div>`).join('')}
+ <button class="btn" onclick="aaAddX()">加入這筆</button></div>`}
+ <div class="card"><h3>💳 花費明細（共 ${fmt(c.tot)}）</h3><ul>${g.ex.map((x,i)=>`<li><span>${esc(x.t)} <span class="note">${esc(x.p)} 付・${Object.keys(x.sh).length} 人分</span></span><span>${fmt(x.a)} ${g.done?'':`<button class="x" onclick="aaDelX(${i})">✕</button>`}</span></li>`).join('')||'<p class="note">還沒有花費</p>'}</ul></div>
+ <div class="card"><h3>⚖️ 每個人的結餘</h3>${g.people.map(p=>{const v=Math.round(c.bal[p]);return`<div class="row"><span>${esc(p)}${p==me?'（你）':''} <span class="note">分攤 ${fmt(c.share[p])}</span></span><b style="color:${v>0?'#2e7d32':v<0?'var(--red)':'inherit'}">${v>0?'應收 '+fmt(v):v<0?'應付 '+fmt(-v):'剛好 👌'}</b></div>`}).join('')}</div>
+ <div class="card"><h3>🤝 怎麼結清最簡單</h3>${c.st.map(([a,b,m])=>{const k=a+'>'+b,r=g.recv&&g.recv[a];return`<div class="row"><span>${esc(a)} → ${esc(b)}</span><span><b>${fmt(m)}</b>${b==me&&g.done?(r?' <span class="tag">已收到 ✅</span>':` <button class="chip" onclick="aaRecv('${esc(a)}',${m})">已收到</button>`):''}</span></div>`}).join('')||'<p class="note">大家都剛好，不用找錢 🎉</p>'}</div>
+ ${g.done?`<p class="note" style="text-align:center">✅ 已記帳：你的分攤 ${fmt(c.share[me])} 已算進本月娛樂。朋友還你的錢按「已收到」才會加回來喔！</p>`:`<button class="btn" onclick="aaDone()">✅ 完成並記帳</button>`}
+ <button class="btn sec" onclick="aaId=null;render()">← 分帳列表</button>${g.done?'':`<button class="btn sec" onclick="aaDel()">刪除這個分帳</button>`}`}
+function aaOwed(g,c){if(!g.done)return 0;return c.st.filter(([a,b])=>b=='我'&&!(g.recv&&g.recv[a])).reduce((s,x)=>s+x[2],0)}
+function aaNew(){const n=$('#gn').value.trim();if(!n)return alert('幫這次出遊取個名字吧');const ps=$('#gp').value.split(/[,，、\s]+/).map(s=>s.trim()).filter(s=>s&&s!='我');
+ const g={id:Date.now(),name:n.slice(0,30),d:$('#gd').value||ds(today()),people:['我',...new Set(ps)],ex:[],done:false,recv:{}};S.aa.push(g);aaId=g.id;save();render()}
+function aaAddP(){const g=aaG(),p=$('#np').value.trim();if(!p||g.people.includes(p))return;g.people.push(p.slice(0,12));save();render()}
+function aaAddX(){const g=aaG(),a=+$('#xa').value;if(!(a>0))return alert('請輸入金額');const custom=$('#xc').checked,sh={};
+ document.querySelectorAll('.xs').forEach(e=>{if(e.checked){const p=e.dataset.p;sh[p]=custom?+(document.querySelector(`.xsa[data-p="${CSS.escape(p)}"]`).value||0):1}});
+ if(!Object.keys(sh).length)return alert('至少要有一個人分');
+ if(custom){const s=Object.values(sh).reduce((a,b)=>a+b,0);if(Math.round(s)!=Math.round(a))return alert(`自訂金額加起來 ${fmt(s)}，跟總額 ${fmt(a)} 不一樣喔`)}
+ g.ex.push({t:($('#xt').value.trim()||'花費').slice(0,20),a,p:$('#xp').value,sh,custom});save();render()}
+function aaDelX(i){aaG().ex.splice(i,1);save();render()}
+function aaDel(){if(!confirm('刪除這個分帳？'))return;S.aa=S.aa.filter(g=>g.id!=aaId);aaId=null;save();render()}
+function aaDone(){const g=aaG(),c=aaCalc(g),my=Math.round(c.share['我']);if(!g.ex.length)return alert('先加一筆花費吧');
+ if(my>0)S.entries.push({id:Date.now(),d:g.d,a:my,c:'娛樂',b:'f',note:('AA・'+g.name).slice(0,40),aa:g.id});
+ g.done=true;save();const ow=aaOwed(g,c);alert(`🎉 分帳完成！你的分攤 ${fmt(my)} 已記進娛樂。`+(ow?`\n朋友還要給你 ${fmt(ow)}，收到後按「已收到」就會加回存款 💰`:''));render()}
+function aaRecv(p,m){const g=aaG();g.recv=g.recv||{};g.recv[p]=true;S.entries.push({id:Date.now(),d:ds(today()),a:-m,c:'娛樂',b:'f',note:('AA 收回・'+p+'・'+g.name).slice(0,40),aa:g.id});save();render()}
+// ===== 鈴鐺通知 =====
+function notes(){const r=[];if(!S.setup)return r;const c=calc(),F=foodOf(c);
+ if(F.food>c.remain)r.push({k:'hungry'+ds(cycleOf(today()).s),t:`🍱 月底準備吃土囉，先顧好便當錢！\n剩下 ${F.days} 天的便當錢要 ${fmt(F.food)}，目前存款 ${fmt(c.remain)}。\n今天起帶便當、少一杯飲料，就能撐到發薪日 💪`});
+ (S.aa||[]).forEach(g=>{const ow=aaOwed(g,aaCalc(g));if(ow)r.push({k:'aa'+g.id+'_'+ow,t:`👥「${g.name}」還有 ${fmt(ow)} 待收，朋友還你後記得按「已收到」喔！`})});return r}
+function bell(){const b=$('#bell'),N=notes(),seen=S.bellSeen||[],un=N.filter(n=>!seen.includes(n.k)).length;
+ b.innerHTML='🔔'+(N.length?`<i>${N.length}</i>`:'');b.classList.toggle('shake',un>0);return N}
+function bellMsg(){const N=bell();S.bellSeen=N.map(n=>n.k);save();bell();alert(N.length?N.map(n=>n.t).join('\n\n'):'🔔 目前沒有通知，便當錢顧得穩穩的 👍')}
+function render(){nav();bell();const A=$('#app');if(!S.setup||tab=='set')return A.innerHTML=setupV();({home,add,book,inv,draw,aa})[tab](A)}
 function setupV(){const st=S.setup||{salary:'',payday:5,rule:[60,30,10],fixed:DEF_FIXED.map(([n,a])=>({n,a}))};
  return`<div class="card"><h3>💰 發薪日設定</h3><label>每月薪資（實領）<input id="sal" type="number" inputmode="numeric" value="${st.salary}" placeholder="例如 35000"></label>
  <label>每月發薪日<input id="pd" type="number" min="1" max="31" value="${st.payday}"></label><label>每日便當錢（必要生存吃喝，預設 300）<input id="food" type="number" inputmode="numeric" value="${st.food||300}"></label><label>生日（選填，天機頁會標出你的星座）<input id="bd" type="date" value="${st.bd||''}"></label>
@@ -99,8 +150,6 @@ function doSetup(){const sal=+$('#sal').value,r=[+$('#r0').value,+$('#r1').value
  if(fixed.reduce((a,f)=>a+f.a,0)>sal*r[0]/100&&!confirm('固定扣款超過必要開銷預算，超出的部分會從儲蓄扣。確定嗎？'))return;
  S.setup={salary:sal,payday:Math.min(31,Math.max(1,+$('#pd').value||5)),rule:r,fixed,start:S.setup?S.setup.start:ds(today()),food:Math.max(0,+$('#food').value||300),bd:$('#bd').value||''};save();tab='home';render()}
 function foodOf(c){const days=Math.max(1,Math.round((c.n-today())/864e5)),per=S.setup.food==null?300:+S.setup.food;return{days,per,food:per*days}}
-function bell(){if(!S.setup){$('#bell').innerHTML='🔔';return}const c=calc(),F=foodOf(c),hungry=F.food>c.remain;$('#bell').innerHTML='🔔'+(hungry?'<i>1</i>':'');return{c,F,hungry}}
-function bellMsg(){const b=bell();if(!b)return;alert(b.hungry?`🍱 月底準備吃土囉，先顧好便當錢！\n剩下 ${b.F.days} 天的便當錢要 ${fmt(b.F.food)}，目前存款 ${fmt(b.c.remain)}。\n今天起帶便當、少一杯飲料，就能撐到發薪日 💪`:'🔔 目前沒有通知，便當錢顧得穩穩的 👍')}
 function home(A){const c=calc(),P=c.P,F=foodOf(c),fun=Math.max(0,c.remain-F.food),st=streak(),hungry=F.food>c.remain;
  const cheers=['有存到錢就值得慶祝 🎉 月光族能留下一塊錢都是勝利！','每記一筆帳，就是幫未來的自己存一點底氣 💪','今天也沒把錢花光光，你超棒 ✨','存款像種樹，慢慢長、不用急 🌱','小小一筆也算數，積少成多就是財庫 🏦'];
  const tips=['把想買的東西放進清單三天，還想要再買','自備水壺，一天省一杯飲料錢','發薪日先存再花，比月底剩多少存多少更容易','整理一下訂閱服務，沒在用的就退掉','零錢丟撲滿，月底給自己一個驚喜'];
@@ -122,6 +171,7 @@ function add(A){const T=ds(today()),list=S.entries.filter(e=>e.d==T).reverse();
  <div class="chips">${CATS.map(([k,b])=>`<button class="chip ${cat==k?'on':''}" onclick="cat='${k}';bk='${b}';render()">${k}</button>`).join('')}</div>
  <div class="chips"><span class="note" style="align-self:center">算在：</span>${['n','f'].map(b=>`<button class="chip ${bk==b?'on':''}" onclick="bk='${b}';render()">${BK[b]}</button>`).join('')}</div>
  <input id="nt" placeholder="備註（選填）"><button class="btn" onclick="addE()">記下來</button></div>
+ <div class="card"><div class="row"><b>👥 AA 分帳</b><button class="chip" onclick="aaId=null;go('aa')">跟朋友分帳 →</button></div><p class="note">像 Splid 一樣算清楚誰該付誰，算完自動記帳。</p></div>
  <div class="card"><h3>今天的帳（${list.length} 筆）</h3><ul>${list.map(li).join('')||'<p class="note">今天還沒記帳，記一筆就能延續連續天數！</p>'}</ul></div>`}
 const li=e=>`<li><span>${esc(e.c)}<span class="tag">${BK[e.b]}</span> <span class="note">${esc(e.note||'')}</span></span><span>${fmt(e.a)} <button class="x" onclick="delE(${e.id})">✕</button></span></li>`;
 function addE(){const a=+$('#amt').value;if(!(a>0))return alert('請輸入金額');S.entries.push({id:Date.now(),d:ds(today()),a,c:cat,b:bk,note:$('#nt').value.trim().slice(0,40)});save();render()}
@@ -193,7 +243,8 @@ function demo(){const t=today(),m=new Date(t);m.setMonth(m.getMonth()-2);
  for(let i=0;i<20;i++){const d=new Date(t);d.setDate(d.getDate()-i);const e=C[i%C.length];S.entries.push({id:i+1,d:ds(d),a:e[2],c:e[0],b:e[1],note:e[3]})}
  // 範例持股：依資料隨機抽 2 檔有走勢的代號，純示意，非推薦
  const ks=Object.keys(PR.stocks).filter(k=>HI&&HI.c[k]&&HI.c[k][0]!=null&&PR.stocks[k].c<200),r=rng('demo');
- for(let j=0;j<2&&ks.length;j++){const k=ks[Math.floor(r()*ks.length)],d0=HI.dates[5],px=HI.c[k][5]||PR.stocks[k].c,sh=j?30:50;S.buys.push({id:90+j,d:d0,code:k,n:PR.stocks[k].n,sh,px,amt:Math.round(sh*px)})}}
+ for(let j=0;j<2&&ks.length;j++){const k=ks[Math.floor(r()*ks.length)],d0=HI.dates[5],px=HI.c[k][5]||PR.stocks[k].c,sh=j?30:50;S.buys.push({id:90+j,d:d0,code:k,n:PR.stocks[k].n,sh,px,amt:Math.round(sh*px)})}
+ S.aa=[{id:7,name:'週末燒肉',d:ds(t),people:['我','小美','阿凱','Wendy'],ex:[{t:'燒肉晚餐',a:2400,p:'我',sh:{'我':1,'小美':1,'阿凱':1,'Wendy':1}},{t:'飲料',a:360,p:'小美',sh:{'我':1,'小美':1,'阿凱':1}},{t:'計程車',a:300,p:'阿凱',sh:{'我':1,'阿凱':1,'Wendy':1}}],done:true,recv:{}}];S.entries.push({id:77,d:ds(t),a:820,c:'娛樂',b:'f',note:'AA・週末燒肉',aa:7});aaId=7}
 
 render();loadData();
 </script></body></html>
