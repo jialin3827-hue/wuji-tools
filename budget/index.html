@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>月光存股模擬人生｜聯邦調財局</title><meta name="theme-color" content="#E2C77E"><meta name="description" content="拯救月光族：532／631 法則記帳＋模擬存股學習。資料只存在你的手機。">
+<title>月光存股模擬人生｜聯邦調財局</title><meta name="theme-color" content="#E2C77E"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="assets/icon-192.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="月光存股"><meta name="description" content="拯救月光族：532／631 法則記帳＋模擬存股學習。資料只存在你的手機。">
 <style>
 :root{--bg:#F3E6C4;--card:#FFFAEE;--mus:#E2C77E;--ink:#3a2a14;--red:#C8321E;--mut:#8a7650}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;background:var(--bg);color:var(--ink);padding-bottom:84px}
@@ -31,10 +31,11 @@ header .bell{margin-left:auto;position:relative;font-size:24px;border:0;backgrou
 .kw{display:inline-flex;align-items:center;justify-content:center;width:84px;height:84px;font-size:52px;font-weight:900;color:var(--ink);font-family:serif}.kw.circ{border:4px solid var(--red);border-radius:50%;transform:rotate(-4deg);box-shadow:inset 0 0 0 2px rgba(200,50,30,.25)}
 .star{color:#c9a24a;letter-spacing:1px}.zs{display:grid;grid-template-columns:1fr 1fr;gap:6px}.zs div{background:#fff;border:1px solid #e3d2a4;border-radius:10px;padding:6px 8px;font-size:13px}.zs div.me{border:2px solid var(--red);background:#fff3e6}.zs small{display:block;color:var(--mut);font-size:11px}
 .quote{font-size:20px;font-weight:800;text-align:center;font-family:serif;margin:6px 0}.hd{font-size:12px;color:var(--mut);letter-spacing:2px}
+#a2hs{position:fixed;left:10px;right:10px;bottom:74px;z-index:50;background:#FFFAEE;border:2px solid var(--red);border-radius:14px;padding:10px 36px 10px 12px;box-shadow:0 4px 14px rgba(0,0,0,.18);font-size:14px;max-width:460px;margin:auto}#a2hs b{color:var(--red)}#a2hs .cl{position:absolute;right:6px;top:4px;border:0;background:none;font-size:20px;color:var(--mut)}#a2hs button.btn{margin-top:6px;padding:8px}
 </style></head><body>
 <header><img src="assets/stamp.png" alt=""><div><b>月光存股模擬人生</b><small>聯邦調財局 @wuji_fbi</small></div><button class="bell" id="bell" onclick="bellMsg()">🔔</button></header>
 <main id="app"></main>
-<footer>僅供參考娛樂，非投資建議｜模擬學習用，本站不推薦任何個股<br>資料只存在你的手機｜行情：臺灣證券交易所、證券櫃檯買賣中心 公開資料</footer>
+<footer>僅供參考娛樂，非投資建議｜模擬學習用，本站不推薦任何個股<br>資料只存在你的手機｜行情：臺灣證券交易所、證券櫃檯買賣中心 公開資料｜<a href="privacy.html" style="color:inherit">隱私說明</a></footer>
 <nav id="nav"></nav>
 <script>
 const K='wuji_moon_v1',$=s=>document.querySelector(s),fmt=n=>'$'+Math.round(n).toLocaleString('zh-TW'),f2=n=>(+n).toLocaleString('zh-TW',{maximumFractionDigits:2});
@@ -141,7 +142,7 @@ function setupV(){const st=S.setup||{salary:'',payday:5,rule:[60,30,10],fixed:DE
  <div class="grid3"><label>必要開銷 %<input id="r0" type="number" value="${st.rule[0]}"></label><label>儲蓄投資 %<input id="r1" type="number" value="${st.rule[1]}"></label><label>娛樂彈性 %<input id="r2" type="number" value="${st.rule[2]}"></label></div>
  <p class="note">建議：必要 50–60%、儲蓄投資 20–30%（擺脫月光族的核心）、娛樂 10–20%，合計 100%。</p></div>
  <div class="card"><h3>📌 每月固定扣款（從「必要開銷」先扣）</h3><div id="fx">${st.fixed.map((f,i)=>fxRow(f,i)).join('')}</div><button class="btn sec" onclick="addFx()">＋ 新增項目</button></div>
- <button class="btn" onclick="doSetup()">儲存設定</button>${S.setup?`<button class="btn sec" onclick="if(confirm('確定清除所有資料？'))(localStorage.removeItem(K),location.reload())">清除全部資料</button>`:''}`}
+ <button class="btn" onclick="doSetup()">儲存設定</button><p class="note" style="text-align:center"><a href="privacy.html" style="color:var(--red)">🔒 隱私說明</a>｜資料只存在你的手機</p>${S.setup?`<button class="btn sec" onclick="if(confirm('確定清除所有資料？'))(localStorage.removeItem(K),location.reload())">清除全部資料</button>`:''}`}
 const fxRow=(f,i)=>`<div class="q"><input class="fn" value="${esc(f.n)}" placeholder="項目"><input class="fa" type="number" inputmode="numeric" value="${f.a||''}" placeholder="金額" style="width:110px"><button class="x" onclick="this.parentNode.remove()">✕</button></div>`;
 function addFx(){$('#fx').insertAdjacentHTML('beforeend',fxRow({n:'',a:''},0))}
 function setR(a,b,c){$('#r0').value=a;$('#r1').value=b;$('#r2').value=c}
@@ -247,4 +248,15 @@ function demo(){const t=today(),m=new Date(t);m.setMonth(m.getMonth()-2);
  S.aa=[{id:7,name:'週末燒肉',d:ds(t),people:['我','小美','阿凱','Wendy'],ex:[{t:'燒肉晚餐',a:2400,p:'我',sh:{'我':1,'小美':1,'阿凱':1,'Wendy':1}},{t:'飲料',a:360,p:'小美',sh:{'我':1,'小美':1,'阿凱':1}},{t:'計程車',a:300,p:'阿凱',sh:{'我':1,'阿凱':1,'Wendy':1}}],done:true,recv:{}}];S.entries.push({id:77,d:ds(t),a:820,c:'娛樂',b:'f',note:'AA・週末燒肉',aa:7});aaId=7}
 
 render();loadData();
+</script><script>
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));
+(function(){const KK='wuji_a2hs_off';let dp=null;
+const sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone;if(sa||localStorage.getItem(KK))return;
+function show(h){if(document.getElementById('a2hs'))return;const d=document.createElement('div');d.id='a2hs';d.innerHTML='<button class="cl" aria-label="關閉">×</button>'+h;document.body.appendChild(d);
+ d.querySelector('.cl').onclick=()=>{localStorage.setItem(KK,'1');d.remove()};const b=d.querySelector('.btn');if(b)b.onclick=async()=>{if(!dp)return;dp.prompt();const r=await dp.userChoice;dp=null;if(r.outcome==='accepted')localStorage.setItem(KK,'1');d.remove()}}
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;show('📱 <b>加到主畫面</b>，像 App 一樣一鍵打開，沒網路也能記帳！<button class="btn">加到主畫面</button>')});
+addEventListener('appinstalled',()=>{localStorage.setItem(KK,'1');const d=document.getElementById('a2hs');d&&d.remove()});
+const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!/crios|fxios|edgios/i.test(navigator.userAgent);
+if(ios)setTimeout(()=>show('📱 <b>加到主畫面</b>：點下方 Safari 的「分享」<span style="font-size:16px">⎋</span> → 選「<b>加入主畫面</b>」，就能像 App 一樣打開。'),1500);
+})();
 </script></body></html>
