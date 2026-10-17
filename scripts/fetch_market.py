@@ -11,6 +11,7 @@ UA = {'User-Agent': 'Mozilla/5.0 (wuji-tools static site; daily)', 'Accept': 'ap
 KEEP = 260                     # bars kept per ticker (~1 year)
 BACKFILL_MONTHS = 7            # ~6 months of TW history
 TW_REQ_BUDGET = int(os.environ.get('TW_REQ_BUDGET', '40'))  # max history requests per run
+LAST_DIVS = None
 TZ8 = dt.timezone(dt.timedelta(hours=8))
 TW = ['2330','2317','2454','2308','2382','2412','2881','2882','2891','2886','2884','2892','2885','5880','2880',
       '2303','2002','1301','1303','2603','2609','2615','3711','2357','2379','3034','2345','3008','2327','2395',
@@ -115,10 +116,12 @@ def run_tw():
     snapshot('tw', TW, 'TWSE/TPEx 開放資料（盤後）')
 
 def us_yahoo(s):
-    j = get(f'https://query1.finance.yahoo.com/v8/finance/chart/{s}?range=1y&interval=1d')
+    j = get(f'https://query1.finance.yahoo.com/v8/finance/chart/{s}?range=1y&interval=1d&events=div')
     r = ((j or {}).get('chart') or {}).get('result')
     if not r: return None, None
-    r = r[0]; q = r['indicators']['quote'][0]; meta = r.get('meta', {})
+    r = r[0]; dv = (r.get('events') or {}).get('dividends') or {}
+    global LAST_DIVS; LAST_DIVS = sorted([dt.datetime.fromtimestamp(x['date'] + (r.get('meta', {}).get('gmtoffset', -14400)), dt.timezone.utc).strftime('%Y-%m-%d'), round(x['amount'], 6)] for x in dv.values())
+    q = r['indicators']['quote'][0]; meta = r.get('meta', {})
     off = meta.get('gmtoffset', -14400); bars = []
     for i, t in enumerate(r.get('timestamp') or []):
         d = dt.datetime.fromtimestamp(t + off, dt.timezone.utc).strftime('%Y-%m-%d')
@@ -142,12 +145,16 @@ def run_us():
     for s in US:
         p = os.path.join(ROOT, 'us', s + '.json')
         f = load(p, {'s': s, 'n': ETF_NAMES.get(s, s), 'm': 'ETF' if s in ETF_NAMES else '', 'bars': []})
+        global LAST_DIVS; LAST_DIVS = None
         bars, name = us_yahoo(s); src = 'Yahoo Finance chart（延遲/收盤）'
         if not bars:
             time.sleep(1); bars, name = us_nasdaq(s); src = 'Nasdaq.com historical（收盤）'
         if bars:
             srcs.add(src); f['bars'] = merge(f['bars'], bars)
             if name and s not in ETF_NAMES: f['n'] = name
+            if LAST_DIVS is not None:  # Yahoo dividend events (ex-date, cash per share); kept 400 days
+                old = {d[0]: d for d in f.get('divs', [])}; old.update({d[0]: d for d in LAST_DIVS})
+                f['divs'] = [old[k] for k in sorted(old)][-12:]
             dump(p, f)
         time.sleep(1.2)
     snapshot('us', US, '、'.join(sorted(srcs)) or '前次資料')

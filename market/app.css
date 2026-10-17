@@ -47,3 +47,10 @@ body.us .bs button.on.buy{background:var(--grn)}body.us .bs button.on.sell{backg
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#273148;padding:9px 16px;border-radius:20px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:30;max-width:90vw}#toast.on{opacity:1}
 .disc{font-size:10px;color:var(--mu);text-align:center;padding:10px 12px 0}
 a{color:var(--ac)}
+.bd{margin-top:6px;background:var(--bg);border:1px solid var(--ln);border-radius:8px;padding:6px 8px;font-size:12px}.bd div{display:flex;justify-content:space-between;gap:8px;padding:2px 0}.bd div span:first-child{color:var(--mu)}.bd div:last-child{border-top:1px dashed var(--ln);margin-top:2px;padding-top:4px}
+.est .bd{font-size:11px;margin-top:2px}.est .bd div:nth-last-child(2){}
+.flt{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px 0;align-items:center}.flt input,.flt select{background:var(--p2);border:1px solid var(--ln);border-radius:6px;padding:5px 6px;font-size:12px;color:var(--tx);min-width:0}.flt input[type=date]{width:128px;color-scheme:dark}.flt input:not([type]){width:92px}
+table.sm{width:100%;border-collapse:collapse;font-size:11px;font-variant-numeric:tabular-nums}table.sm th{color:var(--mu);font-weight:400;text-align:right;padding:3px 2px}table.sm td{text-align:right;padding:3px 2px;border-top:1px solid #182033}table.sm th:first-child,table.sm td:first-child{text-align:left}table.sm tr.tot td{font-weight:700;border-top:1px solid var(--ln)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}.chips button{border:1px solid var(--ln);background:var(--p2);border-radius:14px;padding:4px 10px;font-size:12px}.chips button.on{background:var(--ac);color:#0b0f17;border-color:var(--ac);font-weight:700}
+.tag.div{background:#8a6d1a}.old{font-size:10px;border:1px solid var(--mu);color:var(--mu);border-radius:4px;padding:0 4px}
+select{font:inherit}
