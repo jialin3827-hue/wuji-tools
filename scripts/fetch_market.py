@@ -84,7 +84,10 @@ def run_tw():
             today[c] = ('上櫃', r['CompanyName'].strip(), [roc(r['Date']), num(r.get('Open')), num(r.get('High')),
                          num(r.get('Low')), num(r.get('Close')), int(num(r.get('TradingShares')) or 0)])
     budget = TW_REQ_BUDGET; td = dt.date.today()
-    months = [(td.replace(day=1) - dt.timedelta(days=31*i)).replace(day=1) for i in range(BACKFILL_MONTHS)]
+    months = []
+    y, mo = td.year, td.month
+    for i in range(BACKFILL_MONTHS):  # current month back ~6 months, calendar stepping
+        months.append(dt.date(y, mo, 1)); y, mo = (y, mo - 1) if mo > 1 else (y - 1, 12)
     for s in TW:
         p = os.path.join(ROOT, 'tw', s + '.json')
         f = load(p, {'s': s, 'n': s, 'm': '', 'bars': [], 'months': []})
@@ -105,7 +108,7 @@ def run_tw():
                     rows += [[roc(x[0]), num(x[3]), num(x[4]), num(x[5]), num(x[6]), int((num(x[1]) or 0) * 1000)] for x in t.get('data', [])]
                 ok = j is not None
             f['bars'] = merge(f['bars'], rows)
-            if ok and mo.strftime('%Y-%m') != td.strftime('%Y-%m'):
+            if ok and rows:  # current month: fetched once, later days come from the daily snapshot
                 f['months'] = sorted(set(f.get('months', [])) | {key})[-24:]
         if f['bars']: dump(p, f)
     print('tw history requests left', budget)
