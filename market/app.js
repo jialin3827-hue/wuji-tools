@@ -1,5 +1,5 @@
 'use strict';
-/* 月光股市大冒險 v1.1 — single-player simulated trading. Virtual coins only. State: localStorage wuji_market_v1 */
+/* 舞吉股市大亨 v1.2 — single-player simulated trading. Virtual coins only. State: localStorage wuji_market_v1 */
 const K='wuji_market_v1';
 const TIERS=[{id:'富家',e:'💎',m:10000000,d:'含著金湯匙出生，資金雄厚'},{id:'千金',e:'👑',m:1000000,d:'家境小康，起步不錯'},{id:'存款',e:'🐷',m:100000,d:'靠自己存下的第一桶金'}];
 const MK={tw:{name:'台股帳戶',cur:'TWD',short:'台股',unit:'虛擬幣（新台幣計價）'},us:{name:'美股帳戶',cur:'USD',short:'美股',unit:'虛擬幣（美元計價）'}};
@@ -102,7 +102,7 @@ async function simBot(bot,m){const init=S.init,start=S.start[m];const a=newAcct(
 /* ---------- rendering ---------- */
 function setBody(){document.body.classList.toggle('us',S&&S.acct==='us')}
 function renderTop(){const m=S.acct,st=mstat(m),d=D[m]||{};
- $('#top').innerHTML=`<div class="hrow"><div class="logo">🌙 月光股市</div><div class="seg">${['tw','us'].map(x=>`<button class="${x===m?'on':''}" onclick="swAcct('${x}')">${MK[x].name}</button>`).join('')}</div><div class="sp"></div><button class="ibtn" onclick="menu()" aria-label="設定">⚙️</button></div>
+ $('#top').innerHTML=`<div class="hrow"><div class="logo">🪙 舞吉股市大亨</div><div class="seg">${['tw','us'].map(x=>`<button class="${x===m?'on':''}" onclick="swAcct('${x}')">${MK[x].name}</button>`).join('')}</div><div class="sp"></div><button class="ibtn" onclick="menu()" aria-label="設定">⚙️</button></div>
  <div class="sub"><span class="pill ${st.open?'open':''}">${MK[m].short}${st.open?'盤中':'已收盤'}</span><span>${st.hrs}</span><span>資料日 ${d.asof||'—'}・更新 ${d.updated||'—'}</span></div>`;
  document.documentElement.style.setProperty('--hh',$('#top').offsetHeight+'px')}
 function renderNav(){const T=[['list','📋','行情'],['quote','📈','個股'],['port','💼','庫存'],['ord','🧾','明細'],['battle','🏆','對戰']];
@@ -211,7 +211,7 @@ async function vBattle(){const m=UI.lbm;
 
 /* ---------- start / menu ---------- */
 function startSheet(re){const M=$('#modal');M.classList.add('on');
- M.innerHTML=`<div class="sheet"><div style="text-align:center;font-size:40px">🌙📈</div><h1>投胎模式</h1><div class="lead">選一個出身，台股帳戶和美股帳戶各拿到同樣的虛擬幣開局。<br>白天玩台股、晚上玩美股！</div>
+ M.innerHTML=`<div class="sheet"><div style="text-align:center;font-size:40px">🪙📈</div><h1>投胎模式</h1><div class="lead">選一個出身，台股帳戶和美股帳戶各拿到同樣的虛擬幣開局。<br>白天玩台股、晚上玩美股！</div>
  ${TIERS.map(t=>`<button class="tier ${UI.tier===t.id?'on':''}" onclick="UI.tier='${t.id}';startSheet(${!!re})"><span class="e">${t.e}</span><span style="flex:1"><span class="n">${t.id}</span><br><span class="d">${t.d}</span></span><span class="m">${nf(t.m)}</span></button>`).join('')}
  <div class="lbl" style="margin-top:12px;font-size:12px">遊戲模式</div><div class="modes"><button class="${UI.mode==='solo'?'on':''}" onclick="UI.mode='solo';startSheet(${!!re})">🎮 單機模式</button><button class="${UI.mode==='ai'?'on':''}" onclick="UI.mode='ai';startSheet(${!!re})">🤖 對戰模式<br><small class="mu">vs AI</small></button><button disabled>👥 真人對戰<br><small>即將推出</small></button></div>
  <button class="cta" onclick="born()">投胎！</button>${re?'<button class="sec" onclick="closeM()">取消</button>':''}
