@@ -1,4 +1,4 @@
-const V='wuji-market-v3';
+const V='wuji-market-v4';
 const SHELL=['./','./index.html','./app.js','./app.css','./manifest.webmanifest','./vendor/lightweight-charts.js','./assets/icon-192.png','./assets/icon-512.png','./assets/apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('wuji-market')&&k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
