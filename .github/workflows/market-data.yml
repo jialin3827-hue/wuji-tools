@@ -3,16 +3,17 @@ on:
   schedule:
     - cron: '45 6 * * 1-5'    # 14:45 Asia/Taipei, after TW close -> TW bars
     - cron: '30 22 * * 1-5'   # 06:30 Asia/Taipei Tue-Sat, after US close -> US bars
+    - cron: '10 1-23/3 * * *' # every 3h: time-boxed history backfill / rolling refresh for all symbols
   workflow_dispatch:
     inputs:
-      which: { description: 'tw | us | all', default: 'all' }
+      which: { description: 'tw | us | all | backfill', default: 'all' }
 permissions:
   contents: write
 concurrency: { group: market-data, cancel-in-progress: false }
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,17 +25,18 @@ jobs:
         run: |
           W="${{ github.event.inputs.which }}"
           if [ -z "$W" ]; then
-            if [ "${{ github.event.schedule }}" = "30 22 * * 1-5" ]; then W=us; else W=tw; fi
+            case "${{ github.event.schedule }}" in "30 22 * * 1-5") W=us;; "10 1-23/3 * * *") W=backfill;; *) W=tw;; esac
           fi
-          python3 scripts/fetch_market.py "$W" || echo "fetch failed, keeping previous data"
+          TW_BF_SECONDS=900 US_BF_SECONDS=1500 python3 scripts/fetch_market.py "$W" || echo "fetch failed, keeping previous data"
           echo "W=$W" >> "$GITHUB_ENV"
       - name: Install OpenBB backup (optional)
         id: obb
+        if: env.W != 'backfill'
         continue-on-error: true
         timeout-minutes: 8
         run: pip install -q -r scripts/requirements-openbb.txt
       - name: OpenBB backup for missing/stale tickers (optional)
-        if: steps.obb.outcome == 'success'
+        if: steps.obb.outcome == 'success' && env.W != 'backfill'
         continue-on-error: true
         timeout-minutes: 8
         run: python3 scripts/fallback_openbb.py "$W" || echo "openbb fallback failed, keeping primary data"
