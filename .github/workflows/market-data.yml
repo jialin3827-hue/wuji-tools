@@ -16,7 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/requirements-openbb.txt
       - name: Fetch (keeps previous JSON on failure)
         run: |
           W="${{ github.event.inputs.which }}"
@@ -24,6 +27,17 @@ jobs:
             if [ "${{ github.event.schedule }}" = "30 22 * * 1-5" ]; then W=us; else W=tw; fi
           fi
           python3 scripts/fetch_market.py "$W" || echo "fetch failed, keeping previous data"
+          echo "W=$W" >> "$GITHUB_ENV"
+      - name: Install OpenBB backup (optional)
+        id: obb
+        continue-on-error: true
+        timeout-minutes: 8
+        run: pip install -q -r scripts/requirements-openbb.txt
+      - name: OpenBB backup for missing/stale tickers (optional)
+        if: steps.obb.outcome == 'success'
+        continue-on-error: true
+        timeout-minutes: 8
+        run: python3 scripts/fallback_openbb.py "$W" || echo "openbb fallback failed, keeping primary data"
       - name: Commit if changed
         run: |
           git config user.name "wuji-bot"

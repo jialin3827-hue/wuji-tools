@@ -1,0 +1,5 @@
+# Backup quote source (free, no API key). Installed only by market-data.yml; failures are ignored.
+openbb-core==2.0.1
+openbb-equity==2.0.0
+openbb-yfinance==2.0.0
+openbb-cboe==2.0.0
