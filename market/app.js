@@ -54,11 +54,16 @@ const rt=(v,t)=>Math.round(Math.round(v/t)*t*100)/100;
 
 /* ---------- data ---------- */
 async function getJSON(u){const r=await fetch(u,{cache:'no-cache'});if(!r.ok)throw new Error(u+' '+r.status);return r.json()}
-async function loadSnap(){for(const m of['tw','us']){try{D[m]=await getJSON(`data/${m}.json`);D[m].map={};const A=D[m].asof;D[m].list.forEach(x=>{x.d=x.d||A;if(x.pc==null)x.pc=x.c;if(x.o==null){x.o=x.c;x.h=Math.max(x.c,x.pc);x.l=Math.min(x.c,x.pc);x.est=1}D[m].map[x.s]=x})}catch(e){D[m]=D[m]||{list:[],map:{},asof:null,updated:'讀取失敗'}}}}
+async function loadSnap(){for(const m of['tw','us']){try{D[m]=await getJSON(`data/${m}.json`);D[m].map={};const A=D[m].asof;D[m].list.forEach(x=>{x.d=x.d||A;if(x.pc==null)x.pc=x.c;if(x.o==null){x.o=x.c;x.h=Math.max(x.c,x.pc);x.l=Math.min(x.c,x.pc);x.est=1}D[m].map[x.s]=x})}catch(e){D[m]=D[m]||{list:[],map:{},asof:null,updated:'讀取失敗'}}}try{IQ=await getJSON('data/tw_intraday.json')}catch(e){IQ=null}}
+let IQ=null;
+/* intraday (TW only): used only during market hours and when the quote is < 15 min old; else fall back to close data */
+function iq(m,s){if(m!=='tw'||!IQ||!IQ.q||!mstat('tw').open)return null;const r=IQ.q[s];if(!r||Date.now()-r[1]>9e5)return null;return{p:r[0],ts:r[1],y:r[2]||null,mid:r[3]}}
+const hm=t=>new Date(t).toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour:'2-digit',minute:'2-digit',hour12:false});
+function lpx(m,x){const q=iq(m,x.s);return q?{p:q.p,pc:q.y||x.c,q}:{p:x.c,pc:x.pc,q:null}}
 const FILES={};
 async function file(m,s){const k=m+':'+s;if(!FILES[k]){try{FILES[k]=await getJSON(`data/${m}/${encodeURIComponent(s)}.json`)}catch(e){FILES[k]={bars:[]}}}return FILES[k]}
 async function bars(m,s){const k=m+':'+s;if(!BARS[k]){const b=((await file(m,s)).bars||[]).slice(),x=D[m]&&D[m].map[s];if(x&&x.d&&(!b.length||b[b.length-1][0]<x.d))b.push([x.d,x.o,x.h,x.l,x.c,x.v]);BARS[k]=b}return BARS[k]}
-const last=(m,s)=>{const x=D[m]&&D[m].map[s];return x?x.c:null};
+const last=(m,s)=>{const x=D[m]&&D[m].map[s];if(!x)return null;const q=iq(m,s);return q?q.p:x.c};
 const qname=(m,s)=>{const x=D[m]&&D[m].map[s];return x?x.n:s};
 
 /* ---------- account math ---------- */
@@ -103,7 +108,7 @@ async function simBot(bot,m){const init=S.init,start=S.start[m];const a=newAcct(
 function setBody(){document.body.classList.toggle('us',S&&S.acct==='us')}
 function renderTop(){const m=S.acct,st=mstat(m),d=D[m]||{};
  $('#top').innerHTML=`<div class="hrow"><div class="logo">🪙 舞吉股市大亨</div><div class="seg">${['tw','us'].map(x=>`<button class="${x===m?'on':''}" onclick="swAcct('${x}')">${MK[x].name}</button>`).join('')}</div><div class="sp"></div><button class="ibtn" onclick="menu()" aria-label="設定">⚙️</button></div>
- <div class="sub"><span class="pill ${st.open?'open':''}">${MK[m].short}${st.open?'盤中':'已收盤'}</span><span>${st.hrs}</span><span>資料日 ${d.asof||'—'}・更新 ${d.updated||'—'}</span></div>`;
+ <div class="sub"><span class="pill ${st.open?'open':''}">${MK[m].short}${st.open?'盤中':'已收盤'}</span><span>${st.hrs}</span><span>資料日 ${d.asof||'—'}・更新 ${d.updated||'—'}</span>${m==='tw'&&st.open&&IQ&&Date.now()-IQ.t<9e5?`<span>盤中報價 ${hm(IQ.t)}</span>`:''}</div>`;
  document.documentElement.style.setProperty('--hh',$('#top').offsetHeight+'px')}
 function renderNav(){const T=[['list','📋','行情'],['quote','📈','個股'],['port','💼','庫存'],['ord','🧾','明細'],['battle','🏆','對戰']];
  $('#nav').innerHTML=T.map(([k,i,t])=>`<button class="${UI.tab===k?'on':''}" onclick="go('${k}')"><i>${i}</i>${t}</button>`).join('')}
@@ -116,15 +121,15 @@ function vList(){const m=S.acct;
  $('#view').innerHTML=`<div class="srch"><input id="sq" placeholder="搜尋代號或名稱（${m==='tw'?'例：2330、台積':'例：AAPL、Apple'}）" value="${esc(UI.q)}" oninput="UI.q=this.value;vListRows()"></div><div class="lhead"><span>名稱／代號</span><span class="r">成交價</span><span class="r">漲跌幅</span></div><div id="rows"></div>
  <div class="note">未搜尋時顯示熱門標的；可搜尋全部 ${nf((D[m].list||[]).length)} 檔${m==='tw'?'上市櫃股票與 ETF':'美股與 ETF'}，依代號排列，不代表推薦或評等。${m==='tw'?'台股紅漲綠跌':'美股綠漲紅跌'}。資料來源：${esc(D[m].src||'—')}</div>${DISC}`;vListRows()}
 function vListRows(){const m=S.acct,q=UI.q.trim().toLowerCase(),L=findSyms(m,q);
- $('#rows').innerHTML=L.length?L.map(x=>{const c=x.c/x.pc-1;return`<div class="row" onclick="openQ('${x.s}')"><div><div class="nm">${esc(x.n)}</div><div class="cd">${x.s}${x.m?'・'+esc(x.m):''}${S.a[m].pos[x.s]?'・<span style="color:var(--ac)">持有</span>':''}</div></div><div class="r b ${cls(c)}">${pxf(x.c,m)}</div><div class="chg ${cls(c)}">${pf(c)}</div></div>`}).join(''):'<div class="empty">找不到符合的標的，請換個代號或名稱試試</div>'}
+ $('#rows').innerHTML=L.length?L.map(x=>{const lp=lpx(m,x),c=lp.p/lp.pc-1;return`<div class="row" onclick="openQ('${x.s}')"><div><div class="nm">${esc(x.n)}</div><div class="cd">${x.s}${x.m?'・'+esc(x.m):''}${S.a[m].pos[x.s]?'・<span style="color:var(--ac)">持有</span>':''}</div></div><div class="r b ${cls(c)}">${pxf(lp.p,m)}${lp.q?'<br><small class="mu">盤中 '+hm(lp.q.ts)+'</small>':''}</div><div class="chg ${cls(c)}">${pf(c)}</div></div>`}).join(''):'<div class="empty">找不到符合的標的，請換個代號或名稱試試</div>'}
 function findSyms(m,q){const A=D[m].list||[];if(!q)return A.filter(x=>x.f||S.a[m].pos[x.s]);const sc=x=>{const s=x.s.toLowerCase(),n=x.n.toLowerCase();return s===q?0:s.startsWith(q)?1:n.startsWith(q)?2:s.includes(q)?3:n.includes(q)?4:9};
  const R=[];for(const x of A){const v=sc(x);if(v<9)R.push([v,x.f?0:1,x])}R.sort((a,b)=>a[0]-b[0]||a[1]-b[1]||(a[2].s<b[2].s?-1:1));return R.slice(0,60).map(r=>r[2])}
 function openQ(s){S.cur[S.acct]=s;save();UI.px='';UI.qty=1;go('quote')}
 
 async function vQuote(){const m=S.acct,s=S.cur[m],x=D[m].map[s];if(!x){$('#view').innerHTML='<div class="empty">尚無資料</div>';return}
- const c=x.c-x.pc,cp=c/x.pc;const lot=m==='tw'&&UI.lot==='lot';
+ const lp=lpx(m,x),c=lp.p-lp.pc,cp=c/lp.pc;const lot=m==='tw'&&UI.lot==='lot';
  $('#view').innerHTML=`<div class="qh"><div class="t"><span class="nm">${esc(x.n)}</span><span class="mu">${s}${x.m?'・'+esc(x.m):''}</span></div>
- <div class="t"><span class="px ${cls(c)}">${pxf(x.c,m)}</span><span class="b ${cls(c)}">${c>0?'▲':c<0?'▼':''}${pxf(Math.abs(c),m)}　${pf(cp)}</span></div>
+ <div class="t"><span class="px ${cls(c)}">${pxf(lp.p,m)}</span><span class="b ${cls(c)}">${c>0?'▲':c<0?'▼':''}${pxf(Math.abs(c),m)}　${pf(cp)}</span>${lp.q?`<span class="mu">盤中 ${hm(lp.q.ts)}${lp.q.mid?'（買賣中價）':''}・延遲</span>`:''}</div>
  <div class="grid4"><div><span>開盤</span>${pxf(x.o,m)}</div><div><span>最高</span><b class="${cls(x.h-x.pc)}">${pxf(x.h,m)}</b></div><div><span>最低</span><b class="${cls(x.l-x.pc)}">${pxf(x.l,m)}</b></div><div><span>${m==='tw'?'成交量(張)':'成交量(股)'}</span>${nf(m==='tw'?x.v/1000:x.v)}</div>
  <div><span>昨收</span>${pxf(x.pc,m)}</div><div><span>資料日</span>${x.d}</div><div><span>幣別</span>${MK[m].cur}</div><div><span>持有</span>${nf((S.a[m].pos[s]||{}).q||0)} 股</div></div></div>
  <div class="lgd"><span>日K</span><b style="color:#f0b90b">MA5</b><b style="color:#5b8def">MA20</b><b style="color:#c678dd">MA60</b><span class="sp"></span></div><div id="chart"></div>
@@ -178,7 +183,7 @@ function vPort(){const m=S.acct,a=S.a[m],v=value(m),pl=v.mv-v.cost,ret=v.tot/S.i
  <div class="kv"><div><span>可用現金</span>${nf(a.cash-reserved(m).c,m==='us'?2:0)}</div><div><span>股票市值</span>${nf(v.mv,m==='us'?2:0)}</div><div><span>未實現損益</span><b class="${cls(pl)}">${nf(pl,0)}</b></div><div><span>已實現損益</span><b class="${cls(a.realized)}">${nf(a.realized,0)}</b></div><div><span>投胎本金</span>${nf(S.init)}（${S.tier}）</div><div><span>累計手續費＋稅／規費</span>${nf(a.fees,m==='us'?2:0)}</div><div><span>累計股利（淨）</span>${nf(a.divs||0,m==='us'?2:0)}</div></div></div>
  <div class="pos mu" style="font-size:10px;padding:6px 12px"><span>名稱／股數</span><span class="r">成本均價／現價</span><span class="r">損益／報酬率</span></div>
  ${ps.length?ps.map(([s,p])=>{const lp=last(m,s),mv=p.q*lp,g=mv-p.t,r=g/p.t;return`<div class="pos" onclick="openQ('${s}')"><div><div class="nm">${esc(qname(m,s))}</div><div class="mu">${s}・${nf(p.q)} 股${m==='tw'&&p.q>=1000?`（${nf(p.q/1000,p.q%1000?3:0)} 張）`:''}</div></div><div class="r">${pxf(p.t/p.q,m)}<br><b>${pxf(lp,m)}</b></div><div class="r"><b class="${cls(g)}">${nf(g,m==='us'?2:0)}</b><br><span class="${cls(g)}">${pf(r)}</span></div></div>`}).join(''):'<div class="empty">還沒有庫存，去「行情」挑一檔練習看看吧</div>'}
- <div class="note">成本均價含買進手續費。現價為最新盤後／延遲價格（資料日 ${D[m].asof||'—'}）。</div>${DISC}`}
+ <div class="note">成本均價含買進手續費。現價盤中為證交所延遲報價、其他時間為盤後價（資料日 ${D[m].asof||'—'}）。</div>${DISC}`}
 const ST={P:'委託中',F:'已成交',C:'已取消',E:'已失效',X:'失敗'};
 const odate=o=>o.fd||new Date(o.ts).toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'});
 function fkey(o){return{amt:o.amt??o.fpx*o.q,fee:o.fee||0,tax:o.tax||0,reg:o.reg||0,sec:o.sec,taf:o.taf,net:o.net??(o.side==='B'?o.fpx*o.q+(o.fee||0):o.fpx*o.q-(o.fee||0)-(o.tax||0)),dtq:o.dtq||0,rate:o.rate??(isETF(o.a,o.s)?0.001:0.003),pl:o.pl,q:o.q,disc:o.disc}}

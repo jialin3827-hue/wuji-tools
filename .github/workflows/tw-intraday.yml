@@ -1,0 +1,25 @@
+name: TW intraday quotes
+on:
+  schedule:
+    - cron: '*/5 1-4 * * 1-5'    # 09:00-12:55 Asia/Taipei
+    - cron: '0-35/5 5 * * 1-5'   # 13:00-13:35 Asia/Taipei
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: { group: tw-intraday, cancel-in-progress: true }
+jobs:
+  quotes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch (keeps previous JSON on failure)
+        run: python3 scripts/fetch_tw_intraday.py || echo "fetch failed, keeping previous data"
+      - name: Commit if changed
+        run: |
+          git config user.name "wuji-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add market/data/tw_intraday.json 2>/dev/null || exit 0
+          git diff --cached --quiet && exit 0
+          git commit -q -m "tw intraday: $(TZ=Asia/Taipei date +%F_%H%M)"
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done
