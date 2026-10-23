@@ -26,13 +26,13 @@ ETF_NAMES = {'SPY':'SPDR S&P 500 ETF','QQQ':'Invesco QQQ (Nasdaq-100)','VOO':'Va
              'DIA':'SPDR Dow Jones ETF','IWM':'iShares Russell 2000 ETF','SOXX':'iShares Semiconductor ETF','SMH':'VanEck Semiconductor ETF',
              'VYM':'Vanguard High Dividend Yield ETF','SCHD':'Schwab US Dividend Equity ETF','TLT':'iShares 20+ Year Treasury ETF','GLD':'SPDR Gold Shares'}
 
-def get(url, tries=2):
+def get(url, tries=4):
     for i in range(tries):
         try:
-            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=40) as r:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=90) as r:
                 return json.loads(r.read().decode('utf-8'))
         except Exception as e:
-            print('WARN', url, e, file=sys.stderr); time.sleep(4)
+            print('WARN', url, e, file=sys.stderr); time.sleep(4 + 6 * i)
     return None
 
 def load(p, default):

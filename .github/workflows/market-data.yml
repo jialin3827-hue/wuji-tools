@@ -2,6 +2,7 @@ name: Update market game data
 on:
   schedule:
     - cron: '45 6 * * 1-5'    # 14:45 Asia/Taipei, after TW close -> TW bars
+    - cron: '15 12 * * 1-5'   # 20:15 Asia/Taipei, retry TW (open data often lags at 14:45)
     - cron: '30 22 * * 1-5'   # 06:30 Asia/Taipei Tue-Sat, after US close -> US bars
     - cron: '10 1-23/3 * * *' # every 3h: time-boxed history backfill / rolling refresh for all symbols
   workflow_dispatch:
