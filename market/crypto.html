@@ -47,7 +47,7 @@ header{display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1
 </div>
 <div class="spk" id="spk"></div>
 <div id="toast" style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f1c2a;border:1px solid var(--cy);padding:8px 14px;opacity:0;transition:opacity .3s;z-index:9"></div>
-<script src="store.js?v=12"></script>
+<script src="i18n.js?v=13"></script><script src="store.js?v=13"></script>
 <script>
 let S=null;
 const TOP=[["BTC","比特幣"],["ETH","以太幣"],["BNB","幣安幣"],["SOL","索拉納"],["XRP","瑞波幣"],["DOGE","狗狗幣"],["ADA","艾達幣"],["TRX","波場"],["AVAX","雪崩"],["LINK","Chainlink"],["DOT","波卡"],["TON","TON"],["SHIB","柴犬幣"],["LTC","萊特幣"],["BCH","比特現金"],["NEAR","NEAR"],["UNI","Uniswap"],["APT","Aptos"],["SUI","Sui"],["XLM","恆星幣"]];
@@ -65,11 +65,11 @@ async function gtrOHLC(pool){try{const j=await (await fetch('https://api.geckote
  const L=j.data.attributes.ohlcv_list.slice().reverse();if(L.length)KG=L.map(a=>({t:Math.floor(a[0]/60),o:+a[1],h:+a[2],l:+a[3],c:+a[4]}));
  const b=KG[KG.length-1];if(b&&T.GTR.p){b.c=T.GTR.p;b.h=Math.max(b.h,b.c);b.l=Math.min(b.l,b.c);}}catch(e){}}
 dexPoll();setInterval(dexPoll,10000);
-const fmt=(v,d)=>v>=1000?v.toLocaleString('en-US',{maximumFractionDigits:d??2}):v>=1?v.toFixed(d??3):v.toPrecision(4);
+const fmt=(v,d)=>v>=1000?v.toLocaleString(window.LOC||'en-US',{maximumFractionDigits:d??2}):v>=1?v.toFixed(d??3):v.toPrecision(4);
 const $=id=>document.getElementById(id);
 /* 存檔：遊戲主存檔 wuji_market_v1 透過共用 store.js 的 load()/save() 讀寫（只動美股帳戶 cash）；虛擬幣持倉獨立存在 wuji_crypto_v1 */
 const CK='wuji_crypto_v1',FEE=0.001;
-const nfu=v=>Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const nfu=v=>Number(v).toLocaleString(window.LOC||'en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 function gameLoad(){const g=load();return g&&g.a&&g.a.us?g:null}
 function wLoad(){try{const w=JSON.parse(localStorage.getItem(CK));if(w&&w.v===1)return w}catch(e){}return{v:1,pos:{},trades:[],realized:0,fees:0}}
 function wSave(w){localStorage.setItem(CK,JSON.stringify(w))}
@@ -119,7 +119,7 @@ function coins(){const q=$('q').value.trim().toLowerCase();
  return `<div class="cr${s===sel?' on':''}" onclick="pick('${s}')"><span><b>${s}</b> <small style="color:var(--mu)">${n}</small>${x.dex?' <small style="color:var(--ac);border:1px solid var(--ac);padding:0 3px">DEX報價・流動性低</small>':''}</span><span>${fmt(x.p)} <span class="${x.c>=0?'u':'d'}">${x.c>=0?'+':''}${x.c.toFixed(2)}%</span></span></div>`}).join('')||'<div style="color:var(--mu)">找不到符合的幣種</div>';}
 $('q').oninput=coins;
 function pick(s){sel=s;$('tsym').textContent=s;$('obs').textContent=s;$('kt').textContent=(s==='GTR'?'GTR/USD・1 分 K・DEX報價・流動性低':'BTC/USDT・1 分 K');if(s==='GTR')noBook();else lastBook=0;coins();tick();}
-function tick(){$('clk').textContent=new Date().toLocaleTimeString('zh-TW',{hour12:false})+' 台北';
+function tick(){$('clk').textContent=new Date().toLocaleTimeString(window.LOC||'zh-TW',{hour12:false,timeZone:'Asia/Taipei'})+' 台北';
  const G=gameLoad(),W=wLoad();
  if(!G){$('eq').textContent='尚未開始遊戲';$('pnl').innerHTML='<a href="./" style="color:var(--ac)">先到股市頁「投胎」建立帳戶</a>';$('bb').disabled=$('sb').disabled=true;}
  else{let mv=0,cost=0;for(const k in W.pos){mv+=W.pos[k].q*(T[k]?.p||W.pos[k].t/W.pos[k].q);cost+=W.pos[k].t;}const cash=G.a.us.cash,u=mv-cost;

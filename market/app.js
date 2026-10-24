@@ -14,7 +14,7 @@ function newAcct(m){return{cash:m,pos:{},realized:0,fees:0}}
 function fresh(tier,mode){const t=TIERS.find(x=>x.id===tier);return{v:1,divs:[],cfg:S&&S.cfg||{},tier,init:t.m,mode,born:Date.now(),acct:S?S.acct:'tw',start:{tw:D.tw&&D.tw.asof,us:D.us&&D.us.asof},a:{tw:newAcct(t.m),us:newAcct(t.m)},orders:[],cur:{tw:'2330',us:'AAPL'},seq:1}}
 
 /* ---------- formatting ---------- */
-const nf=(v,d=0)=>(v==null||isNaN(v))?'—':Number(v).toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
+const nf=(v,d=0)=>(v==null||isNaN(v))?'—':Number(v).toLocaleString(window.LOC||'zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
 const pxf=(v,m)=>v==null?'—':m==='us'?nf(v,2):nf(v,v<10?2:v<1000?(v%1?2:0):0).replace(/^/,'');
 const pf=(v,d=2)=>(v>0?'+':'')+nf(v*100,d)+'%';
 const cls=v=>v>1e-9?'up':v<-1e-9?'dn':'fl';
@@ -55,7 +55,7 @@ async function loadSnap(){for(const m of['tw','us']){try{D[m]=await getJSON(`dat
 let IQ=null;
 /* intraday (TW only): used only during market hours and when the quote is < 15 min old; else fall back to close data */
 function iq(m,s){if(m!=='tw'||!IQ||!IQ.q||!mstat('tw').open)return null;const r=IQ.q[s];if(!r||Date.now()-r[1]>9e5)return null;return{p:r[0],ts:r[1],y:r[2]||null,mid:r[3]}}
-const hm=t=>new Date(t).toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour:'2-digit',minute:'2-digit',hour12:false});
+const hm=t=>new Date(t).toLocaleTimeString(window.LOC||'zh-TW',{timeZone:'Asia/Taipei',hour:'2-digit',minute:'2-digit',hour12:false});
 function lpx(m,x){const q=iq(m,x.s);return q?{p:q.p,pc:q.y||x.c,q}:{p:x.c,pc:x.pc,q:null}}
 const FILES={};
 async function file(m,s){const k=m+':'+s;if(!FILES[k]){try{FILES[k]=await getJSON(`data/${m}/${encodeURIComponent(s)}.json`)}catch(e){FILES[k]={bars:[]}}}return FILES[k]}
@@ -225,6 +225,7 @@ function closeM(){$('#modal').classList.remove('on');$('#modal').innerHTML=''}
 function setCfg(k,v){S.cfg=Object.assign({},S.cfg,{[k]:v});save();menu()}
 function menu(){const M=$('#modal'),c=cfg();M.classList.add('on');const D2=[[1,'無折扣'],[0.6,'6 折'],[0.5,'5 折'],[0.38,'3.8 折'],[0.28,'2.8 折'],[0.2,'2 折']];const custom=!D2.some(x=>x[0]===c.disc);
  M.innerHTML=`<div class="sheet"><h1>⚙️ 設定</h1><div class="lead">${S.tier}出身・${S.mode==='ai'?'對戰模式（vs AI）':'單機模式'}・本金各 ${nf(S.init)}</div>
+ <div class="card" style="margin:8px 0"><h3>🌐 語言</h3><div class="chips">${(window.LANGS||[]).map(([c,n])=>`<button class="${window.LANG===c?'on':''}" onclick="setLang('${c}')">${n}</button>`).join('')}</div></div>
  <div class="card" style="margin:8px 0"><h3>💸 交易成本設定（模擬）</h3>
  <div class="lbl">台股手續費折扣（0.1425% × 折扣後無條件捨去，再套最低手續費）</div><div class="chips">${D2.map(([v,t])=>`<button class="${c.disc===v?'on':''}" onclick="setCfg('disc',${v})">${t}</button>`).join('')}<button class="${custom?'on':''}" onclick="const v=prompt('輸入折扣（例：0.3 代表 3 折）','${c.disc}');if(v&&+v>0&&+v<=1)setCfg('disc',+v)">自訂${custom?' '+(+(c.disc*10).toFixed(2))+' 折':''}</button></div>
  <div class="lbl">零股最低手續費（各券商不同，常見 1 元）</div><div class="chips">${[1,5,10,20].map(v=>`<button class="${+c.oddMin===v?'on':''}" onclick="setCfg('oddMin',${v})">${v} 元</button>`).join('')}</div>
