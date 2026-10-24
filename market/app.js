@@ -1,6 +1,5 @@
 'use strict';
 /* 舞吉股市大亨 v1.2 — single-player simulated trading. Virtual coins only. State: localStorage wuji_market_v1 */
-const K='wuji_market_v1';
 const TIERS=[{id:'富家',e:'💎',m:10000000,d:'含著金湯匙出生，資金雄厚'},{id:'千金',e:'👑',m:1000000,d:'家境小康，起步不錯'},{id:'存款',e:'🐷',m:100000,d:'靠自己存下的第一桶金'}];
 const MK={tw:{name:'台股帳戶',cur:'TWD',short:'台股',unit:'虛擬幣（新台幣計價）'},us:{name:'美股帳戶',cur:'USD',short:'美股',unit:'虛擬幣（美元計價）'}};
 const BOTS=[
@@ -11,8 +10,6 @@ const BOTS=[
 const $=s=>document.querySelector(s);
 let S=load(),D={tw:null,us:null},BARS={},UI={f:{q:'',from:'',to:'',side:''},open:null,tab:(['list','quote','port','ord','battle'].includes(location.hash.slice(1))?location.hash.slice(1):'list'),q:'',side:'B',type:'L',lot:'lot',px:'',qty:1,lbm:(load()||{}).acct||'tw',oh:'P',tier:'存款',mode:'ai'},chart=null;
 
-function load(){try{return JSON.parse(localStorage.getItem(K))||null}catch(e){return null}}
-function save(){localStorage.setItem(K,JSON.stringify(S))}
 function newAcct(m){return{cash:m,pos:{},realized:0,fees:0}}
 function fresh(tier,mode){const t=TIERS.find(x=>x.id===tier);return{v:1,divs:[],cfg:S&&S.cfg||{},tier,init:t.m,mode,born:Date.now(),acct:S?S.acct:'tw',start:{tw:D.tw&&D.tw.asof,us:D.us&&D.us.asof},a:{tw:newAcct(t.m),us:newAcct(t.m)},orders:[],cur:{tw:'2330',us:'AAPL'},seq:1}}
 
@@ -107,7 +104,7 @@ async function simBot(bot,m){const init=S.init,start=S.start[m];const a=newAcct(
 /* ---------- rendering ---------- */
 function setBody(){document.body.classList.toggle('us',S&&S.acct==='us')}
 function renderTop(){const m=S.acct,st=mstat(m),d=D[m]||{};
- $('#top').innerHTML=`<div class="hrow"><div class="logo">🪙 舞吉股市大亨</div><div class="seg">${['tw','us'].map(x=>`<button class="${x===m?'on':''}" onclick="swAcct('${x}')">${MK[x].name}</button>`).join('')}</div><div class="sp"></div><button class="ibtn" onclick="menu()" aria-label="設定">⚙️</button></div>
+ $('#top').innerHTML=`<div class="hrow"><div class="logo">🪙 舞吉股市大亨</div><div class="seg">${['tw','us'].map(x=>`<button class="${x===m?'on':''}" onclick="swAcct('${x}')">${MK[x].name}</button>`).join('')}</div><div class="sp"></div><a class="ibtn" href="crypto.html" aria-label="虛擬幣" style="text-decoration:none;font-size:12px;font-weight:700;color:var(--ac);white-space:nowrap">₿ 虛擬幣</a><button class="ibtn" onclick="menu()" aria-label="設定">⚙️</button></div>
  <div class="sub"><span class="pill ${st.open?'open':''}">${MK[m].short}${st.open?'盤中':'已收盤'}</span><span>${st.hrs}</span><span>資料日 ${d.asof||'—'}・更新 ${d.updated||'—'}</span>${m==='tw'&&st.open&&IQ&&Date.now()-IQ.t<9e5?`<span>盤中報價 ${hm(IQ.t)}</span>`:''}</div>`;
  document.documentElement.style.setProperty('--hh',$('#top').offsetHeight+'px')}
 function renderNav(){const T=[['list','📋','行情'],['quote','📈','個股'],['port','💼','庫存'],['ord','🧾','明細'],['battle','🏆','對戰']];

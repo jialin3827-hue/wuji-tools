@@ -1,0 +1,157 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#05080d"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="assets/icon-192.png">
+<title>舞吉股市大亨・虛擬幣</title>
+<style>
+:root{--bg:#05080d;--p:#0a1018;--ln:#1c2a3a;--tx:#d6e2ee;--mu:#6c7f95;--g:#19f28a;--r:#ff3b5c;--ac:#f0b90b;--cy:#3fd4ff}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--tx);font:12px/1.4 ui-monospace,"JetBrains Mono",Menlo,Consolas,"Noto Sans Mono CJK TC","Noto Sans TC",monospace}
+header{display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1px solid var(--ln);background:#070c13}
+.logo{color:var(--ac);font-weight:800;font-size:15px;letter-spacing:1px}.tag{border:1px solid var(--g);color:var(--g);padding:1px 6px;font-size:10px}
+.tag.r{border-color:var(--ac);color:var(--ac)}.sp{flex:1}.clock{font-size:18px;color:#fff}
+.mq{overflow:hidden;white-space:nowrap;border-bottom:1px solid var(--ln);background:#081018;padding:4px 0}
+.mq div{display:inline-block;animation:mq 60s linear infinite;padding-left:100%}@keyframes mq{to{transform:translateX(-100%)}}
+.mq span{margin-right:28px}.u{color:var(--r)}.d{color:var(--g)}
+.grid{display:grid;gap:8px;padding:8px;grid-template-columns:300px 1fr 300px}
+.pn{background:var(--p);border:1px solid var(--ln);position:relative;min-width:0}
+.pn h3{margin:0;font-size:11px;font-weight:600;color:var(--cy);padding:5px 8px;border-bottom:1px solid var(--ln);letter-spacing:1px;display:flex;justify-content:space-between}
+.pn h3 em{font-style:normal;color:var(--g)}.bd{padding:8px}
+.big{font-size:38px;font-weight:800;color:#fff;text-shadow:0 0 14px rgba(63,212,255,.6)}
+.kv{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px}.kv b{display:block;font-size:14px;color:#fff}.kv small{color:var(--mu)}
+canvas{display:block;width:100%}
+.ob{width:100%;border-collapse:collapse;font-size:11px}.ob td{padding:1px 6px;text-align:right}.ob td:first-child{text-align:left}
+.ob tr.f{animation:fl .6s}@keyframes fl{from{background:rgba(255,255,255,.18)}}
+.mid{font-size:16px;text-align:center;padding:4px;border-block:1px solid var(--ln);color:#fff}
+#list input{width:100%;background:#03070b;border:1px solid var(--ln);color:var(--tx);padding:6px;font:inherit;outline:none}
+#coins{max-height:260px;overflow:auto;margin-top:6px}.cr{display:flex;justify-content:space-between;padding:3px 2px;border-bottom:1px dashed #132030;cursor:pointer}.cr:hover,.cr.on{background:#0f1c2a}
+.tape{height:190px;overflow:hidden;font-size:11px}.tape div{display:grid;grid-template-columns:70px 70px 1fr 1fr;padding:1px 8px}
+.spk{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 8px 8px}
+.spk .pn .bd{padding:4px 8px}.spk b{font-size:13px}
+.wide{grid-column:1/-1}.note{color:var(--ac);font-size:10px}
+.tbtn{display:flex;gap:6px;margin-top:8px}.tbtn button{flex:1;padding:7px;border:1px solid;background:transparent;font:inherit;font-weight:700;cursor:pointer}
+.buy{color:var(--r);border-color:var(--r)!important}.sell{color:var(--g);border-color:var(--g)!important}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.spk{grid-template-columns:1fr 1fr}.big{font-size:32px}header{flex-wrap:wrap}.clock{font-size:14px}}
+</style></head><body>
+<header><a href="./" style="color:var(--cy);text-decoration:none;border:1px solid var(--ln);padding:2px 8px">← 股市</a><span class="logo">◆ 舞吉股市大亨・虛擬幣</span><span class="tag">模擬交易・虛擬錢</span><span class="tag r" id="src">連線中…</span><span class="sp"></span><span class="clock" id="clk"></span></header>
+<div class="mq"><div id="mq"></div></div>
+<div class="grid">
+ <div class="pn"><h3>虛擬資產總額<em id="acctn">美股帳戶現金＋虛擬幣</em></h3><div class="bd">
+  <div class="big" id="eq">—</div><div id="pnl">—</div>
+  <div class="kv"><div><small>可用現金 USD</small><b id="cash">—</b></div><div><small>虛擬幣市值</small><b id="cmv">—</b></div><div><small>已實現損益</small><b id="real">—</b></div></div>
+  <div style="margin-top:8px;display:flex;gap:6px;align-items:center"><b id="tsym" style="color:var(--ac);min-width:52px">BTC</b><input id="amt" type="number" min="0" step="any" placeholder="買：金額 USD／賣：數量" style="flex:1;min-width:0;background:#03070b;border:1px solid var(--ln);color:var(--tx);padding:6px;font:inherit"></div>
+  <div class="tbtn"><button class="buy" id="bb">買進</button><button class="sell" id="sb">賣出</button></div>
+  <div id="hold" style="margin-top:6px;font-size:11px"></div>
+  <div class="note" style="margin-top:6px">用遊戲美股帳戶的虛擬現金（USD）買賣，手續費 0.1%，以最新報價成交。點下方幣種清單切換要交易的幣。</div></div></div>
+ <div class="pn"><h3><span id="kt">BTC/USDT・1 分 K</span><em id="kp">—</em></h3><canvas id="kc" height="260"></canvas></div>
+ <div class="pn"><h3>買賣盤<em>BTC</em></h3><table class="ob" id="asks"></table><div class="mid" id="midp">—</div><table class="ob" id="bids"></table></div>
+ <div class="pn" id="list"><h3>前 20 大幣種<em>24h</em></h3><div class="bd"><input id="q" placeholder="搜尋幣種（例：ETH、索拉納）"><div id="coins"></div></div></div>
+ <div class="pn"><h3>全市場資金流向<em>節點＝幣種</em></h3><div style="position:relative"><canvas id="net" height="300" style="cursor:pointer"></canvas><div id="tip" style="position:absolute;display:none;pointer-events:none;background:#03070bee;border:1px solid var(--cy);padding:5px 8px;font-size:11px;white-space:nowrap"></div></div></div>
+ <div class="pn"><h3>成交紀錄<em>BTC</em></h3><div class="tape" id="tape"></div></div>
+</div>
+<div class="spk" id="spk"></div>
+<div id="toast" style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f1c2a;border:1px solid var(--cy);padding:8px 14px;opacity:0;transition:opacity .3s;z-index:9"></div>
+<script src="store.js"></script>
+<script>
+let S=null;
+const TOP=[["BTC","比特幣"],["ETH","以太幣"],["BNB","幣安幣"],["SOL","索拉納"],["XRP","瑞波幣"],["DOGE","狗狗幣"],["ADA","艾達幣"],["TRX","波場"],["AVAX","雪崩"],["LINK","Chainlink"],["DOT","波卡"],["TON","TON"],["SHIB","柴犬幣"],["LTC","萊特幣"],["BCH","比特現金"],["NEAR","NEAR"],["UNI","Uniswap"],["APT","Aptos"],["SUI","Sui"],["XLM","恆星幣"]];
+const T={};let KL=[],sel="BTC",live=false;
+const fmt=(v,d)=>v>=1000?v.toLocaleString('en-US',{maximumFractionDigits:d??2}):v>=1?v.toFixed(d??3):v.toPrecision(4);
+const $=id=>document.getElementById(id);
+/* 存檔：遊戲主存檔 wuji_market_v1 透過共用 store.js 的 load()/save() 讀寫（只動美股帳戶 cash）；虛擬幣持倉獨立存在 wuji_crypto_v1 */
+const CK='wuji_crypto_v1',FEE=0.001;
+const nfu=v=>Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+function gameLoad(){const g=load();return g&&g.a&&g.a.us?g:null}
+function wLoad(){try{const w=JSON.parse(localStorage.getItem(CK));if(w&&w.v===1)return w}catch(e){}return{v:1,pos:{},trades:[],realized:0,fees:0}}
+function wSave(w){localStorage.setItem(CK,JSON.stringify(w))}
+function say(t){const e=$('toast');e.textContent=t;e.style.opacity=1;clearTimeout(e._t);e._t=setTimeout(()=>e.style.opacity=0,2500)}
+function trade2(side){const p=T[sel]?.p,v=parseFloat($('amt').value);if(!live)return say('目前沒有真實報價，暫停交易');if(!p||!(v>0))return say('請輸入'+(side==='B'?'金額':'數量'));
+ S=gameLoad();if(!S)return say('請先到股市頁建立帳戶');const W=wLoad(),a=S.a.us;
+ if(side==='B'){if(v>a.cash)return say('美股帳戶現金不足');const fee=v*FEE,q=(v-fee)/p;a.cash=+(a.cash-v).toFixed(6);const P=W.pos[sel]||(W.pos[sel]={q:0,t:0});P.q+=q;P.t+=v;W.fees+=fee;W.trades.push({ts:Date.now(),s:sel,side,q,p,amt:v,fee});save();wSave(W);say(`買進 ${sel} ${q.toPrecision(6)}，花費 $${nfu(v)}`);}
+ else{const P=W.pos[sel];if(!P||P.q<v-1e-12)return say('持有數量不足');const q=Math.min(v,P.q),gross=q*p,fee=gross*FEE,net=gross-fee,part=P.t*q/P.q;a.cash=+(a.cash+net).toFixed(6);W.realized+=net-part;W.fees+=fee;P.q-=q;P.t-=part;if(P.q<1e-10)delete W.pos[sel];W.trades.push({ts:Date.now(),s:sel,side,q,p,amt:net,fee});save();wSave(W);say(`賣出 ${sel} ${q.toPrecision(6)}，入帳 $${nfu(net)}`);}
+ $('amt').value='';tick();}
+function fake(){const base={BTC:80750,ETH:3120,BNB:610,SOL:182,XRP:2.41,DOGE:.198,ADA:.72,TRX:.31,AVAX:31.2,LINK:17.4,DOT:5.6,TON:4.1,SHIB:.0000168,LTC:96,BCH:410,NEAR:4.3,UNI:9.8,APT:7.2,SUI:3.6,XLM:.38};
+ TOP.forEach(([s])=>T[s]={p:base[s],c:(Math.random()-.45)*8,v:Math.random()*2e9});
+ let p=80000;KL=[];for(let i=0;i<80;i++){const o=p;p+= (Math.random()-.48)*120;KL.push({o,c:p,h:Math.max(o,p)+Math.random()*60,l:Math.min(o,p)-Math.random()*60});}T.BTC.p=p;}
+const API='https://api.binance.com/api/v3/';let wsOK=false,poll=null;
+const badge=t=>$('src').textContent=t;
+async function rest(full){const j=await (await fetch(API+'ticker/24hr?symbols='+encodeURIComponent(JSON.stringify(TOP.map(t=>t[0]+'USDT'))))).json();
+ j.forEach(x=>T[x.symbol.replace('USDT','')]={p:+x.lastPrice,c:+x.priceChangePercent,v:+x.quoteVolume});
+ const k=await (await fetch(API+'klines?symbol=BTCUSDT&interval=1m&limit=80')).json();KL=k.map(a=>({o:+a[1],h:+a[2],l:+a[3],c:+a[4]}));T.BTC.p=KL[KL.length-1].c;
+ const dp=await (await fetch(API+'depth?symbol=BTCUSDT&limit=10')).json();lastBook=0;book(dp.bids,dp.asks);
+ const tr=await (await fetch(API+'trades?symbol=BTCUSDT&limit='+(full?16:5))).json();tr.forEach(x=>{lt=0;trade(+x.price,+x.qty,!x.isBuyerMaker)});live=true;}
+function startPoll(why){if(poll)return;badge('REST 輪詢中（每 3 秒）'+(why?'・'+why:''));poll=setInterval(()=>rest().catch(()=>badge('連線失敗，價格可能過時')),3000);}
+function stopPoll(){if(poll){clearInterval(poll);poll=null}}
+function connect(){let ws;try{ws=new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@kline_1m/btcusdt@aggTrade/btcusdt@depth10@100ms/!miniTicker@arr')}catch(e){startPoll('即時串流無法使用');return}
+ const to=setTimeout(()=>{if(!wsOK)startPoll('即時串流連不上')},5000);
+ ws.onmessage=e=>{if(!wsOK){wsOK=true;clearTimeout(to);stopPoll();badge('幣安即時串流');}const m=JSON.parse(e.data),d=m.data;
+  if(m.stream.endsWith('kline_1m')){const b={o:+d.k.o,h:+d.k.h,l:+d.k.l,c:+d.k.c};if(KL.length&&d.k.t===KL.t)KL[KL.length-1]=b;else if(KL.t&&d.k.t!==KL.t){KL.push(b);KL.shift();}else KL[KL.length-1]=b;KL.t=d.k.t;T.BTC.p=b.c;}
+  else if(m.stream.endsWith('aggTrade'))trade(+d.p,+d.q,!d.m);
+  else if(m.stream.includes('depth'))book(d.bids,d.asks);
+  else d.forEach(x=>{const s=x.s.replace('USDT','');if(T[s]&&x.s.endsWith('USDT'))T[s].p=+x.c;});};
+ ws.onclose=()=>{wsOK=false;startPoll('串流中斷，10 秒後重連');setTimeout(connect,10000);};}
+async function boot(){try{await rest(true);badge('連線中…');connect();}catch(e){fake();badge('示意資料（無法取得報價，暫停交易）');setInterval(sim,400);}
+ init();}
+function init(){coins();setInterval(tick,1000);requestAnimationFrame(net);sparks();tick();}
+function sim(){const b=KL[KL.length-1];const p=b.c+(Math.random()-.5)*25;b.c=p;b.h=Math.max(b.h,p);b.l=Math.min(b.l,p);T.BTC.p=p;
+ if(Math.random()<.04){KL.push({o:p,c:p,h:p,l:p});KL.shift();}
+ const bi=[],as=[];for(let i=0;i<10;i++){bi.push([p-1-i*2.5,Math.random()*2]);as.push([p+1+i*2.5,Math.random()*2]);}book(bi,as);trade(p,Math.random()*.5,Math.random()>.5);
+ TOP.forEach(([s])=>{if(s!=='BTC')T[s].p*=1+(Math.random()-.5)*.0008});}
+let lastBook=0;function book(b,a){if(Date.now()-lastBook<300)return;lastBook=Date.now();
+ const row=(x,c)=>`<tr class="f"><td class="${c}">${fmt(+x[0],2)}</td><td>${(+x[1]).toFixed(4)}</td><td>${fmt(x[0]*x[1],0)}</td></tr>`;
+ $('asks').innerHTML=a.slice(0,8).reverse().map(x=>row(x,'d')).join('');$('bids').innerHTML=b.slice(0,8).map(x=>row(x,'u')).join('');
+ $('midp').innerHTML=`<span class="u">${fmt(+b[0][0],2)}</span> ／ 價差 ${(a[0][0]-b[0][0]).toFixed(2)}`;}
+let lt=0;function trade(p,q,buy){if(Date.now()-lt<150)return;lt=Date.now();const t=$('tape'),d=document.createElement('div');
+ d.innerHTML=`<span>${new Date().toTimeString().slice(0,8)}</span><span class="${buy?'u':'d'}">${buy?'買':'賣'}</span><span class="${buy?'u':'d'}">${fmt(p,2)}</span><span>${q.toFixed(4)}</span>`;
+ t.prepend(d);while(t.children.length>16)t.lastChild.remove();}
+function coins(){const q=$('q').value.trim().toLowerCase();
+ $('coins').innerHTML=TOP.filter(([s,n])=>!q||s.toLowerCase().includes(q)||n.toLowerCase().includes(q)).map(([s,n])=>{const x=T[s]||{p:0,c:0};
+ return `<div class="cr${s===sel?' on':''}" onclick="pick('${s}')"><span><b>${s}</b> <small style="color:var(--mu)">${n}</small></span><span>${fmt(x.p)} <span class="${x.c>=0?'u':'d'}">${x.c>=0?'+':''}${x.c.toFixed(2)}%</span></span></div>`}).join('')||'<div style="color:var(--mu)">找不到符合的幣種</div>';}
+$('q').oninput=coins;
+function pick(s){sel=s;$('tsym').textContent=s;coins();tick();}
+function tick(){$('clk').textContent=new Date().toLocaleTimeString('zh-TW',{hour12:false})+' 台北';
+ const G=gameLoad(),W=wLoad();
+ if(!G){$('eq').textContent='尚未開始遊戲';$('pnl').innerHTML='<a href="./" style="color:var(--ac)">先到股市頁「投胎」建立帳戶</a>';$('bb').disabled=$('sb').disabled=true;}
+ else{let mv=0,cost=0;for(const k in W.pos){mv+=W.pos[k].q*(T[k]?.p||W.pos[k].t/W.pos[k].q);cost+=W.pos[k].t;}const cash=G.a.us.cash,u=mv-cost;
+  $('eq').textContent='$'+nfu(cash+mv);$('cash').textContent='$'+nfu(cash);$('cmv').textContent='$'+nfu(mv);
+  $('real').innerHTML=`<span class="${W.realized>=0?'u':'d'}">${W.realized>=0?'+':''}${nfu(W.realized)}</span>`;
+  $('pnl').className=u>=0?'u':'d';$('pnl').textContent=`虛擬幣未實現 ${u>=0?'+':'-'}$${nfu(Math.abs(u))}${cost?` (${(u/cost*100).toFixed(2)}%)`:''}`;
+  const p=W.pos[sel];$('hold').innerHTML=p?`持有 ${sel} ${p.q.toFixed(8).replace(/0+$/,'')}・均價 $${fmt(p.t/p.q)}・現值 $${nfu(p.q*(T[sel]?.p||0))}`:`未持有 ${sel}`;}
+ $('mq').innerHTML=TOP.map(([s])=>{const x=T[s];return `<span>${s} <b>${fmt(x.p)}</b> <span class="${x.c>=0?'u':'d'}">${x.c>=0?'▲':'▼'}${Math.abs(x.c).toFixed(2)}%</span></span>`}).join('')+'<span class="note">模擬交易・虛擬資金</span>';
+ $('kp').textContent=fmt(T.BTC.p,2);drawK();if(document.activeElement!==$('q'))coins();sparks();}
+function fit(c){const w=c.clientWidth,h=+c.getAttribute('height');c.width=w*devicePixelRatio;c.height=h*devicePixelRatio;c.style.height=h+'px';const x=c.getContext('2d');x.scale(devicePixelRatio,devicePixelRatio);return[x,w,h];}
+function drawK(){const[x,w,h]=fit($('kc'));const hi=Math.max(...KL.map(k=>k.h)),lo=Math.min(...KL.map(k=>k.l)),y=v=>8+(hi-v)/(hi-lo)*(h-24);
+ x.strokeStyle='#122030';for(let i=0;i<5;i++){x.beginPath();x.moveTo(0,8+i*(h-24)/4);x.lineTo(w,8+i*(h-24)/4);x.stroke();}
+ const bw=(w-60)/KL.length;KL.forEach((k,i)=>{const c=k.c>=k.o?'#ff3b5c':'#19f28a';x.strokeStyle=x.fillStyle=c;const cx=i*bw+bw/2;
+ x.beginPath();x.moveTo(cx,y(k.h));x.lineTo(cx,y(k.l));x.stroke();x.fillRect(i*bw+1,Math.min(y(k.o),y(k.c)),bw-2,Math.max(1,Math.abs(y(k.o)-y(k.c))));});
+ const ly=y(KL[KL.length-1].c);x.setLineDash([3,3]);x.strokeStyle='#f0b90b';x.beginPath();x.moveTo(0,ly);x.lineTo(w-58,ly);x.stroke();x.setLineDash([]);
+ x.fillStyle='#f0b90b';x.fillRect(w-58,ly-8,58,16);x.fillStyle='#000';x.font='10px monospace';x.fillText(fmt(KL[KL.length-1].c,1),w-55,ly+4);
+ x.fillStyle='#6c7f95';x.fillText(fmt(hi,0),w-55,14);x.fillText(fmt(lo,0),w-55,h-14);}
+const CAT={BTC:'pow',LTC:'pow',BCH:'pow',DOGE:'meme',SHIB:'meme',ETH:'l1',SOL:'l1',ADA:'l1',AVAX:'l1',DOT:'l1',NEAR:'l1',APT:'l1',SUI:'l1',TON:'l1',TRX:'l1',BNB:'ex',XRP:'pay',XLM:'pay',LINK:'defi',UNI:'defi'};
+const NM=Object.fromEntries(TOP);let N=null,E=[],hov=null,pin=null;
+function buildNet(w,h){N=TOP.map(([s],i)=>{const a=i*2.4,rr=Math.sqrt(i/TOP.length);return{s,x:w/2+Math.cos(a)*w*.42*rr,y:h/2+Math.sin(a)*h*.42*rr,vx:0,vy:0}});E=[];const deg={};
+ for(let i=0;i<N.length;i++)for(let j=i+1;j<N.length;j++){const A=T[N[i].s],B=T[N[j].s],same=CAT[N[i].s]===CAT[N[j].s],cor=!same&&Math.abs(A.c-B.c)<0.12&&(deg[i]||0)<2&&(deg[j]||0)<2;if(cor){deg[i]=(deg[i]||0)+1;deg[j]=(deg[j]||0)+1;}if(same||cor)E.push([i,j,same?1:.5]);}}
+function net(t){const c=$('net');const[x,w,h]=fit(c);if(!N||N.w!==w){buildNet(w,h);N.w=w;}
+ const vmax=Math.max(...TOP.map(([s])=>T[s].v||1));N.forEach(n=>{n.r=7+Math.sqrt((T[n.s].v||1)/vmax)*Math.min(w,h)*.085;});
+ for(const a of N){a.vx+=(w/2-a.x)*.0009;a.vy+=(h/2-a.y)*.0016;for(const b of N)if(a!==b){const dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy)||1,m=a.r+b.r+Math.min(w,h)*.09;if(d<m){a.vx+=dx/d*(m-d)*.03;a.vy+=dy/d*(m-d)*.03;}}}
+ N.forEach(n=>{n.vx*=.85;n.vy*=.85;n.x=Math.max(n.r,Math.min(w-n.r,n.x+n.vx));n.y=Math.max(n.r,Math.min(h-18-n.r,n.y+n.vy));});
+ const col=s=>T[s].c>=0?'255,59,92':'25,242,138';
+ E.forEach(([i,j,k],ei)=>{const a=N[i],b=N[j],g=x.createLinearGradient(a.x,a.y,b.x,b.y);g.addColorStop(0,`rgba(${col(a.s)},${.12+.3*k})`);g.addColorStop(1,`rgba(${col(b.s)},${.12+.3*k})`);
+  x.strokeStyle=g;x.lineWidth=k*1.2;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke();
+  const p=(t/2500+ei*.137)%1;x.fillStyle='rgba(255,255,255,.75)';x.beginPath();x.arc(a.x+(b.x-a.x)*p,a.y+(b.y-a.y)*p,1.3,0,6.28);x.fill();});
+ N.forEach((n,i)=>{const q=T[n.s],ch=Math.min(Math.abs(q.c),8)/8,pul=1+Math.sin(t/(520-ch*320)+i)*(.04+ch*.12),rr=n.r*pul,c=col(n.s),on=hov===n||pin===n;
+  const g=x.createRadialGradient(n.x,n.y,0,n.x,n.y,rr*1.9);g.addColorStop(0,`rgba(${c},${.3+ch*.5})`);g.addColorStop(1,`rgba(${c},0)`);x.fillStyle=g;x.beginPath();x.arc(n.x,n.y,rr*1.9,0,6.28);x.fill();
+  x.fillStyle=`rgba(${c},${.45+ch*.5})`;x.strokeStyle=on?'#fff':`rgb(${c})`;x.lineWidth=on?2:1;x.beginPath();x.arc(n.x,n.y,rr,0,6.28);x.fill();x.stroke();
+  x.fillStyle='#fff';x.font=`bold ${Math.max(9,Math.min(13,rr*.6))}px monospace`;x.textAlign='center';x.textBaseline='middle';x.fillText(n.s,n.x,n.y);});
+ x.textAlign='left';x.textBaseline='alphabetic';x.fillStyle='#6c7f95';x.font='10px monospace';x.fillText(w<500?'紅漲綠跌・大小＝成交額・連線＝同類/走勢近':'紅＝漲　綠＝跌　大小＝24h成交額　脈動＝波動　連線＝同類或走勢相近',8,h-6);
+ const tn=hov||pin,tp=$('tip');if(tn){const q=T[tn.s];tp.style.display='block';tp.innerHTML=`<b>${tn.s}</b> ${NM[tn.s]}<br>價格 ${fmt(q.p)}<br><span class="${q.c>=0?'u':'d'}">24h ${q.c>=0?'+':''}${q.c.toFixed(2)}%</span><br>成交額 $${(q.v/1e6).toFixed(0)}M`;
+  tp.style.left=Math.max(0,Math.min(tn.x+tn.r+6,w-140))+'px';tp.style.top=Math.max(0,Math.min(tn.y-30,h-80))+'px';}else tp.style.display='none';
+ requestAnimationFrame(net);}
+const hit=e=>{const b=$('net').getBoundingClientRect(),mx=e.clientX-b.left,my=e.clientY-b.top;return N&&N.find(n=>Math.hypot(n.x-mx,n.y-my)<n.r+3)||null;};
+$('net').onmousemove=e=>{hov=hit(e);};$('net').onmouseleave=()=>hov=null;$('net').onclick=e=>{const n=hit(e);pin=pin===n?null:n;};
+window._nodes=()=>{const b=$('net').getBoundingClientRect();return N.map(n=>[n.s,b.left+n.x+scrollX,b.top+n.y+scrollY]);};
+const SP=['BTC','ETH','SOL','BNB'],hist={};
+function sparks(){const box=$('spk');if(!box.children.length)box.innerHTML=SP.map(s=>`<div class="pn"><h3>${s}<em id="sv${s}"></em></h3><canvas id="sp${s}" height="50"></canvas></div>`).join('');
+ SP.forEach(s=>{const p=T[s]?.p;if(!p)return;const a=hist[s]||(hist[s]=Array.from({length:40},(_,i)=>p*(1+Math.sin(i/4+s.length)*.004+(Math.random()-.5)*.003)));a.push(p);a.shift();
+ const[x,w,h]=fit($('sp'+s));const mx=Math.max(...a),mn=Math.min(...a),up=a[a.length-1]>=a[0];x.strokeStyle=up?'#ff3b5c':'#19f28a';x.lineWidth=1.5;x.beginPath();
+ a.forEach((v,i)=>{const X=i/(a.length-1)*w,Y=4+(mx-v)/(mx-mn||1)*(h-8);i?x.lineTo(X,Y):x.moveTo(X,Y);});x.stroke();
+ const e=$('sv'+s);e.textContent=fmt(p);e.style.color=up?'#ff3b5c':'#19f28a';});}
+boot();
+$('bb').onclick=()=>trade2('B');$('sb').onclick=()=>trade2('S');
+</script></body></html>
