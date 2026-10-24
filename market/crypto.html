@@ -40,18 +40,31 @@ header{display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1
   <div id="hold" style="margin-top:6px;font-size:11px"></div>
   <div class="note" style="margin-top:6px">用遊戲美股帳戶的虛擬現金（USD）買賣，手續費 0.1%，以最新報價成交。點下方幣種清單切換要交易的幣。</div></div></div>
  <div class="pn"><h3><span id="kt">BTC/USDT・1 分 K</span><em id="kp">—</em></h3><div class="cv" style="height:260px"><canvas id="kc"></canvas></div></div>
- <div class="pn"><h3>買賣盤<em>BTC</em></h3><table class="ob" id="asks"></table><div class="mid" id="midp">—</div><table class="ob" id="bids"></table></div>
+ <div class="pn"><h3>買賣盤<em id="obs">BTC</em></h3><table class="ob" id="asks"></table><div class="mid" id="midp">—</div><table class="ob" id="bids"></table></div>
  <div class="pn" id="list"><h3>前 20 大幣種<em>24h</em></h3><div class="bd"><input id="q" placeholder="搜尋幣種（例：ETH、索拉納）"><div id="coins"></div></div></div>
  <div class="pn"><h3>全市場資金流向<em>節點＝幣種</em></h3><div class="cv" style="height:300px"><canvas id="net" style="cursor:pointer"></canvas><div id="tip" style="position:absolute;display:none;pointer-events:none;background:#03070bee;border:1px solid var(--cy);padding:5px 8px;font-size:11px;white-space:nowrap"></div></div></div>
  <div class="pn"><h3>成交紀錄<em>BTC</em></h3><div class="tape" id="tape"></div></div>
 </div>
 <div class="spk" id="spk"></div>
 <div id="toast" style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f1c2a;border:1px solid var(--cy);padding:8px 14px;opacity:0;transition:opacity .3s;z-index:9"></div>
-<script src="store.js?v=11"></script>
+<script src="store.js?v=12"></script>
 <script>
 let S=null;
 const TOP=[["BTC","比特幣"],["ETH","以太幣"],["BNB","幣安幣"],["SOL","索拉納"],["XRP","瑞波幣"],["DOGE","狗狗幣"],["ADA","艾達幣"],["TRX","波場"],["AVAX","雪崩"],["LINK","Chainlink"],["DOT","波卡"],["TON","TON"],["SHIB","柴犬幣"],["LTC","萊特幣"],["BCH","比特現金"],["NEAR","NEAR"],["UNI","Uniswap"],["APT","Aptos"],["SUI","Sui"],["XLM","恆星幣"]];
-const T={};let KL=[],sel="BTC",live=false;
+const BN=TOP.slice();TOP.push(["GTR","GETTR幣"]);const DEX={GTR:{chain:'solana',ca:'CatEvkKVmK2fsiVJZ3EzEBuCW8bmNoHKxsXvbBggdebp'}};
+const T={GTR:{p:0,c:0,v:1,dex:1}};let KL=[],KG=[],sel="BTC",live=false,gtrOK=false;
+/* GTR：DexScreener 免費 API，每 10 秒；挑 GTR 為 baseToken 且流動性最高的交易對，否則用 quote 端換算 */
+async function dexPoll(){try{const d=DEX.GTR,j=await (await fetch('https://api.dexscreener.com/tokens/v1/'+d.chain+'/'+d.ca)).json();
+ const liq=p=>+(p.liquidity&&p.liquidity.usd)||0,base=j.filter(p=>p.baseToken.address===d.ca).sort((a,b)=>liq(b)-liq(a))[0];let px,pair;
+ if(base){pair=base;px=+base.priceUsd;}else{pair=j.filter(p=>p.quoteToken.address===d.ca).sort((a,b)=>liq(b)-liq(a))[0];if(!pair)throw 0;px=(+pair.priceUsd)/(+pair.priceNative);}
+ if(!(px>0))throw 0;T.GTR={p:px,c:+(pair.priceChange&&pair.priceChange.h24)||0,v:+(pair.volume&&pair.volume.h24)||1,dex:1,liq:liq(pair),pair:pair.pairAddress,base:!!base};gtrOK=true;
+ const now=Math.floor(Date.now()/60000);const b=KG[KG.length-1];if(b&&b.t===now){b.c=px;b.h=Math.max(b.h,px);b.l=Math.min(b.l,px);}else if(KG.length){KG.push({t:now,o:b.c,h:Math.max(b.c,px),l:Math.min(b.c,px),c:px});if(KG.length>80)KG.shift();}
+ if(!KG.length||Date.now()-(dexPoll.oh||0)>60000){dexPoll.oh=Date.now();gtrOHLC(pair.pairAddress);}
+}catch(e){gtrOK=false;}}
+async function gtrOHLC(pool){try{const j=await (await fetch('https://api.geckoterminal.com/api/v2/networks/solana/pools/'+pool+'/ohlcv/minute?aggregate=1&limit=80&currency=usd'+(T.GTR.base?'':'&token=quote'),{headers:{Accept:'application/json'}})).json();
+ const L=j.data.attributes.ohlcv_list.slice().reverse();if(L.length)KG=L.map(a=>({t:Math.floor(a[0]/60),o:+a[1],h:+a[2],l:+a[3],c:+a[4]}));
+ const b=KG[KG.length-1];if(b&&T.GTR.p){b.c=T.GTR.p;b.h=Math.max(b.h,b.c);b.l=Math.min(b.l,b.c);}}catch(e){}}
+dexPoll();setInterval(dexPoll,10000);
 const fmt=(v,d)=>v>=1000?v.toLocaleString('en-US',{maximumFractionDigits:d??2}):v>=1?v.toFixed(d??3):v.toPrecision(4);
 const $=id=>document.getElementById(id);
 /* 存檔：遊戲主存檔 wuji_market_v1 透過共用 store.js 的 load()/save() 讀寫（只動美股帳戶 cash）；虛擬幣持倉獨立存在 wuji_crypto_v1 */
@@ -61,17 +74,17 @@ function gameLoad(){const g=load();return g&&g.a&&g.a.us?g:null}
 function wLoad(){try{const w=JSON.parse(localStorage.getItem(CK));if(w&&w.v===1)return w}catch(e){}return{v:1,pos:{},trades:[],realized:0,fees:0}}
 function wSave(w){localStorage.setItem(CK,JSON.stringify(w))}
 function say(t){const e=$('toast');e.textContent=t;e.style.opacity=1;clearTimeout(e._t);e._t=setTimeout(()=>e.style.opacity=0,2500)}
-function trade2(side){const p=T[sel]?.p,v=parseFloat($('amt').value);if(!live)return say('目前沒有真實報價，暫停交易');if(!p||!(v>0))return say('請輸入'+(side==='B'?'金額':'數量'));
+function trade2(side){const p=T[sel]?.p,v=parseFloat($('amt').value);if(sel==='GTR'?!gtrOK:!live)return say('目前沒有真實報價，暫停交易');if(!p||!(v>0))return say('請輸入'+(side==='B'?'金額':'數量'));
  S=gameLoad();if(!S)return say('請先到股市頁建立帳戶');const W=wLoad(),a=S.a.us;
  if(side==='B'){if(v>a.cash)return say('美股帳戶現金不足');const fee=v*FEE,q=(v-fee)/p;a.cash=+(a.cash-v).toFixed(6);const P=W.pos[sel]||(W.pos[sel]={q:0,t:0});P.q+=q;P.t+=v;W.fees+=fee;W.trades.push({ts:Date.now(),s:sel,side,q,p,amt:v,fee});save();wSave(W);say(`買進 ${sel} ${q.toPrecision(6)}，花費 $${nfu(v)}`);}
  else{const P=W.pos[sel];if(!P||P.q<v-1e-12)return say('持有數量不足');const q=Math.min(v,P.q),gross=q*p,fee=gross*FEE,net=gross-fee,part=P.t*q/P.q;a.cash=+(a.cash+net).toFixed(6);W.realized+=net-part;W.fees+=fee;P.q-=q;P.t-=part;if(P.q<1e-10)delete W.pos[sel];W.trades.push({ts:Date.now(),s:sel,side,q,p,amt:net,fee});save();wSave(W);say(`賣出 ${sel} ${q.toPrecision(6)}，入帳 $${nfu(net)}`);}
  $('amt').value='';tick();}
 function fake(){const base={BTC:80750,ETH:3120,BNB:610,SOL:182,XRP:2.41,DOGE:.198,ADA:.72,TRX:.31,AVAX:31.2,LINK:17.4,DOT:5.6,TON:4.1,SHIB:.0000168,LTC:96,BCH:410,NEAR:4.3,UNI:9.8,APT:7.2,SUI:3.6,XLM:.38};
- TOP.forEach(([s])=>T[s]={p:base[s],c:(Math.random()-.45)*8,v:Math.random()*2e9});
+ BN.forEach(([s])=>T[s]={p:base[s],c:(Math.random()-.45)*8,v:Math.random()*2e9});
  let p=80000;KL=[];for(let i=0;i<80;i++){const o=p;p+= (Math.random()-.48)*120;KL.push({o,c:p,h:Math.max(o,p)+Math.random()*60,l:Math.min(o,p)-Math.random()*60});}T.BTC.p=p;}
 const API='https://api.binance.com/api/v3/';let wsOK=false,poll=null;
 const badge=t=>$('src').textContent=t;
-async function rest(full){const j=await (await fetch(API+'ticker/24hr?symbols='+encodeURIComponent(JSON.stringify(TOP.map(t=>t[0]+'USDT'))))).json();
+async function rest(full){const j=await (await fetch(API+'ticker/24hr?symbols='+encodeURIComponent(JSON.stringify(BN.map(t=>t[0]+'USDT'))))).json();
  j.forEach(x=>T[x.symbol.replace('USDT','')]={p:+x.lastPrice,c:+x.priceChangePercent,v:+x.quoteVolume});
  const k=await (await fetch(API+'klines?symbol=BTCUSDT&interval=1m&limit=80')).json();KL=k.map(a=>({o:+a[1],h:+a[2],l:+a[3],c:+a[4]}));T.BTC.p=KL[KL.length-1].c;
  const dp=await (await fetch(API+'depth?symbol=BTCUSDT&limit=10')).json();lastBook=0;book(dp.bids,dp.asks);
@@ -92,8 +105,9 @@ function init(){coins();setInterval(tick,1000);requestAnimationFrame(net);sparks
 function sim(){const b=KL[KL.length-1];const p=b.c+(Math.random()-.5)*25;b.c=p;b.h=Math.max(b.h,p);b.l=Math.min(b.l,p);T.BTC.p=p;
  if(Math.random()<.04){KL.push({o:p,c:p,h:p,l:p});KL.shift();}
  const bi=[],as=[];for(let i=0;i<10;i++){bi.push([p-1-i*2.5,Math.random()*2]);as.push([p+1+i*2.5,Math.random()*2]);}book(bi,as);trade(p,Math.random()*.5,Math.random()>.5);
- TOP.forEach(([s])=>{if(s!=='BTC')T[s].p*=1+(Math.random()-.5)*.0008});}
-let lastBook=0;function book(b,a){if(Date.now()-lastBook<300)return;lastBook=Date.now();
+ BN.forEach(([s])=>{if(s!=='BTC')T[s].p*=1+(Math.random()-.5)*.0008});}
+let lastBook=0;function noBook(){$('asks').innerHTML='';$('bids').innerHTML='';$('midp').innerHTML='<span style="color:var(--mu)">此幣無盤口資料</span><br><small style="color:var(--ac)">DEX報價・流動性低</small>';}
+function book(b,a){if(sel==='GTR'){noBook();return}if(Date.now()-lastBook<300)return;lastBook=Date.now();
  const row=(x,c)=>`<tr class="f"><td class="${c}">${fmt(+x[0],2)}</td><td>${(+x[1]).toFixed(4)}</td><td>${fmt(x[0]*x[1],0)}</td></tr>`;
  $('asks').innerHTML=a.slice(0,8).reverse().map(x=>row(x,'d')).join('');$('bids').innerHTML=b.slice(0,8).map(x=>row(x,'u')).join('');
  $('midp').innerHTML=`<span class="u">${fmt(+b[0][0],2)}</span> ／ 價差 ${(a[0][0]-b[0][0]).toFixed(2)}`;}
@@ -102,9 +116,9 @@ let lt=0;function trade(p,q,buy){if(Date.now()-lt<150)return;lt=Date.now();const
  t.prepend(d);while(t.children.length>16)t.lastChild.remove();}
 function coins(){const q=$('q').value.trim().toLowerCase();
  $('coins').innerHTML=TOP.filter(([s,n])=>!q||s.toLowerCase().includes(q)||n.toLowerCase().includes(q)).map(([s,n])=>{const x=T[s]||{p:0,c:0};
- return `<div class="cr${s===sel?' on':''}" onclick="pick('${s}')"><span><b>${s}</b> <small style="color:var(--mu)">${n}</small></span><span>${fmt(x.p)} <span class="${x.c>=0?'u':'d'}">${x.c>=0?'+':''}${x.c.toFixed(2)}%</span></span></div>`}).join('')||'<div style="color:var(--mu)">找不到符合的幣種</div>';}
+ return `<div class="cr${s===sel?' on':''}" onclick="pick('${s}')"><span><b>${s}</b> <small style="color:var(--mu)">${n}</small>${x.dex?' <small style="color:var(--ac);border:1px solid var(--ac);padding:0 3px">DEX報價・流動性低</small>':''}</span><span>${fmt(x.p)} <span class="${x.c>=0?'u':'d'}">${x.c>=0?'+':''}${x.c.toFixed(2)}%</span></span></div>`}).join('')||'<div style="color:var(--mu)">找不到符合的幣種</div>';}
 $('q').oninput=coins;
-function pick(s){sel=s;$('tsym').textContent=s;coins();tick();}
+function pick(s){sel=s;$('tsym').textContent=s;$('obs').textContent=s;$('kt').textContent=(s==='GTR'?'GTR/USD・1 分 K・DEX報價・流動性低':'BTC/USDT・1 分 K');if(s==='GTR')noBook();else lastBook=0;coins();tick();}
 function tick(){$('clk').textContent=new Date().toLocaleTimeString('zh-TW',{hour12:false})+' 台北';
  const G=gameLoad(),W=wLoad();
  if(!G){$('eq').textContent='尚未開始遊戲';$('pnl').innerHTML='<a href="./" style="color:var(--ac)">先到股市頁「投胎」建立帳戶</a>';$('bb').disabled=$('sb').disabled=true;}
@@ -114,18 +128,18 @@ function tick(){$('clk').textContent=new Date().toLocaleTimeString('zh-TW',{hour
   $('pnl').className=u>=0?'u':'d';$('pnl').textContent=`虛擬幣未實現 ${u>=0?'+':'-'}$${nfu(Math.abs(u))}${cost?` (${(u/cost*100).toFixed(2)}%)`:''}`;
   const p=W.pos[sel];$('hold').innerHTML=p?`持有 ${sel} ${p.q.toFixed(8).replace(/0+$/,'')}・均價 $${fmt(p.t/p.q)}・現值 $${nfu(p.q*(T[sel]?.p||0))}`:`未持有 ${sel}`;}
  $('mq').innerHTML=TOP.map(([s])=>{const x=T[s];return `<span>${s} <b>${fmt(x.p)}</b> <span class="${x.c>=0?'u':'d'}">${x.c>=0?'▲':'▼'}${Math.abs(x.c).toFixed(2)}%</span></span>`}).join('')+'<span class="note">模擬交易・虛擬資金</span>';
- $('kp').textContent=fmt(T.BTC.p,2);drawK();if(document.activeElement!==$('q'))coins();sparks();}
+ window.KLb=KL;$('kp').textContent=sel==='GTR'?fmt(T.GTR.p):fmt(T.BTC.p,2);drawK();if(document.activeElement!==$('q'))coins();sparks();}
 /* 只讀固定高度容器的尺寸；DPR 上限 2、每張 canvas 最多 4M 像素；尺寸沒變就不重設，避免回饋迴圈 */
 function fit(c){const b=c.parentElement,w=Math.max(1,b.clientWidth),h=Math.max(1,b.clientHeight);let d=Math.min(2,window.devicePixelRatio||1);if(w*h*d*d>4e6)d=Math.sqrt(4e6/(w*h));
  const W=Math.round(w*d),H=Math.round(h*d);if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,w,h);return[x,w,h];}
-function drawK(){const[x,w,h]=fit($('kc'));const hi=Math.max(...KL.map(k=>k.h)),lo=Math.min(...KL.map(k=>k.l)),y=v=>8+(hi-v)/(hi-lo)*(h-24);
+function drawK(){const[x,w,h]=fit($('kc'));const KL=sel==='GTR'?KG:window.KLb;if(!KL||KL.length<2){x.fillStyle='#6c7f95';x.font='12px monospace';x.fillText(sel==='GTR'?'GTR K 線累積中（每 10 秒報價）…':'載入中…',10,30);return}const hi=Math.max(...KL.map(k=>k.h)),lo=Math.min(...KL.map(k=>k.l)),y=v=>8+(hi-v)/(hi-lo)*(h-24);
  x.strokeStyle='#122030';for(let i=0;i<5;i++){x.beginPath();x.moveTo(0,8+i*(h-24)/4);x.lineTo(w,8+i*(h-24)/4);x.stroke();}
  const bw=(w-60)/KL.length;KL.forEach((k,i)=>{const c=k.c>=k.o?'#ff3b5c':'#19f28a';x.strokeStyle=x.fillStyle=c;const cx=i*bw+bw/2;
  x.beginPath();x.moveTo(cx,y(k.h));x.lineTo(cx,y(k.l));x.stroke();x.fillRect(i*bw+1,Math.min(y(k.o),y(k.c)),bw-2,Math.max(1,Math.abs(y(k.o)-y(k.c))));});
  const ly=y(KL[KL.length-1].c);x.setLineDash([3,3]);x.strokeStyle='#f0b90b';x.beginPath();x.moveTo(0,ly);x.lineTo(w-58,ly);x.stroke();x.setLineDash([]);
  x.fillStyle='#f0b90b';x.fillRect(w-58,ly-8,58,16);x.fillStyle='#000';x.font='10px monospace';x.fillText(fmt(KL[KL.length-1].c,1),w-55,ly+4);
  x.fillStyle='#6c7f95';x.fillText(fmt(hi,0),w-55,14);x.fillText(fmt(lo,0),w-55,h-14);}
-const CAT={BTC:'pow',LTC:'pow',BCH:'pow',DOGE:'meme',SHIB:'meme',ETH:'l1',SOL:'l1',ADA:'l1',AVAX:'l1',DOT:'l1',NEAR:'l1',APT:'l1',SUI:'l1',TON:'l1',TRX:'l1',BNB:'ex',XRP:'pay',XLM:'pay',LINK:'defi',UNI:'defi'};
+const CAT={GTR:'social',BTC:'pow',LTC:'pow',BCH:'pow',DOGE:'meme',SHIB:'meme',ETH:'l1',SOL:'l1',ADA:'l1',AVAX:'l1',DOT:'l1',NEAR:'l1',APT:'l1',SUI:'l1',TON:'l1',TRX:'l1',BNB:'ex',XRP:'pay',XLM:'pay',LINK:'defi',UNI:'defi'};
 const NM=Object.fromEntries(TOP);let N=null,E=[],hov=null,pin=null;
 function buildNet(w,h){N=TOP.map(([s],i)=>{const a=i*2.4,rr=Math.sqrt(i/TOP.length);return{s,x:w/2+Math.cos(a)*w*.42*rr,y:h/2+Math.sin(a)*h*.42*rr,vx:0,vy:0}});E=[];const deg={};
  for(let i=0;i<N.length;i++)for(let j=i+1;j<N.length;j++){const A=T[N[i].s],B=T[N[j].s],same=CAT[N[i].s]===CAT[N[j].s],cor=!same&&Math.abs(A.c-B.c)<0.12&&(deg[i]||0)<2&&(deg[j]||0)<2;if(cor){deg[i]=(deg[i]||0)+1;deg[j]=(deg[j]||0)+1;}if(same||cor)E.push([i,j,same?1:.5]);}}
