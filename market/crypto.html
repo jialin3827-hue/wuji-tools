@@ -15,7 +15,7 @@ header{display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1
 .pn h3 em{font-style:normal;color:var(--g)}.bd{padding:8px}
 .big{font-size:38px;font-weight:800;color:#fff;text-shadow:0 0 14px rgba(63,212,255,.6)}
 .kv{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px}.kv b{display:block;font-size:14px;color:#fff}.kv small{color:var(--mu)}
-canvas{display:block;width:100%}
+.cv{position:relative;overflow:hidden;width:100%}.cv>canvas{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
 .ob{width:100%;border-collapse:collapse;font-size:11px}.ob td{padding:1px 6px;text-align:right}.ob td:first-child{text-align:left}
 .ob tr.f{animation:fl .6s}@keyframes fl{from{background:rgba(255,255,255,.18)}}
 .mid{font-size:16px;text-align:center;padding:4px;border-block:1px solid var(--ln);color:#fff}
@@ -39,10 +39,10 @@ canvas{display:block;width:100%}
   <div class="tbtn"><button class="buy" id="bb">買進</button><button class="sell" id="sb">賣出</button></div>
   <div id="hold" style="margin-top:6px;font-size:11px"></div>
   <div class="note" style="margin-top:6px">用遊戲美股帳戶的虛擬現金（USD）買賣，手續費 0.1%，以最新報價成交。點下方幣種清單切換要交易的幣。</div></div></div>
- <div class="pn"><h3><span id="kt">BTC/USDT・1 分 K</span><em id="kp">—</em></h3><canvas id="kc" height="260"></canvas></div>
+ <div class="pn"><h3><span id="kt">BTC/USDT・1 分 K</span><em id="kp">—</em></h3><div class="cv" style="height:260px"><canvas id="kc"></canvas></div></div>
  <div class="pn"><h3>買賣盤<em>BTC</em></h3><table class="ob" id="asks"></table><div class="mid" id="midp">—</div><table class="ob" id="bids"></table></div>
  <div class="pn" id="list"><h3>前 20 大幣種<em>24h</em></h3><div class="bd"><input id="q" placeholder="搜尋幣種（例：ETH、索拉納）"><div id="coins"></div></div></div>
- <div class="pn"><h3>全市場資金流向<em>節點＝幣種</em></h3><div style="position:relative"><canvas id="net" height="300" style="cursor:pointer"></canvas><div id="tip" style="position:absolute;display:none;pointer-events:none;background:#03070bee;border:1px solid var(--cy);padding:5px 8px;font-size:11px;white-space:nowrap"></div></div></div>
+ <div class="pn"><h3>全市場資金流向<em>節點＝幣種</em></h3><div class="cv" style="height:300px"><canvas id="net" style="cursor:pointer"></canvas><div id="tip" style="position:absolute;display:none;pointer-events:none;background:#03070bee;border:1px solid var(--cy);padding:5px 8px;font-size:11px;white-space:nowrap"></div></div></div>
  <div class="pn"><h3>成交紀錄<em>BTC</em></h3><div class="tape" id="tape"></div></div>
 </div>
 <div class="spk" id="spk"></div>
@@ -115,7 +115,9 @@ function tick(){$('clk').textContent=new Date().toLocaleTimeString('zh-TW',{hour
   const p=W.pos[sel];$('hold').innerHTML=p?`持有 ${sel} ${p.q.toFixed(8).replace(/0+$/,'')}・均價 $${fmt(p.t/p.q)}・現值 $${nfu(p.q*(T[sel]?.p||0))}`:`未持有 ${sel}`;}
  $('mq').innerHTML=TOP.map(([s])=>{const x=T[s];return `<span>${s} <b>${fmt(x.p)}</b> <span class="${x.c>=0?'u':'d'}">${x.c>=0?'▲':'▼'}${Math.abs(x.c).toFixed(2)}%</span></span>`}).join('')+'<span class="note">模擬交易・虛擬資金</span>';
  $('kp').textContent=fmt(T.BTC.p,2);drawK();if(document.activeElement!==$('q'))coins();sparks();}
-function fit(c){const w=c.clientWidth,h=+c.getAttribute('height');c.width=w*devicePixelRatio;c.height=h*devicePixelRatio;c.style.height=h+'px';const x=c.getContext('2d');x.scale(devicePixelRatio,devicePixelRatio);return[x,w,h];}
+/* 只讀固定高度容器的尺寸；DPR 上限 2、每張 canvas 最多 4M 像素；尺寸沒變就不重設，避免回饋迴圈 */
+function fit(c){const b=c.parentElement,w=Math.max(1,b.clientWidth),h=Math.max(1,b.clientHeight);let d=Math.min(2,window.devicePixelRatio||1);if(w*h*d*d>4e6)d=Math.sqrt(4e6/(w*h));
+ const W=Math.round(w*d),H=Math.round(h*d);if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,w,h);return[x,w,h];}
 function drawK(){const[x,w,h]=fit($('kc'));const hi=Math.max(...KL.map(k=>k.h)),lo=Math.min(...KL.map(k=>k.l)),y=v=>8+(hi-v)/(hi-lo)*(h-24);
  x.strokeStyle='#122030';for(let i=0;i<5;i++){x.beginPath();x.moveTo(0,8+i*(h-24)/4);x.lineTo(w,8+i*(h-24)/4);x.stroke();}
  const bw=(w-60)/KL.length;KL.forEach((k,i)=>{const c=k.c>=k.o?'#ff3b5c':'#19f28a';x.strokeStyle=x.fillStyle=c;const cx=i*bw+bw/2;
@@ -147,7 +149,7 @@ const hit=e=>{const b=$('net').getBoundingClientRect(),mx=e.clientX-b.left,my=e.
 $('net').onmousemove=e=>{hov=hit(e);};$('net').onmouseleave=()=>hov=null;$('net').onclick=e=>{const n=hit(e);pin=pin===n?null:n;};
 window._nodes=()=>{const b=$('net').getBoundingClientRect();return N.map(n=>[n.s,b.left+n.x+scrollX,b.top+n.y+scrollY]);};
 const SP=['BTC','ETH','SOL','BNB'],hist={};
-function sparks(){const box=$('spk');if(!box.children.length)box.innerHTML=SP.map(s=>`<div class="pn"><h3>${s}<em id="sv${s}"></em></h3><canvas id="sp${s}" height="50"></canvas></div>`).join('');
+function sparks(){const box=$('spk');if(!box.children.length)box.innerHTML=SP.map(s=>`<div class="pn"><h3>${s}<em id="sv${s}"></em></h3><div class="cv" style="height:50px"><canvas id="sp${s}"></canvas></div></div>`).join('');
  SP.forEach(s=>{const p=T[s]?.p;if(!p)return;const a=hist[s]||(hist[s]=Array.from({length:40},(_,i)=>p*(1+Math.sin(i/4+s.length)*.004+(Math.random()-.5)*.003)));a.push(p);a.shift();
  const[x,w,h]=fit($('sp'+s));const mx=Math.max(...a),mn=Math.min(...a),up=a[a.length-1]>=a[0];x.strokeStyle=up?'#ff3b5c':'#19f28a';x.lineWidth=1.5;x.beginPath();
  a.forEach((v,i)=>{const X=i/(a.length-1)*w,Y=4+(mx-v)/(mx-mn||1)*(h-8);i?x.lineTo(X,Y):x.moveTo(X,Y);});x.stroke();
