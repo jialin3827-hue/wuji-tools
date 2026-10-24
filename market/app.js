@@ -238,4 +238,4 @@ function menu(){const M=$('#modal'),c=cfg();M.classList.add('on');const D2=[[1,'
 (async function init(){await loadSnap();await loadDiv();if(S){S.divs=S.divs||[];S.cfg=S.cfg||{};if(!S.start.tw)S.start.tw=D.tw.asof;if(!S.start.us)S.start.us=D.us.asof;await processOrders();await processDivs();save()}render();
  setInterval(()=>{if(S)renderTop()},60000);
  document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&S){await loadSnap();await loadDiv();BARS={};for(const k in FILES)delete FILES[k];await processOrders();await processDivs();render()}})})();
-if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));
+
