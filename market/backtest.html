@@ -1,0 +1,200 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#05080d"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="assets/icon-192.png">
+<title>舞吉股市大亨・策略回測</title>
+<style>
+:root{--bg:#05080d;--p:#0a1018;--ln:#1c2a3a;--tx:#d6e2ee;--mu:#6c7f95;--g:#19f28a;--r:#ff3b5c;--ac:#f0b90b;--cy:#3fd4ff;--pu:#b98cff}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.45 ui-monospace,"JetBrains Mono",Menlo,Consolas,"Noto Sans Mono CJK TC","Noto Sans TC",monospace;-webkit-text-size-adjust:100%}
+header{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--ln);background:#070c13;flex-wrap:wrap;padding-top:max(8px,env(safe-area-inset-top))}
+header a{color:var(--cy);text-decoration:none;border:1px solid var(--ln);padding:2px 8px}.logo{color:var(--ac);font-weight:800;letter-spacing:1px}.tag{color:var(--mu);border:1px solid var(--ln);padding:1px 6px;font-size:11px}
+main{max-width:980px;margin:0 auto;padding:10px;display:grid;gap:10px}
+.pn{background:var(--p);border:1px solid var(--ln);padding:10px;min-width:0}.pn h3{margin:0 0 8px;font-size:12px;color:var(--cy);letter-spacing:1px;display:flex;justify-content:space-between;gap:8px}.pn h3 em{color:var(--mu);font-style:normal;font-weight:400}
+.seg{display:flex;gap:4px;flex-wrap:wrap}.seg button,.chip{flex:1;min-width:0;padding:8px 6px;border:1px solid var(--ln);background:#03070b;color:var(--tx);font:inherit;cursor:pointer;white-space:nowrap}.seg button.on,.chip.on{border-color:var(--ac);color:var(--ac);background:#151208}
+.tabs button{font-weight:800;font-size:14px}
+.row{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
+input[type=text]{flex:1;min-width:90px;background:#03070b;border:1px solid var(--ln);color:var(--tx);padding:8px;font:inherit;font-size:16px;outline:none}
+.go{padding:8px 14px;border:1px solid var(--ac);background:var(--ac);color:#000;font:inherit;font-weight:800;cursor:pointer}
+.sl{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin-top:8px}.sl label{color:var(--mu)}.sl b{color:var(--ac);text-align:end}.sl input{grid-column:1/3;width:100%;accent-color:#f0b90b}
+.kp{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}@media(min-width:640px){.kp{grid-template-columns:repeat(4,1fr)}}
+.k{border:1px solid var(--ln);padding:6px 8px;background:#060b11}.k span{display:block;color:var(--mu);font-size:11px}.k b{font-size:17px}
+.up{color:var(--r)}.dn{color:var(--g)}
+.cv{position:relative;height:240px;overflow:hidden}.cv canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.lg{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--mu);margin-top:6px}.lg i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-inline-end:4px}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:4px;border-bottom:1px dashed #132030;text-align:start;white-space:nowrap}th{color:var(--mu);font-weight:400}tr.me td{color:var(--ac)}
+.tw{overflow:auto;max-height:260px}
+#st{color:var(--mu);margin-top:6px;min-height:1.4em}
+.disc{color:#ffb4c0;border:1px solid #4a1f2a;background:#1a0a10;padding:8px;font-size:12px;text-align:center}
+#card{width:100%;display:block;border:1px solid var(--ln);margin-top:8px}
+.hide{display:none!important}
+</style></head><body>
+<header><a href="./">← 股市</a><span class="logo">◆ 策略回測</span><span class="tag">虛擬模擬</span></header>
+<main>
+<div class="disc">⚠️ 虛擬模擬，非投資建議。歷史績效不代表未來表現，本頁不連接任何真實帳戶。</div>
+<div class="pn"><div class="seg tabs" id="mode"><button data-m="bt" class="on">📈 策略回測</button><button data-m="ai">🤖 AI 跟單</button></div></div>
+<div class="pn"><h3>選擇標的<em id="src"></em></h3>
+ <div class="seg" id="mk"><button data-k="crypto">₿ 虛擬幣</button><button data-k="tw">台股</button><button data-k="us">美股</button></div>
+ <div class="seg" id="chips" style="margin-top:6px"></div>
+ <div class="row"><input id="sym" type="text" autocapitalize="characters" autocomplete="off" placeholder="代號"><button class="go" id="load">載入</button></div>
+ <div class="seg" id="per" style="margin-top:8px"><button data-p="126">6 個月</button><button data-p="252">1 年</button><button data-p="504">2 年</button><button data-p="756">3 年</button><button data-p="0">全部</button></div>
+ <div id="st"></div>
+</div>
+<div class="pn" id="cfg"><h3>策略設定<em>起始資金 100,000</em></h3>
+ <div class="seg" id="stg"><button data-s="ma">均線交叉</button><button data-s="rsi">RSI</button><button data-s="bh">買入持有</button><button data-s="dca">定期定額</button></div>
+ <div class="sl" id="sls"></div>
+</div>
+<div class="pn" id="aicfg"><h3>AI 跟單規則<em>10 位模擬交易員</em></h3><div style="color:var(--mu)">智能跟單會先跟隨上週表現最好的交易員；連續虧損兩筆就換成當下排名最好的另一位。全部是虛擬錢，不連接任何帳戶。</div></div>
+<div class="pn"><h3>回測結果<em id="rng"></em></h3><div class="kp" id="kp"></div></div>
+<div class="pn"><h3>資產曲線<em>▲買 ▼賣</em></h3><div class="cv"><canvas id="eqc"></canvas></div><div class="lg" id="lg"></div></div>
+<div class="pn" id="aipn"><h3>交易員排行<em>上週報酬</em></h3><div class="tw"><table id="rk"></table></div>
+ <h3 style="margin-top:10px">切換紀錄</h3><div class="tw"><table id="sw"></table></div></div>
+<div class="pn"><h3>分享成績卡<em>@WujiTycoon</em></h3>
+ <div class="row" style="margin-top:0"><button class="go" id="mkc">產生成績卡</button><button class="go" id="shr" style="background:transparent;color:var(--ac)">分享</button><a class="go" id="tx" target="_blank" rel="noopener" style="text-decoration:none;background:#000;color:#fff;border-color:#333">發到 X</a></div>
+ <div style="color:var(--mu);margin-top:6px;font-size:11px">長按圖片即可儲存，發文時附上圖片。</div>
+ <img id="card" class="hide" alt="card"></div>
+<div class="disc">虛擬模擬，非投資建議。資料可能延遲或缺漏。 FinMind · Binance · GeckoTerminal</div>
+</main>
+<script src="i18n.js?v=14"></script><script src="store.js?v=14"></script>
+<script>
+'use strict';
+const $=id=>document.getElementById(id),tr=s=>(window.i18nT?i18nT(s):s);
+const CK='wuji_bt_v1',CP='wuji_btc_';
+let C={m:'bt',mk:'tw',sym:'2330',per:252,s:'ma',p:{f:10,sl:30,rp:14,lo:30,hi:70,iv:20}};
+try{Object.assign(C,JSON.parse(localStorage.getItem(CK))||{})}catch(e){}
+const saveC=()=>{try{localStorage.setItem(CK,JSON.stringify(C))}catch(e){}};
+const CHIPS={tw:['2330','2317','2454','0050'],us:['NVDA','AAPL','TSLA','MSFT'],crypto:['BTC','ETH','SOL','GTR']};
+const FEE={tw:[.001425,.004425],us:[.001,.001],crypto:[.001,.001]};/* 買/賣費率（台股賣出含證交稅 0.3%） */
+const INIT=100000;let DATA=null,RES=null;
+/* ---------- 資料：FinMind（台/美股）、Binance（幣）、GeckoTerminal（GTR），存 localStorage 12 小時 ---------- */
+const ymd=d=>new Date(d).toISOString().slice(0,10);
+async function getJ(u){const r=await fetch(u,{headers:{Accept:'application/json'}});if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+async function fetchBars(mk,sym){
+ const st=ymd(Date.now()-5.2*365*864e5);
+ if(mk==='tw'||mk==='us'){const ds=mk==='tw'?'TaiwanStockPrice':'USStockPrice';
+  const j=await getJ('https://api.finmindtrade.com/api/v4/data?dataset='+ds+'&data_id='+encodeURIComponent(sym)+'&start_date='+st);
+  if(!j.data||!j.data.length)throw new Error(j.msg||'no data');
+  return j.data.map(x=>[x.date,+(mk==='us'?(x.Adj_Close||x.Close):x.close)]).filter(x=>x[1]>0)}
+ if(sym==='GTR'){const d=await getJ('https://api.dexscreener.com/tokens/v1/solana/CatEvkKVmK2fsiVJZ3EzEBuCW8bmNoHKxsXvbBggdebp');
+  const ps=(Array.isArray(d)?d:d.pairs||[]).sort((a,b)=>((b.liquidity||{}).usd||0)-((a.liquidity||{}).usd||0));if(!ps.length)throw new Error('no pool');
+  const p=ps[0],base=(p.baseToken||{}).symbol==='GTR';
+  const j=await getJ('https://api.geckoterminal.com/api/v2/networks/solana/pools/'+p.pairAddress+'/ohlcv/day?aggregate=1&limit=1000&currency=usd'+(base?'':'&token=quote'));
+  return j.data.attributes.ohlcv_list.map(x=>[ymd(x[0]*1000),+x[4]]).sort((a,b)=>a[0]<b[0]?-1:1)}
+ const j=await getJ('https://api.binance.com/api/v3/klines?symbol='+sym+'USDT&interval=1d&limit=1000');
+ return j.map(x=>[ymd(x[0]),+x[4]])}
+async function getBars(mk,sym){const k=CP+mk+'_'+sym;
+ try{const c=JSON.parse(localStorage.getItem(k));if(c&&Date.now()-c.t<12*36e5&&c.d.length)return{d:c.d,cached:1}}catch(e){}
+ const d=await fetchBars(mk,sym);const v=JSON.stringify({t:Date.now(),d});
+ try{localStorage.setItem(k,v)}catch(e){/* 空間不足：清掉其他回測快取再試 */for(let i=localStorage.length-1;i>=0;i--){const kk=localStorage.key(i);if(kk&&kk.startsWith(CP))localStorage.removeItem(kk)}try{localStorage.setItem(k,v)}catch(e2){}}
+ return{d}}
+/* ---------- 指標與策略（只用當天以前的收盤價，收盤成交） ---------- */
+function sma(c,n){const o=new Array(c.length).fill(NaN);let s=0;for(let i=0;i<c.length;i++){s+=c[i];if(i>=n)s-=c[i-n];if(i>=n-1)o[i]=s/n}return o}
+function rsi(c,n){const o=new Array(c.length).fill(NaN);let g=0,l=0;for(let i=1;i<c.length;i++){const d=c[i]-c[i-1],u=Math.max(d,0),w=Math.max(-d,0);
+ if(i<=n){g+=u/n;l+=w/n;if(i===n)o[i]=l?100-100/(1+g/l):100}else{g=(g*(n-1)+u)/n;l=(l*(n-1)+w)/n;o[i]=l?100-100/(1+g/l):100}}return o}
+/* 每個策略回傳 0/1 目標部位陣列 */
+function sigMA(c,f,s){const a=sma(c,f),b=sma(c,s);return c.map((_,i)=>a[i]>b[i]?1:0)}
+function sigRSI(c,n,lo,hi){const r=rsi(c,n);let p=0;return c.map((_,i)=>{if(r[i]<lo)p=1;else if(r[i]>hi)p=0;return p})}
+function sigBrk(c,n,m){let p=0;return c.map((x,i)=>{if(i<n)return 0;let H=-1e99,L=1e99;for(let j=i-n;j<i;j++)H=Math.max(H,c[j]);for(let j=i-m;j<i;j++)L=Math.min(L,c[j]);if(x>H)p=1;else if(x<L)p=0;return p})}
+function sigMom(c,n){return c.map((x,i)=>i>=n&&x>c[i-n]?1:0)}
+/* 回測引擎：sig 為 0/1，從 i0 開始 */
+function run(c,sig,i0,fee){let cash=INIT,sh=0,ent=0,eq=[],tr=[],mk=[];
+ for(let i=i0;i<c.length;i++){const t=sig[i];
+  if(t&&!sh){sh=cash*(1-fee[0])/c[i];ent=cash;cash=0;mk.push([i,1])}
+  else if(!t&&sh){cash=sh*c[i]*(1-fee[1]);sh=0;tr.push(cash/ent-1);mk.push([i,0])}
+  eq.push(cash+sh*c[i])}
+ if(sh)tr.push(sh*c[c.length-1]*(1-fee[1])/ent-1,);return{eq,tr,mk,open:!!sh}}
+function runDCA(c,iv,i0,fee){const n=Math.ceil((c.length-i0)/iv),part=INIT/n;let cash=INIT,sh=0,eq=[],mk=[];
+ for(let i=i0,k=0;i<c.length;i++,k++){if(k%iv===0&&cash>1){const a=Math.min(part,cash);cash-=a;sh+=a*(1-fee[0])/c[i];mk.push([i,1])}eq.push(cash+sh*c[i])}return{eq,tr:[],mk,open:true}}
+function stats(eq){let pk=eq[0],dd=0;for(const v of eq){pk=Math.max(pk,v);dd=Math.min(dd,v/pk-1)}return{ret:eq[eq.length-1]/INIT-1,dd}}
+/* ---------- AI 跟單：10 位模擬交易員 ---------- */
+const TRADERS=[['🐢 Turtle','sigBrk',[20,10],'突破'],['🚀 Rocket','sigMom',[10],'動能'],['🌊 Wave','sigMA',[5,20],'均線'],['🦉 Owl','sigMA',[20,60],'均線'],['🐘 Elephant','sigMA',[50,200],'均線'],
+ ['🦊 Fox','sigRSI',[14,30,70],'RSI'],['🐇 Rabbit','sigRSI',[7,25,75],'RSI'],['🐼 Panda','sigRSI',[14,40,60],'RSI'],['⚡ Flash','sigMA',[3,10],'均線'],['🐉 Dragon','sigMom',[30],'動能']];
+const FN={sigBrk,sigMom,sigMA,sigRSI};
+function copyTrade(c,dates,i0,fee,wk){
+ const T=TRADERS.map(([n,f,a,k])=>{const s=FN[f](c,...a),r=run(c,s,i0,fee);return{n,k,a,s,r,st:stats(r.eq)}});
+ const wret=(t,i)=>{const j=i-i0,e=t.r.eq;if(j<wk)return(e[j]||INIT)/INIT-1;return e[j]/e[j-wk]-1};
+ const rank=i=>T.map((t,x)=>[x,wret(t,i)]).sort((a,b)=>b[1]-a[1]);
+ let cur=rank(i0)[0][0],loss=0,cash=INIT,sh=0,ent=0,eq=[],mk=[],log=[[dates[i0],null,cur,'開始跟單']],trs=[];
+ for(let i=i0;i<c.length;i++){const t=T[cur].s[i];
+  if(t&&!sh){sh=cash*(1-fee[0])/c[i];ent=cash;cash=0;mk.push([i,1])}
+  else if(!t&&sh){cash=sh*c[i]*(1-fee[1]);sh=0;const p=cash/ent-1;trs.push(p);mk.push([i,0]);
+   if(p<0){loss++;if(loss>=2){const nx=rank(i).find(x=>x[0]!==cur)[0];log.push([dates[i],cur,nx,'連續虧損兩筆']);cur=nx;loss=0}}else loss=0}
+  eq.push(cash+sh*c[i])}
+ if(sh)trs.push(sh*c[c.length-1]*(1-fee[1])/ent-1);
+ const last=rank(c.length-1);return{T,eq,mk,log,trs,cur,last}}
+/* ---------- 畫圖（固定高度容器，DPR 最多 2，避免 iPhone 越畫越長） ---------- */
+function fit(cv){const b=cv.parentElement,w=Math.max(1,b.clientWidth),h=Math.max(1,b.clientHeight),d=Math.min(2,window.devicePixelRatio||1);
+ if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d)}const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);return[x,w,h]}
+function plot(x,X,Y,W,H,lines,dates,marks){let lo=1e99,hi=-1e99;lines.forEach(l=>l.v.forEach(v=>{lo=Math.min(lo,v);hi=Math.max(hi,v)}));const pad=(hi-lo)*.06||1;lo-=pad;hi+=pad;
+ const n=lines[0].v.length,px=i=>X+(n<2?0:i*(W-50)/(n-1)),py=v=>Y+H-(v-lo)/(hi-lo)*H;
+ x.font='10px ui-monospace,monospace';x.fillStyle='#6c7f95';x.strokeStyle='#132030';x.lineWidth=1;
+ for(let k=0;k<=4;k++){const v=lo+(hi-lo)*k/4,yy=py(v);x.beginPath();x.moveTo(X,yy);x.lineTo(X+W-50,yy);x.stroke();x.fillText(Math.round(v).toLocaleString(),X+W-46,yy+3)}
+ if(dates){x.fillText(dates[0],X,Y+H+12);const e=dates[dates.length-1];x.fillText(e,X+W-50-x.measureText(e).width,Y+H+12)}
+ x.beginPath();x.strokeStyle='#3a4a5c';x.setLineDash([3,3]);x.moveTo(X,py(INIT));x.lineTo(X+W-50,py(INIT));x.stroke();x.setLineDash([]);
+ for(let li=lines.length-1;li>=0;li--){const l=lines[li];x.beginPath();x.strokeStyle=l.c;x.lineWidth=l.w||1.5;l.v.forEach((v,i)=>i?x.lineTo(px(i),py(v)):x.moveTo(px(i),py(v)));x.stroke()}
+ if(marks&&marks.m.length<=80)marks.m.forEach(([i,b])=>{const j=i-marks.i0,xx=px(j),yy=py(lines[0].v[j]);x.fillStyle=b?'#ff3b5c':'#19f28a';x.beginPath();
+  if(b){x.moveTo(xx,yy+3);x.lineTo(xx-4,yy+10);x.lineTo(xx+4,yy+10)}else{x.moveTo(xx,yy-3);x.lineTo(xx-4,yy-10);x.lineTo(xx+4,yy-10)}x.fill()})}
+function draw(){if(!RES)return;const[x,w,h]=fit($('eqc'));x.clearRect(0,0,w,h);plot(x,4,8,w-4,h-26,RES.lines,RES.dates,RES.marks)}
+/* ---------- 主流程 ---------- */
+const pct=v=>(v>=0?'+':'')+(v*100).toFixed(2)+'%',cls=v=>v>0?'up':v<0?'dn':'';
+const money=v=>(C.mk==='tw'?'NT$':'$')+Math.round(v).toLocaleString();
+const STG={ma:'均線交叉',rsi:'RSI',bh:'買入持有',dca:'定期定額'};
+function sliders(){const P=C.p,S={ma:[['f','短均線',2,60,1],['sl','長均線',10,240,5]],rsi:[['rp','RSI 週期',5,30,1],['lo','超賣買進',10,45,1],['hi','超買賣出',55,90,1]],dca:[['iv','每隔幾天買一次',5,60,5]],bh:[]}[C.s];
+ $('sls').innerHTML=S.length?S.map(([k,l,a,b,s])=>`<label>${l}</label><b id="v_${k}">${P[k]}</b><input type="range" min="${a}" max="${b}" step="${s}" value="${P[k]}" data-k="${k}">`).join(''):'<label>一開始全部買進，持有到最後</label>';
+ $('sls').querySelectorAll('input').forEach(r=>r.oninput=()=>{P[r.dataset.k]=+r.value;if(C.p.f>=C.p.sl&&C.s==='ma'){if(r.dataset.k==='f')C.p.sl=C.p.f+5;else C.p.f=Math.max(2,C.p.sl-5);sliders();}
+  $('v_'+r.dataset.k).textContent=r.value;saveC();sched()})}
+let tm=0;const sched=()=>{clearTimeout(tm);tm=setTimeout(compute,120)};
+function ui(){document.querySelectorAll('#mode button').forEach(b=>b.classList.toggle('on',b.dataset.m===C.m));
+ document.querySelectorAll('#mk button').forEach(b=>b.classList.toggle('on',b.dataset.k===C.mk));
+ document.querySelectorAll('#per button').forEach(b=>b.classList.toggle('on',+b.dataset.p===C.per));
+ document.querySelectorAll('#stg button').forEach(b=>b.classList.toggle('on',b.dataset.s===C.s));
+ $('chips').innerHTML=CHIPS[C.mk].map(s=>`<button class="chip ${s===C.sym?'on':''}" data-s="${s}">${s}</button>`).join('');
+ $('chips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{$('sym').value=b.dataset.s;load()});
+ $('sym').value=C.sym;$('cfg').classList.toggle('hide',C.m!=='bt');$('aicfg').classList.toggle('hide',C.m!=='ai');$('aipn').classList.toggle('hide',C.m!=='ai');sliders()}
+async function load(){const sym=($('sym').value||'').trim().toUpperCase().replace(/\.TW$/,'').replace(/USDT$/,'');if(!sym)return;C.sym=sym;saveC();ui();
+ $('st').textContent=tr('載入中…');DATA=null;RES=null;
+ try{const r=await getBars(C.mk,sym);DATA={d:r.d.map(x=>x[0]),c:r.d.map(x=>x[1]),sym,mk:C.mk};
+  $('st').textContent=tr('已載入')+' '+DATA.c.length+' '+tr('筆日線資料')+(r.cached?' ('+tr('快取')+')':'');
+  $('src').textContent=C.mk==='crypto'?(sym==='GTR'?'GeckoTerminal':'Binance'):'FinMind';compute()}
+ catch(e){$('st').innerHTML='<span class="up">'+tr('載入失敗，請確認代號或稍後再試')+'</span> '+(e.message||'')}}
+function compute(){if(!DATA)return;const c=DATA.c,N=c.length,fee=FEE[DATA.mk];if(N<30){$('st').textContent=tr('資料太少');return}
+ const i0=C.per&&N-C.per>0?N-C.per:Math.min(N-2,0),dates=DATA.d.slice(i0),bh=run(c,c.map(()=>1),i0,fee),bs=stats(bh.eq);let k=[],lines,marks;
+ $('rng').textContent=dates[0]+' → '+dates[dates.length-1];
+ if(C.m==='bt'){const P=C.p;const r=C.s==='dca'?runDCA(c,P.iv,i0,fee):run(c,C.s==='ma'?sigMA(c,P.f,P.sl):C.s==='rsi'?sigRSI(c,P.rp,P.lo,P.hi):c.map(()=>1),i0,fee),s=stats(r.eq);
+  const win=r.tr.length?r.tr.filter(v=>v>0).length/r.tr.length:NaN;
+  k=[['總報酬',pct(s.ret),cls(s.ret)],['最大回撤',pct(s.dd),'dn'],['交易次數',C.s==='dca'?r.mk.length+'':r.tr.length+'',''],['勝率',isNaN(win)?'—':(win*100).toFixed(0)+'%',''],
+   ['期末資產',money(r.eq[r.eq.length-1]),cls(s.ret)],['買入持有',pct(bs.ret),cls(bs.ret)],['勝過持有',pct(s.ret-bs.ret),cls(s.ret-bs.ret)],['持有回撤',pct(bs.dd),'dn']];
+  lines=[{v:r.eq,c:'#f0b90b',w:2},{v:bh.eq,c:'#6c7f95'}];marks={m:r.mk,i0};
+  $('lg').innerHTML=`<span><i style="background:#f0b90b"></i>${STG[C.s]}</span><span><i style="background:#6c7f95"></i>買入持有</span>`;
+  RES={lines,dates,marks,ret:s.ret,dd:s.dd,bh:bs.ret,name:STG[C.s],n:C.s==='dca'?r.mk.length:r.tr.length}}
+ else{const wk=DATA.mk==='crypto'?7:5,a=copyTrade(c,DATA.d,i0,fee,wk),s=stats(a.eq),best=a.T.slice().sort((x,y)=>y.st.ret-x.st.ret)[0];
+  k=[['AI 總報酬',pct(s.ret),cls(s.ret)],['最大回撤',pct(s.dd),'dn'],['切換次數',a.log.length-1+'',''],['交易次數',a.trs.length+'',''],
+   ['最強交易員',best.n,''],['最強報酬',pct(best.st.ret),cls(best.st.ret)],['買入持有',pct(bs.ret),cls(bs.ret)],['勝過持有',pct(s.ret-bs.ret),cls(s.ret-bs.ret)]];
+  lines=[{v:a.eq,c:'#f0b90b',w:2},{v:best.r.eq,c:'#b98cff'},{v:bh.eq,c:'#6c7f95'}];marks={m:a.mk,i0};
+  $('lg').innerHTML=`<span><i style="background:#f0b90b"></i>AI 跟單</span><span><i style="background:#b98cff"></i>${best.n}</span><span><i style="background:#6c7f95"></i>買入持有</span>`;
+  $('rk').innerHTML='<tr><th>#</th><th>交易員</th><th>風格</th><th>上週</th><th>期間</th></tr>'+a.last.map(([x,w],i)=>{const t=a.T[x];return`<tr class="${x===a.cur?'me':''}"><td>${i+1}</td><td>${t.n}${x===a.cur?' ◀ AI':''}</td><td>${t.k} ${t.a.join('/')}</td><td class="${cls(w)}">${pct(w)}</td><td class="${cls(t.st.ret)}">${pct(t.st.ret)}</td></tr>`}).join('');
+  $('sw').innerHTML='<tr><th>日期</th><th>從</th><th>換成</th><th>原因</th></tr>'+a.log.slice().reverse().map(([d,f,t,why])=>`<tr><td>${d}</td><td>${f==null?'—':a.T[f].n}</td><td>${a.T[t].n}</td><td>${why}</td></tr>`).join('');
+  RES={lines,dates,marks,ret:s.ret,dd:s.dd,bh:bs.ret,name:'AI 跟單',n:a.trs.length}}
+ $('kp').innerHTML=k.map(([l,v,c])=>`<div class="k"><span>${l}</span><b class="${c}">${v}</b></div>`).join('');draw();$('card').classList.add('hide')}
+/* ---------- 成績卡（1200x675，X 適用） ---------- */
+function card(){if(!RES)return null;const cv=document.createElement('canvas');cv.width=1200;cv.height=675;const x=cv.getContext('2d'),F='ui-monospace,Menlo,"Noto Sans TC",monospace';
+ const g=x.createLinearGradient(0,0,1200,675);g.addColorStop(0,'#05080d');g.addColorStop(1,'#0b1626');x.fillStyle=g;x.fillRect(0,0,1200,675);
+ x.strokeStyle='#1c2a3a';x.lineWidth=1;for(let i=0;i<1200;i+=40){x.beginPath();x.moveTo(i,0);x.lineTo(i,675);x.stroke()}for(let i=0;i<675;i+=40){x.beginPath();x.moveTo(0,i);x.lineTo(1200,i);x.stroke()}
+ x.fillStyle='#f0b90b';x.font='bold 34px '+F;x.fillText('◆ 舞吉股市大亨',48,70);x.fillStyle='#3fd4ff';x.font='24px '+F;x.fillText(RES.name+' · '+DATA.sym,48,110);
+ x.fillStyle='#6c7f95';x.font='20px '+F;x.fillText(RES.dates[0]+' → '+RES.dates[RES.dates.length-1],48,142);
+ x.font='bold 92px '+F;x.fillStyle=RES.ret>=0?'#ff3b5c':'#19f28a';x.fillText(pct(RES.ret),48,250);
+ const kv=[['最大回撤',pct(RES.dd)],['買入持有',pct(RES.bh)],['交易次數',RES.n+'']];kv.forEach(([l,v],i)=>{x.fillStyle='#6c7f95';x.font='20px '+F;x.fillText(l,48+i*190,300);x.fillStyle='#d6e2ee';x.font='bold 30px '+F;x.fillText(v,48+i*190,338)});
+ x.save();plot(x,48,380,1150,200,RES.lines,null,null);x.restore();
+ x.fillStyle='#ffb4c0';x.font='20px '+F;x.fillText('虛擬模擬，非投資建議',48,640);
+ x.fillStyle='rgba(240,185,11,.9)';x.font='bold 30px '+F;const wm='@WujiTycoon';x.fillText(wm,1152-x.measureText(wm).width,70);
+ return cv}
+$('mkc').onclick=()=>{const cv=card();if(!cv)return;$('card').src=cv.toDataURL('image/png');$('card').classList.remove('hide')};
+$('shr').onclick=()=>{const cv=card();if(!cv)return;cv.toBlob(async b=>{const f=new File([b],'wuji-backtest.png',{type:'image/png'});
+ if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],text:shareText()})}catch(e){}}else{$('card').src=cv.toDataURL('image/png');$('card').classList.remove('hide')}})};
+const shareText=()=>RES?tr(RES.name)+' '+DATA.sym+' '+pct(RES.ret)+' vs '+tr('買入持有')+' '+pct(RES.bh)+' — '+tr('虛擬模擬，非投資建議')+' @WujiTycoon':'';
+$('tx').onclick=e=>{e.preventDefault();window.open('https://x.com/intent/post?text='+encodeURIComponent(shareText()),'_blank')};
+/* 事件 */
+$('mode').onclick=e=>{const b=e.target.closest('button');if(!b)return;C.m=b.dataset.m;saveC();ui();compute()};
+$('mk').onclick=e=>{const b=e.target.closest('button');if(!b)return;C.mk=b.dataset.k;C.sym=CHIPS[C.mk][0];saveC();ui();load()};
+$('per').onclick=e=>{const b=e.target.closest('button');if(!b)return;C.per=+b.dataset.p;saveC();ui();compute()};
+$('stg').onclick=e=>{const b=e.target.closest('button');if(!b)return;C.s=b.dataset.s;saveC();ui();compute()};
+$('load').onclick=load;$('sym').onkeydown=e=>{if(e.key==='Enter')load()};
+let rw=0;addEventListener('resize',()=>{if(innerWidth!==rw){rw=innerWidth;draw()}});
+ui();load();
+</script></body></html>
