@@ -1,4 +1,4 @@
-const V='wuji-market-v16';
+const V='wuji-market-v17';
 const SHELL=['./','./index.html','./app.js','./store.js','./i18n.js','./crypto.html','./backtest.html','./app.css','./manifest.webmanifest','./vendor/lightweight-charts.js','./assets/icon-192.png','./assets/icon-512.png','./assets/apple-touch-icon.png'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(V).then(c=>Promise.all(SHELL.map(u=>fetch(u,{cache:'no-store'}).then(r=>r.ok&&c.put(u,r)).catch(()=>{})))))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});

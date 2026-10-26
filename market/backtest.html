@@ -34,8 +34,10 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:4px;borde
 <header><a href="./">← 股市</a><span class="logo">◆ 策略回測</span><span class="tag">虛擬模擬</span></header>
 <main>
 <div class="disc">⚠️ 虛擬模擬，非投資建議。歷史績效不代表未來表現，本頁不連接任何真實帳戶。</div>
-<div class="pn"><div class="seg tabs" id="mode"><button data-m="bt" class="on">📈 策略回測</button><button data-m="ai">🤖 AI 跟單</button></div></div>
-<div class="pn"><h3>選擇標的<em id="src"></em></h3>
+<div class="pn"><div class="seg tabs" id="mode"><button data-m="bt" class="on">📈 策略回測</button><button data-m="ai">🤖 AI 跟單</button><button data-m="live">📅 實戰模擬（每日）</button></div></div>
+<div class="pn" id="livepn"><h3>實戰模擬（每日）<em id="lday"></em></h3><div style="color:var(--mu)">每天收盤後自動跑一次，只用當天以前的資料；每個市場虛擬資金十萬，不連接任何帳戶。</div>
+ <div class="seg" id="lmk" style="margin-top:8px"><button data-k="tw">台股</button><button data-k="us">美股</button><button data-k="crypto">₿ 虛擬幣</button></div><div id="lst" style="margin-top:8px"></div></div>
+<div class="pn" id="sympn"><h3>選擇標的<em id="src"></em></h3>
  <div class="seg" id="mk"><button data-k="crypto">₿ 虛擬幣</button><button data-k="tw">台股</button><button data-k="us">美股</button></div>
  <div class="seg" id="chips" style="margin-top:6px"></div>
  <form class="row" id="symf" action="#"><input id="sym" type="text" inputmode="text" enterkeyhint="go" autocapitalize="characters" autocorrect="off" spellcheck="false" autocomplete="off" placeholder="代號"><button class="go" id="load" type="submit">載入</button></form>
@@ -50,6 +52,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:4px;borde
 <div id="toast"></div><div id="busy" class="hide"><div class="spin"></div><span id="busyt">載入中…</span></div><div id="err" class="hide"></div>
 <div class="pn" id="respn"><h3>回測結果<em id="rng"></em></h3><div class="kp" id="kp"></div></div>
 <div class="pn"><h3>資產曲線<em>▲買 ▼賣</em></h3><div class="cv"><canvas id="eqc"></canvas></div><div class="lg" id="lg"></div></div>
+<div class="pn" id="livex"><h3>目前持股</h3><div class="tw"><table id="lhold"></table></div><h3 style="margin-top:10px">今日交易</h3><div class="tw"><table id="ltoday"></table></div><h3 style="margin-top:10px">交易紀錄</h3><div class="tw"><table id="ltr"></table></div><h3 style="margin-top:10px">切換紀錄</h3><div class="tw"><table id="lsw"></table></div></div>
 <div class="pn" id="aipn"><h3>交易員排行<em>上週報酬</em></h3><div class="tw"><table id="rk"></table></div>
  <h3 style="margin-top:10px">切換紀錄</h3><div class="tw"><table id="sw"></table></div></div>
 <div class="pn"><h3>分享成績卡<em>@WujiTycoon</em></h3>
@@ -58,7 +61,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:4px;borde
  <img id="card" class="hide" alt="card"></div>
 <div class="disc">虛擬模擬，非投資建議。資料可能延遲或缺漏。 FinMind · Binance · GeckoTerminal</div>
 </main>
-<script src="i18n.js?v=16"></script><script src="store.js?v=16"></script>
+<script src="i18n.js?v=17"></script><script src="store.js?v=17"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id),tr=s=>(window.i18nT?i18nT(s):s);
@@ -163,7 +166,7 @@ function ui(){document.querySelectorAll('#mode button').forEach(b=>b.classList.t
  document.querySelectorAll('#stg button').forEach(b=>b.classList.toggle('on',b.dataset.s===C.s));
  $('chips').innerHTML=chipsOf(C.mk).map(s=>{const n=(NM[C.mk]||{})[s];return`<button class="chip ${s===C.sym?'on':''}" data-s="${s}"><span>${s}</span>${n?`<small>${n.replace(/[<>&"]/g,'')}</small>`:''}</button>`}).join('');
  $('chips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{$('sym').value=b.dataset.s;load()});
- $('sym').value=C.sym;$('cfg').classList.toggle('hide',C.m!=='bt');$('aicfg').classList.toggle('hide',C.m!=='ai');$('aipn').classList.toggle('hide',C.m!=='ai');sliders()}
+ $('sym').value=C.sym;$('cfg').classList.toggle('hide',C.m!=='bt');$('sympn').classList.toggle('hide',C.m==='live');$('livepn').classList.toggle('hide',C.m!=='live');$('livex').classList.toggle('hide',C.m!=='live');document.querySelectorAll('#lmk button').forEach(b=>b.classList.toggle('on',b.dataset.k===(C.lmk||'tw')));$('aicfg').classList.toggle('hide',C.m!=='ai');$('aipn').classList.toggle('hide',C.m!=='ai');sliders()}
 let SEQ=0,first=true;
 function norm(mk,v){let x=(v||'').trim().toUpperCase().replace(/\s+/g,'');if(mk==='tw')x=x.replace(/\.(TW|TWO)$/,'');if(mk==='crypto')x=x.replace(/[-\/]?(USDT|USD)$/,'');return x}
 function busy(on,t){$('busy').classList.toggle('hide',!on);if(t)$('busyt').textContent=tr(t);$('load').disabled=on;$('respn').classList.toggle('stale',on)}
@@ -179,7 +182,7 @@ async function load(){const sym=norm(C.mk,$('sym').value);if(!sym){showErr('請�
  catch(e){if(my!==SEQ)return;first=false;DATA=null;RES=null;$('kp').innerHTML='';const x=$('eqc').getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,$('eqc').width,$('eqc').height);
   const m=sym+'：'+tr('載入失敗')+' — '+tr(e.message||'請確認代號或稍後再試');$('st').innerHTML='<span class="up"></span>';$('st').firstChild.textContent=m;showErr(m)}
  finally{if(my===SEQ)busy(false)}}
-function compute(){if(!DATA)return;const c=DATA.c,N=c.length,fee=FEE[DATA.mk];if(N<30){showErr('資料太少');return}
+function compute(){if(C.m==='live')return live();if(!DATA)return;const c=DATA.c,N=c.length,fee=FEE[DATA.mk];if(N<30){showErr('資料太少');return}
  const i0=C.per&&N-C.per>0?N-C.per:Math.min(N-2,0),dates=DATA.d.slice(i0),bh=run(c,c.map(()=>1),i0,fee),bs=stats(bh.eq);let k=[],lines,marks;
  $('rng').textContent=dates[0]+' → '+dates[dates.length-1];
  if(C.m==='bt'){const P=C.p;const r=C.s==='dca'?runDCA(c,P.iv,i0,fee):run(c,C.s==='ma'?sigMA(c,P.f,P.sl):C.s==='rsi'?sigRSI(c,P.rp,P.lo,P.hi):c.map(()=>1),i0,fee),s=stats(r.eq);
@@ -188,7 +191,7 @@ function compute(){if(!DATA)return;const c=DATA.c,N=c.length,fee=FEE[DATA.mk];if
    ['期末資產',money(r.eq[r.eq.length-1]),cls(s.ret)],['買入持有',pct(bs.ret),cls(bs.ret)],['勝過持有',pct(s.ret-bs.ret),cls(s.ret-bs.ret)],['持有回撤',pct(bs.dd),'dn']];
   lines=[{v:r.eq,c:'#f0b90b',w:2},{v:bh.eq,c:'#6c7f95'}];marks={m:r.mk,i0};
   $('lg').innerHTML=`<span><i style="background:#f0b90b"></i>${STG[C.s]}</span><span><i style="background:#6c7f95"></i>買入持有</span>`;
-  RES={lines,dates,marks,ret:s.ret,dd:s.dd,bh:bs.ret,name:STG[C.s],n:C.s==='dca'?r.mk.length:r.tr.length}}
+  RES={sym:DATA.sym,lines,dates,marks,ret:s.ret,dd:s.dd,bh:bs.ret,name:STG[C.s],n:C.s==='dca'?r.mk.length:r.tr.length}}
  else{const wk=DATA.mk==='crypto'?7:5,a=copyTrade(c,DATA.d,i0,fee,wk),s=stats(a.eq),best=a.T.slice().sort((x,y)=>y.st.ret-x.st.ret)[0];
   k=[['AI 總報酬',pct(s.ret),cls(s.ret)],['最大回撤',pct(s.dd),'dn'],['切換次數',a.log.length-1+'',''],['交易次數',a.trs.length+'',''],
    ['最強交易員',best.n,''],['最強報酬',pct(best.st.ret),cls(best.st.ret)],['買入持有',pct(bs.ret),cls(bs.ret)],['勝過持有',pct(s.ret-bs.ret),cls(s.ret-bs.ret)]];
@@ -196,13 +199,33 @@ function compute(){if(!DATA)return;const c=DATA.c,N=c.length,fee=FEE[DATA.mk];if
   $('lg').innerHTML=`<span><i style="background:#f0b90b"></i>AI 跟單</span><span><i style="background:#b98cff"></i>${best.n}</span><span><i style="background:#6c7f95"></i>買入持有</span>`;
   $('rk').innerHTML='<tr><th>#</th><th>交易員</th><th>風格</th><th>上週</th><th>期間</th></tr>'+a.last.map(([x,w],i)=>{const t=a.T[x];return`<tr class="${x===a.cur?'me':''}"><td>${i+1}</td><td>${t.n}${x===a.cur?' ◀ AI':''}</td><td>${t.k} ${t.a.join('/')}</td><td class="${cls(w)}">${pct(w)}</td><td class="${cls(t.st.ret)}">${pct(t.st.ret)}</td></tr>`}).join('');
   $('sw').innerHTML='<tr><th>日期</th><th>從</th><th>換成</th><th>原因</th></tr>'+a.log.slice().reverse().map(([d,f,t,why])=>`<tr><td>${d}</td><td>${f==null?'—':a.T[f].n}</td><td>${a.T[t].n}</td><td>${why}</td></tr>`).join('');
-  RES={lines,dates,marks,ret:s.ret,dd:s.dd,bh:bs.ret,name:'AI 跟單',n:a.trs.length}}
+  RES={sym:DATA.sym,lines,dates,marks,ret:s.ret,dd:s.dd,bh:bs.ret,name:'AI 跟單',n:a.trs.length}}
  $('kp').innerHTML=k.map(([l,v,c])=>`<div class="k"><span>${l}</span><b class="${c}">${v}</b></div>`).join('');draw();$('card').classList.add('hide')}
+/* ---------- 實戰模擬（每日）：讀 GitHub Actions 每天寫入的 data/ai_live.json ---------- */
+let LIVE=null;const MKN={tw:'台股',us:'美股',crypto:'虛擬幣'},BN={tw:'0050',us:'SPY',crypto:'BTC'};
+async function live(){const mk=C.lmk||'tw';
+ if(!LIVE){busy(true,'載入中…');try{const r=await fetch('data/ai_live.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);LIVE=await r.json()}catch(e){busy(false);showErr('實戰資料尚未產生，請稍後再試');return}busy(false)}
+ showErr('');const M=LIVE[mk],cur=mk==='tw'?'NT$':'$';
+ if(!M||!M.equity||!M.equity.length){$('lday').textContent='';$('lst').textContent=tr('這個市場還沒開始，等下一次收盤後自動執行');$('kp').innerHTML='';RES=null;const x=$('eqc').getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,9999,9999);['lhold','ltoday','ltr','lsw'].forEach(i=>$(i).innerHTML='');return}
+ const E=M.equity,eq=E.map(x=>x[1]),bh=E.map(x=>x[2]),s=stats(eq),bs=stats(bh),N=M.day||E.length,last=E[E.length-1];
+ $('lday').textContent='Day '+N;$('rng').textContent=M.start+' → '+M.lastDate;
+ $('lst').innerHTML=`<b style="color:var(--ac)">Day ${N}</b> · ${tr('開始日')} ${M.start} · ${tr('跟隨交易員')} <b>${(M.switches.at(-1)||{}).to||'—'}</b>`;
+ $('kp').innerHTML=[['總報酬',pct(s.ret),cls(s.ret)],['最大回撤',pct(s.dd),'dn'],['目前資產',cur+Math.round(last[1]).toLocaleString(),cls(s.ret)],['買入持有',BN[mk]+' '+pct(bs.ret),cls(bs.ret)]].map(([l,v,c])=>`<div class="k"><span>${l}</span><b class="${c}">${v}</b></div>`).join('');
+ $('lg').innerHTML=`<span><i style="background:#f0b90b"></i>AI 跟單</span><span><i style="background:#6c7f95"></i>${BN[mk]} 買入持有</span>`;
+ const p=M.pos,lp=p?(M.lastPx||{})[p.sym]:null;
+ $('lhold').innerHTML=p?`<tr><th>代號</th><th>股數</th><th>買進日</th><th>成本</th></tr><tr><td>${p.sym}</td><td>${(+p.sh).toFixed(mk==='crypto'?4:2)}</td><td>${p.date}</td><td>${cur}${Math.round(p.cost).toLocaleString()}</td></tr>`:'<tr><td>空手（全部現金）</td></tr>';
+ const row=t=>`<tr><td>${t.date}</td><td class="${t.side==='BUY'?'up':'dn'}">${t.side==='BUY'?'買':'賣'}</td><td>${t.sym}</td><td>${(+t.px).toLocaleString()}</td><td class="${t.pnl==null?'':cls(t.pnl)}">${t.pnl==null?'':pct(t.pnl)}</td><td>${t.trader||''}</td></tr>`,hd='<tr><th>日期</th><th>買賣</th><th>代號</th><th>價格</th><th>損益</th><th>交易員</th></tr>';
+ $('ltoday').innerHTML=(M.today&&M.today.length)?hd+M.today.map(row).join(''):'<tr><td>今天沒有交易</td></tr>';
+ $('ltr').innerHTML=M.trades.length?hd+M.trades.slice().reverse().slice(0,50).map(row).join(''):'<tr><td>尚無交易</td></tr>';
+ $('lsw').innerHTML='<tr><th>日期</th><th>從</th><th>換成</th><th>原因</th></tr>'+M.switches.slice().reverse().map(w=>`<tr><td>${w.date}</td><td>${w.from||'—'}</td><td>${w.to}</td><td>${w.why}</td></tr>`).join('');
+ RES={sym:MKN[mk],lines:[{v:eq.length>1?eq:[eq[0],eq[0]],c:'#f0b90b',w:2},{v:bh.length>1?bh:[bh[0],bh[0]],c:'#6c7f95'}],dates:E.map(x=>x[0]),marks:null,ret:s.ret,dd:s.dd,bh:bs.ret,name:'AI 操盤實況 Day '+N,n:M.trades.length};
+ if(RES.dates.length<2)RES.dates=[RES.dates[0],RES.dates[0]];draw();$('card').classList.add('hide')}
+$('lmk').onclick=e=>{const b=e.target.closest('button');if(!b)return;C.lmk=b.dataset.k;saveC();ui();live()};
 /* ---------- 成績卡（1200x675，X 適用） ---------- */
 function card(){if(!RES)return null;const cv=document.createElement('canvas');cv.width=1200;cv.height=675;const x=cv.getContext('2d'),F='ui-monospace,Menlo,"Noto Sans TC",monospace';
  const g=x.createLinearGradient(0,0,1200,675);g.addColorStop(0,'#05080d');g.addColorStop(1,'#0b1626');x.fillStyle=g;x.fillRect(0,0,1200,675);
  x.strokeStyle='#1c2a3a';x.lineWidth=1;for(let i=0;i<1200;i+=40){x.beginPath();x.moveTo(i,0);x.lineTo(i,675);x.stroke()}for(let i=0;i<675;i+=40){x.beginPath();x.moveTo(0,i);x.lineTo(1200,i);x.stroke()}
- x.fillStyle='#f0b90b';x.font='bold 34px '+F;x.fillText('◆ 舞吉股市大亨',48,70);x.fillStyle='#3fd4ff';x.font='24px '+F;x.fillText(RES.name+' · '+DATA.sym,48,110);
+ x.fillStyle='#f0b90b';x.font='bold 34px '+F;x.fillText('◆ 舞吉股市大亨',48,70);x.fillStyle='#3fd4ff';x.font='24px '+F;x.fillText(RES.name+' · '+RES.sym,48,110);
  x.fillStyle='#6c7f95';x.font='20px '+F;x.fillText(RES.dates[0]+' → '+RES.dates[RES.dates.length-1],48,142);
  x.font='bold 92px '+F;x.fillStyle=RES.ret>=0?'#ff3b5c':'#19f28a';x.fillText(pct(RES.ret),48,250);
  const kv=[['最大回撤',pct(RES.dd)],['買入持有',pct(RES.bh)],['交易次數',RES.n+'']];kv.forEach(([l,v],i)=>{x.fillStyle='#6c7f95';x.font='20px '+F;x.fillText(l,48+i*190,300);x.fillStyle='#d6e2ee';x.font='bold 30px '+F;x.fillText(v,48+i*190,338)});
@@ -213,7 +236,7 @@ function card(){if(!RES)return null;const cv=document.createElement('canvas');cv
 $('mkc').onclick=()=>{const cv=card();if(!cv)return;$('card').src=cv.toDataURL('image/png');$('card').classList.remove('hide')};
 $('shr').onclick=()=>{const cv=card();if(!cv)return;cv.toBlob(async b=>{const f=new File([b],'wuji-backtest.png',{type:'image/png'});
  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],text:shareText()})}catch(e){}}else{$('card').src=cv.toDataURL('image/png');$('card').classList.remove('hide')}})};
-const shareText=()=>RES?tr(RES.name)+' '+DATA.sym+' '+pct(RES.ret)+' vs '+tr('買入持有')+' '+pct(RES.bh)+' — '+tr('虛擬模擬，非投資建議')+' @WujiTycoon':'';
+const shareText=()=>RES?tr(RES.name)+' '+RES.sym+' '+pct(RES.ret)+' vs '+tr('買入持有')+' '+pct(RES.bh)+' — '+tr('虛擬模擬，非投資建議')+' @WujiTycoon':'';
 $('tx').onclick=e=>{e.preventDefault();window.open('https://x.com/intent/post?text='+encodeURIComponent(shareText()),'_blank')};
 /* 事件 */
 $('mode').onclick=e=>{const b=e.target.closest('button');if(!b)return;C.m=b.dataset.m;saveC();ui();compute()};

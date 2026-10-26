@@ -1,0 +1,34 @@
+name: AI copy-trade live sim (virtual)
+on:
+  schedule:
+    - cron: '45 6 * * 1-5'    # 14:45 Asia/Taipei 台股收盤後
+    - cron: '20 12 * * 1-5'   # 20:20 Asia/Taipei 台股補跑（資料延遲時）
+    - cron: '40 22 * * 1-5'   # 06:40 Asia/Taipei 週二至週六，美股收盤後
+    - cron: '20 0 * * *'      # 08:20 Asia/Taipei 每天，虛擬幣日 K 收盤後
+  workflow_dispatch:
+    inputs:
+      which: { description: 'tw | us | crypto | all', default: 'all' }
+permissions:
+  contents: write
+concurrency: { group: ai-live, cancel-in-progress: false }
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Simulate
+        run: |
+          W="${{ github.event.inputs.which }}"
+          if [ -z "$W" ]; then case "${{ github.event.schedule }}" in "40 22 * * 1-5") W=us;; "20 0 * * *") W=crypto;; *) W=tw;; esac; fi
+          node scripts/ai_live.mjs "$W" || echo "sim failed, keeping previous state"
+      - name: Commit if changed
+        run: |
+          git config user.name "wuji-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add market/data/ai_live.json
+          git diff --cached --quiet && exit 0
+          git commit -m "ai live sim: $(TZ=Asia/Taipei date +%F_%H%M)"
+          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done
