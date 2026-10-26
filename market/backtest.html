@@ -21,7 +21,7 @@ input[type=text]{flex:1;min-width:90px;background:#03070b;border:1px solid var(-
 .cv{position:relative;height:240px;overflow:hidden}.cv canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .lg{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--mu);margin-top:6px}.lg i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-inline-end:4px}
 table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:4px;border-bottom:1px dashed #132030;text-align:start;white-space:nowrap}th{color:var(--mu);font-weight:400}tr.me td{color:var(--ac)}
-.tw{overflow:auto;max-height:260px}
+.tw{overflow:auto;max-height:260px}#lhold td,#lhold th{padding:4px 3px}html,body{overflow-x:hidden}main{min-width:0;max-width:min(980px,100vw)}.tw{max-width:100%;contain:inline-size}
 #st{color:var(--mu);margin-top:6px;min-height:1.4em}
 .disc{color:#ffb4c0;border:1px solid #4a1f2a;background:#1a0a10;padding:8px;font-size:12px;text-align:center}
 #card{width:100%;display:block;border:1px solid var(--ln);margin-top:8px}
@@ -35,7 +35,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:4px;borde
 <main>
 <div class="disc">⚠️ 虛擬模擬，非投資建議。歷史績效不代表未來表現，本頁不連接任何真實帳戶。</div>
 <div class="pn"><div class="seg tabs" id="mode"><button data-m="bt" class="on">📈 策略回測</button><button data-m="ai">🤖 AI 跟單</button><button data-m="live">📅 每日實戰</button></div></div>
-<div class="pn" id="livepn"><h3>實戰模擬（每日）<em id="lday"></em></h3><div style="color:var(--mu)">每天收盤後自動跑一次，只用當天以前的資料；每個市場虛擬資金十萬，不連接任何帳戶。</div>
+<div class="pn" id="livepn"><h3>實戰模擬（每日）<em id="lday"></em></h3><div style="color:var(--mu)">每天收盤後自動跑一次，只用當天以前的資料；每個市場虛擬資金十萬，不連接任何帳戶。<br>分散持股：台股、美股最多五檔各約兩成；虛擬幣比特幣、以太幣各四分之一，另一半由智能挑一檔。</div>
  <div class="seg" id="lmk" style="margin-top:8px"><button data-k="tw">台股</button><button data-k="us">美股</button><button data-k="crypto">₿ 虛擬幣</button></div><div id="lst" style="margin-top:8px"></div></div>
 <div class="pn" id="sympn"><h3>選擇標的<em id="src"></em></h3>
  <div class="seg" id="mk"><button data-k="crypto">₿ 虛擬幣</button><button data-k="tw">台股</button><button data-k="us">美股</button></div>
@@ -52,7 +52,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:4px;borde
 <div id="toast"></div><div id="busy" class="hide"><div class="spin"></div><span id="busyt">載入中…</span></div><div id="err" class="hide"></div>
 <div class="pn" id="respn"><h3>回測結果<em id="rng"></em></h3><div class="kp" id="kp"></div></div>
 <div class="pn"><h3>資產曲線<em>▲買 ▼賣</em></h3><div class="cv"><canvas id="eqc"></canvas></div><div class="lg" id="lg"></div></div>
-<div class="pn" id="livex"><h3>目前持股</h3><div class="tw"><table id="lhold"></table></div><h3 style="margin-top:10px">今日交易</h3><div class="tw"><table id="ltoday"></table></div><h3 style="margin-top:10px">交易紀錄</h3><div class="tw"><table id="ltr"></table></div><h3 style="margin-top:10px">切換紀錄</h3><div class="tw"><table id="lsw"></table></div></div>
+<div class="pn" id="livex"><h3>目前持股<em>★ 核心</em></h3><div class="tw"><table id="lhold"></table></div><h3 style="margin-top:10px">今日交易</h3><div class="tw"><table id="ltoday"></table></div><h3 style="margin-top:10px">交易紀錄</h3><div class="tw"><table id="ltr"></table></div><h3 style="margin-top:10px">切換紀錄</h3><div class="tw"><table id="lsw"></table></div></div>
 <div class="pn" id="aipn"><h3>交易員排行<em>上週報酬</em></h3><div class="tw"><table id="rk"></table></div>
  <h3 style="margin-top:10px">切換紀錄</h3><div class="tw"><table id="sw"></table></div></div>
 <div class="pn"><h3>分享成績卡<em>@WujiTycoon</em></h3>
@@ -61,7 +61,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:4px;borde
  <img id="card" class="hide" alt="card"></div>
 <div class="disc">虛擬模擬，非投資建議。資料可能延遲或缺漏。 FinMind · Binance · GeckoTerminal</div>
 </main>
-<script src="i18n.js?v=18"></script><script src="store.js?v=18"></script>
+<script src="i18n.js?v=19"></script><script src="store.js?v=19"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id),tr=s=>(window.i18nT?i18nT(s):s);
@@ -212,8 +212,8 @@ async function live(){const mk=C.lmk||'tw';
  $('lst').innerHTML=`<b style="color:var(--ac)">Day ${N}</b> · ${tr('開始日')} ${M.start} · ${tr('跟隨交易員')} <b>${(M.switches.at(-1)||{}).to||'—'}</b>`;
  $('kp').innerHTML=[['總報酬',pct(s.ret),cls(s.ret)],['最大回撤',pct(s.dd),'dn'],['目前資產',cur+Math.round(last[1]).toLocaleString(),cls(s.ret)],['買入持有',BN[mk]+' '+pct(bs.ret),cls(bs.ret)]].map(([l,v,c])=>`<div class="k"><span>${l}</span><b class="${c}">${v}</b></div>`).join('');
  $('lg').innerHTML=`<span><i style="background:#f0b90b"></i>AI 跟單</span><span><i style="background:#6c7f95"></i>${BN[mk]} 買入持有</span>`;
- const p=M.pos,lp=p?(M.lastPx||{})[p.sym]:null;
- $('lhold').innerHTML=p?`<tr><th>代號</th><th>股數</th><th>買進日</th><th>成本</th></tr><tr><td>${p.sym}</td><td>${(+p.sh).toFixed(mk==='crypto'?4:2)}</td><td>${p.date}</td><td>${cur}${Math.round(p.cost).toLocaleString()}</td></tr>`:'<tr><td>空手（全部現金）</td></tr>';
+ const PS=M.positions||(M.pos?[M.pos]:[]),eqL=last[1],cw=M.cash/eqL;
+ $('lhold').innerHTML=PS.length?`<tr><th>代號</th><th>權重</th><th>股數</th><th>成本</th></tr>`+PS.map(p=>{const w=p.w!=null?p.w:(PS.length===1?1-cw:null);return`<tr><td>${p.sym}${p.core?' ★':''}</td><td>${w==null?'—':(w*100).toFixed(1)+'%'}</td><td>${(+p.sh).toFixed(mk==='crypto'?4:0)}</td><td>${cur}${Math.round(p.cost).toLocaleString()}</td></tr>`}).join('')+`<tr><td>現金</td><td>${(cw*100).toFixed(1)}%</td><td></td><td>${cur}${Math.round(M.cash).toLocaleString()}</td></tr>`:'<tr><td>空手（全部現金）</td></tr>';
  const row=t=>`<tr><td>${t.date}</td><td class="${t.side==='BUY'?'up':'dn'}">${t.side==='BUY'?'買':'賣'}</td><td>${t.sym}</td><td>${(+t.px).toLocaleString()}</td><td class="${t.pnl==null?'':cls(t.pnl)}">${t.pnl==null?'':pct(t.pnl)}</td><td>${t.trader||''}</td></tr>`,hd='<tr><th>日期</th><th>買賣</th><th>代號</th><th>價格</th><th>損益</th><th>交易員</th></tr>';
  $('ltoday').innerHTML=(M.today&&M.today.length)?hd+M.today.map(row).join(''):'<tr><td>今天沒有交易</td></tr>';
  $('ltr').innerHTML=M.trades.length?hd+M.trades.slice().reverse().slice(0,50).map(row).join(''):'<tr><td>尚無交易</td></tr>';

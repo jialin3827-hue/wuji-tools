@@ -36,17 +36,32 @@ async function runMarket(mk,S){
  const score=TR.map(([n,f,a],ti)=>{let t=0;for(const s of syms2){const sg=(SG[s+ti]=sig(C[s],f,a));t+=wkRet(C[s],sg,w)}return{ti,n,w:t/syms2.length}}).sort((a,b)=>b.w-a.w);
  M.ranking=score.map(x=>({n:x.n,w:+x.w.toFixed(4)}));
  if(M.trader==null){M.trader=score[0].ti;M.switches.push({date:today,from:null,to:TR[M.trader][0],why:'開始跟單'})}
- const px=s=>C[s].at(-1),fee=FEE[mk],todayTr=[];
- // 1) 持股：若目前跟隨的交易員對該標的出場訊號 → 賣出
- if(M.pos&&C[M.pos.sym]&&!SG[M.pos.sym+M.trader].at(-1)){const p=px(M.pos.sym),v=M.pos.sh*p*(1-fee[1]),pnl=v/M.pos.cost-1;M.cash+=v;
-  const t={date:today,side:'SELL',sym:M.pos.sym,px:p,sh:+M.pos.sh.toFixed(6),pnl:+pnl.toFixed(4),trader:TR[M.trader][0]};M.trades.push(t);todayTr.push(t);M.pos=null;
+ // 分散持股：台股/美股最多 5 檔各約 20%；虛擬幣 BTC 25%+ETH 25% 核心 + 1 檔 AI 挑選 50%
+ if(M.pos!==undefined){M.positions=M.pos?[M.pos]:[];delete M.pos} // 舊版單一持股 → 轉換
+ M.positions=M.positions||[];
+ M.lastPx=M.lastPx||{};for(const s of syms2)M.lastPx[s]=C[s].at(-1);
+ const px=s=>M.lastPx[s],fee=FEE[mk],todayTr=[],CORE=mk==='crypto'?{BTC:.25,ETH:.25}:{};
+ const eqNow=()=>M.cash+M.positions.reduce((a,p)=>a+p.sh*px(p.sym),0);
+ const sell=(p,sh,why)=>{const pr=px(p.sym),v=sh*pr*(1-fee[1]),part=sh/p.sh,cost=p.cost*part,pnl=v/cost-1;M.cash+=v;p.sh-=sh;p.cost-=cost;
+  const t={date:today,side:'SELL',sym:p.sym,px:pr,sh:+sh.toFixed(6),pnl:+pnl.toFixed(4),trader:TR[M.trader][0],why};M.trades.push(t);todayTr.push(t);return pnl};
+ const buy=(sym,amt,core)=>{amt=Math.min(amt,M.cash);if(amt<eqNow()*.01)return;const pr=px(sym),sh=amt*(1-fee[0])/pr;M.cash-=amt;
+  let p=M.positions.find(x=>x.sym===sym);if(p){p.sh+=sh;p.cost+=amt}else M.positions.push(p={sym,sh,cost:amt,date:today,core:!!core});
+  const t={date:today,side:'BUY',sym,px:pr,sh:+sh.toFixed(6),trader:core?'core':TR[M.trader][0]};M.trades.push(t);todayTr.push(t)};
+ // 1) 出場：非核心持股若跟隨交易員訊號轉空 → 全賣，計算連虧
+ for(const p of M.positions.slice()){if(CORE[p.sym]||!C[p.sym]||SG[p.sym+M.trader].at(-1))continue;const pnl=sell(p,p.sh,'signal');
   if(pnl<0){M.loss++;if(M.loss>=2){const nx=score.find(x=>x.ti!==M.trader).ti;M.switches.push({date:today,from:TR[M.trader][0],to:TR[nx][0],why:'連續虧損兩筆'});M.trader=nx;M.loss=0}}else M.loss=0}
- // 2) 空手：在全宇宙裡挑交易員目前有多單訊號、且近一週表現最好的標的
- if(!M.pos){const c=syms2.filter(s=>SG[s+M.trader].at(-1)).map(s=>[s,wkRet(C[s],SG[s+M.trader],w)]).sort((a,b)=>b[1]-a[1]);
-  if(c.length){const s=c[0][0],p=px(s),sh=M.cash*(1-fee[0])/p;M.pos={sym:s,sh,cost:M.cash,date:today};
-   const t={date:today,side:'BUY',sym:s,px:p,sh:+sh.toFixed(6),trader:TR[M.trader][0]};M.trades.push(t);todayTr.push(t);M.cash=0}}
+ M.positions=M.positions.filter(p=>p.sh>1e-9);
+ // 2) 再平衡：超過目標權重 1.25 倍的部位減碼回目標（舊的單一持股會在這裡分散）
+ const slotW=mk==='crypto'?.5:.2,maxN=mk==='crypto'?1:5;
+ {const E=eqNow();for(const p of M.positions){const tw=CORE[p.sym]||slotW,w=p.sh*px(p.sym)/E;if(w>tw*1.25)sell(p,(w-tw)*E/px(p.sym),'rebalance')}}
+ // 3) 核心部位補足
+ {const E=eqNow();for(const s in CORE)if(C[s]){const p=M.positions.find(x=>x.sym===s),w=p?p.sh*px(s)/E:0;if(w<CORE[s]*.8)buy(s,(CORE[s]-w)*E,true)}}
+ // 4) 衛星部位：跟隨交易員有多單訊號、近一週表現最好的標的
+ {const E=eqNow(),held=new Set(M.positions.map(p=>p.sym)),sat=M.positions.filter(p=>!CORE[p.sym]).length;
+  const cand=syms2.filter(s=>!CORE[s]&&!held.has(s)&&SG[s+M.trader].at(-1)).map(s=>[s,wkRet(C[s],SG[s+M.trader],w)]).sort((a,b)=>b[1]-a[1]);
+  for(const [s] of cand.slice(0,Math.max(0,maxN-sat)))buy(s,slotW*E)}
  const bp=D[BENCH[mk]].at(-1)[1];if(!M.benchUnits)M.benchUnits=INIT/bp;
- const eq=M.cash+(M.pos?M.pos.sh*px(M.pos.sym):0);
+ const eq=eqNow();M.positions.forEach(p=>{p.w=+(p.sh*px(p.sym)/eq).toFixed(4);p.sh=+p.sh.toFixed(6);p.cost=+p.cost.toFixed(2)});
  M.equity.push([today,+eq.toFixed(2),+(M.benchUnits*bp).toFixed(2)]);M.lastDate=today;M.day=M.equity.length;M.today=todayTr;
  M.log.push({date:today,ran:new Date().toISOString(),n:syms2.length});M.log=M.log.slice(-60);
  console.log(mk,'Day',M.day,today,'equity',eq.toFixed(0),'trader',TR[M.trader][0],todayTr.map(t=>t.side+' '+t.sym).join(','))}
