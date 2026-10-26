@@ -11,7 +11,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const ymd=t=>new Date(t).toISOString().slice(0,10);
 async function getJ(u){for(let i=0;i<3;i++){try{const r=await fetch(u,{signal:AbortSignal.timeout(30000)});if(r.ok)return await r.json();console.log('HTTP',r.status,u)}catch(e){console.log('ERR',e.message,u)}await sleep(3000*(i+1))}throw new Error('fetch failed '+u)}
 async function bars(mk,s){const st=ymd(Date.now()-420*864e5);
- if(mk==='crypto'){let j;const q=`/api/v3/klines?symbol=${s}USDT&interval=1d&limit=400`;try{j=await getJ('https://data-api.binance.vision'+q)}catch(e){j=await getJ('https://api.binance.com'+q)} // binance.com 擋美國 IP（GitHub runner），先用官方公開鏡像const now=Date.now();
+ if(mk==='crypto'){let j;const q=`/api/v3/klines?symbol=${s}USDT&interval=1d&limit=400`;try{j=await getJ('https://data-api.binance.vision'+q)}catch(e){j=await getJ('https://api.binance.com'+q)}/* binance.com 擋美國 IP（GitHub runner），先用官方公開鏡像 */const now=Date.now();
   return j.filter(x=>x[6]<now).map(x=>[ymd(x[0]),+x[4]])} // 只要已收盤的日 K
  const j=await getJ(`https://api.finmindtrade.com/api/v4/data?dataset=${mk==='tw'?'TaiwanStockPrice':'USStockPrice'}&data_id=${s}&start_date=${st}`);
  if(!j.data||!j.data.length)throw new Error('no data '+s);return j.data.map(x=>[x.date,+(mk==='us'?(x.Adj_Close||x.Close):x.close)]).filter(x=>x[1]>0)}
