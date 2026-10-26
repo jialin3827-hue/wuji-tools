@@ -104,7 +104,7 @@ async function simBot(bot,m){const init=S.init,start=S.start[m];const a=newAcct(
 /* ---------- rendering ---------- */
 function setBody(){document.body.classList.toggle('us',S&&S.acct==='us')}
 function renderTop(){const m=S.acct,st=mstat(m),d=D[m]||{};
- $('#top').innerHTML=`<div class="hrow"><div class="logo">🪙 舞吉股市大亨</div><div class="seg"><a href="crypto.html" style="text-decoration:none;color:var(--ac);font-weight:700;padding:4px 10px;white-space:nowrap;display:flex;align-items:center">₿ 虛擬幣</a><a href="backtest.html" style="text-decoration:none;color:var(--ac);font-weight:700;padding:4px 10px;white-space:nowrap;display:flex;align-items:center">📈 回測</a>${['tw','us'].map(x=>`<button class="${x===m?'on':''}" onclick="swAcct('${x}')" style="white-space:nowrap">${innerWidth<480?MK[x].short:MK[x].name}</button>`).join('')}</div><div class="sp"></div><button class="ibtn" onclick="menu()" aria-label="設定">⚙️</button></div>
+ $('#top').innerHTML=`<div class="hrow"><div class="logo">🪙 舞吉股市大亨</div><div class="sp"></div><button class="ibtn" onclick="menu()" aria-label="設定">⚙️</button></div><div class="seg tnav"><a href="crypto.html">₿ 虛擬幣</a><a href="backtest.html">📈 回測</a>${['tw','us'].map(x=>`<button class="${x===m?'on':''}" onclick="swAcct('${x}')">${MK[x].short}</button>`).join('')}</div>
  <div class="sub"><span class="pill ${st.open?'open':''}">${MK[m].short}${st.open?'盤中':'已收盤'}</span><span>${st.hrs}</span><span>資料日 ${d.asof||'—'}・更新 ${d.updated||'—'}</span>${m==='tw'&&st.open&&IQ&&Date.now()-IQ.t<9e5?`<span>盤中報價 ${hm(IQ.t)}</span>`:''}</div>`;
  document.documentElement.style.setProperty('--hh',$('#top').offsetHeight+'px')}
 function renderNav(){const T=[['list','📋','行情'],['quote','📈','個股'],['port','💼','庫存'],['ord','🧾','明細'],['battle','🏆','對戰']];

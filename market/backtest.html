@@ -10,7 +10,7 @@ main{max-width:980px;margin:0 auto;padding:10px;display:grid;gap:10px}
 .seg{display:flex;gap:4px;flex-wrap:wrap}.chip{display:flex;flex-direction:column;align-items:center;line-height:1.2}.chip small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:10px;color:var(--mu)}.chip.on small{color:#b8902a}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#0f1c2a;border:1px solid var(--ac);color:var(--ac);font-weight:700;padding:10px 16px;opacity:0;transition:opacity .3s;z-index:60;pointer-events:none;white-space:nowrap}#toast.on{opacity:1}
 .seg button,.chip{flex:1;min-width:0;padding:8px 6px;border:1px solid var(--ln);background:#03070b;color:var(--tx);font:inherit;cursor:pointer;white-space:nowrap}.seg button.on,.chip.on{border-color:var(--ac);color:var(--ac);background:#151208}
-.tabs button{font-weight:800;font-size:14px}
+.tabs button{font-weight:800;font-size:12px;white-space:normal;line-height:1.2;min-height:44px;padding:4px 3px;overflow-wrap:anywhere}
 .row{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
 input[type=text]{flex:1;min-width:90px;background:#03070b;border:1px solid var(--ln);color:var(--tx);padding:8px;font:inherit;font-size:16px;outline:none}
 .go{padding:8px 14px;border:1px solid var(--ac);background:var(--ac);color:#000;font:inherit;font-weight:800;cursor:pointer}
@@ -34,7 +34,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:4px;borde
 <header><a href="./">← 股市</a><span class="logo">◆ 策略回測</span><span class="tag">虛擬模擬</span></header>
 <main>
 <div class="disc">⚠️ 虛擬模擬，非投資建議。歷史績效不代表未來表現，本頁不連接任何真實帳戶。</div>
-<div class="pn"><div class="seg tabs" id="mode"><button data-m="bt" class="on">📈 策略回測</button><button data-m="ai">🤖 AI 跟單</button><button data-m="live">📅 實戰模擬（每日）</button></div></div>
+<div class="pn"><div class="seg tabs" id="mode"><button data-m="bt" class="on">📈 策略回測</button><button data-m="ai">🤖 AI 跟單</button><button data-m="live">📅 每日實戰</button></div></div>
 <div class="pn" id="livepn"><h3>實戰模擬（每日）<em id="lday"></em></h3><div style="color:var(--mu)">每天收盤後自動跑一次，只用當天以前的資料；每個市場虛擬資金十萬，不連接任何帳戶。</div>
  <div class="seg" id="lmk" style="margin-top:8px"><button data-k="tw">台股</button><button data-k="us">美股</button><button data-k="crypto">₿ 虛擬幣</button></div><div id="lst" style="margin-top:8px"></div></div>
 <div class="pn" id="sympn"><h3>選擇標的<em id="src"></em></h3>
@@ -61,7 +61,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:4px;borde
  <img id="card" class="hide" alt="card"></div>
 <div class="disc">虛擬模擬，非投資建議。資料可能延遲或缺漏。 FinMind · Binance · GeckoTerminal</div>
 </main>
-<script src="i18n.js?v=17"></script><script src="store.js?v=17"></script>
+<script src="i18n.js?v=18"></script><script src="store.js?v=18"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id),tr=s=>(window.i18nT?i18nT(s):s);
