@@ -7,7 +7,9 @@ header{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1
 header a{color:var(--cy);text-decoration:none;border:1px solid var(--ln);padding:2px 8px}.logo{color:var(--ac);font-weight:800;letter-spacing:1px}.tag{color:var(--mu);border:1px solid var(--ln);padding:1px 6px;font-size:11px}
 main{max-width:980px;margin:0 auto;padding:10px;display:grid;gap:10px}
 .pn{background:var(--p);border:1px solid var(--ln);padding:10px;min-width:0}.pn h3{margin:0 0 8px;font-size:12px;color:var(--cy);letter-spacing:1px;display:flex;justify-content:space-between;gap:8px}.pn h3 em{color:var(--mu);font-style:normal;font-weight:400}
-.seg{display:flex;gap:4px;flex-wrap:wrap}.seg button,.chip{flex:1;min-width:0;padding:8px 6px;border:1px solid var(--ln);background:#03070b;color:var(--tx);font:inherit;cursor:pointer;white-space:nowrap}.seg button.on,.chip.on{border-color:var(--ac);color:var(--ac);background:#151208}
+.seg{display:flex;gap:4px;flex-wrap:wrap}.chip{display:flex;flex-direction:column;align-items:center;line-height:1.2}.chip small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:10px;color:var(--mu)}.chip.on small{color:#b8902a}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#0f1c2a;border:1px solid var(--ac);color:var(--ac);font-weight:700;padding:10px 16px;opacity:0;transition:opacity .3s;z-index:60;pointer-events:none;white-space:nowrap}#toast.on{opacity:1}
+.seg button,.chip{flex:1;min-width:0;padding:8px 6px;border:1px solid var(--ln);background:#03070b;color:var(--tx);font:inherit;cursor:pointer;white-space:nowrap}.seg button.on,.chip.on{border-color:var(--ac);color:var(--ac);background:#151208}
 .tabs button{font-weight:800;font-size:14px}
 .row{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
 input[type=text]{flex:1;min-width:90px;background:#03070b;border:1px solid var(--ln);color:var(--tx);padding:8px;font:inherit;font-size:16px;outline:none}
@@ -45,7 +47,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:4px;borde
  <div class="sl" id="sls"></div>
 </div>
 <div class="pn" id="aicfg"><h3>AI 跟單規則<em>10 位模擬交易員</em></h3><div style="color:var(--mu)">智能跟單會先跟隨上週表現最好的交易員；連續虧損兩筆就換成當下排名最好的另一位。全部是虛擬錢，不連接任何帳戶。</div></div>
-<div id="busy" class="hide"><div class="spin"></div><span id="busyt">載入中…</span></div><div id="err" class="hide"></div>
+<div id="toast"></div><div id="busy" class="hide"><div class="spin"></div><span id="busyt">載入中…</span></div><div id="err" class="hide"></div>
 <div class="pn" id="respn"><h3>回測結果<em id="rng"></em></h3><div class="kp" id="kp"></div></div>
 <div class="pn"><h3>資產曲線<em>▲買 ▼賣</em></h3><div class="cv"><canvas id="eqc"></canvas></div><div class="lg" id="lg"></div></div>
 <div class="pn" id="aipn"><h3>交易員排行<em>上週報酬</em></h3><div class="tw"><table id="rk"></table></div>
@@ -56,7 +58,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:4px;borde
  <img id="card" class="hide" alt="card"></div>
 <div class="disc">虛擬模擬，非投資建議。資料可能延遲或缺漏。 FinMind · Binance · GeckoTerminal</div>
 </main>
-<script src="i18n.js?v=15"></script><script src="store.js?v=15"></script>
+<script src="i18n.js?v=16"></script><script src="store.js?v=16"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id),tr=s=>(window.i18nT?i18nT(s):s);
@@ -64,7 +66,14 @@ const CK='wuji_bt_v1',CP='wuji_btc_';
 let C={m:'bt',mk:'tw',sym:'2330',per:252,s:'ma',p:{f:10,sl:30,rp:14,lo:30,hi:70,iv:20}};
 try{Object.assign(C,JSON.parse(localStorage.getItem(CK))||{})}catch(e){}
 const saveC=()=>{try{localStorage.setItem(CK,JSON.stringify(C))}catch(e){}};
-const CHIPS={tw:['2330','2317','2454','0050'],us:['NVDA','AAPL','TSLA','MSFT'],crypto:['BTC','ETH','SOL','GTR']};
+const RK='wuji_bt_recent_v1',NK='wuji_bt_names_v1';let REC={tw:[],us:[],crypto:[]},NM={tw:{2330:'台積電',2317:'鴻海',2454:'聯發科','0050':'元大台灣50'},us:{NVDA:'NVIDIA',AAPL:'Apple',TSLA:'Tesla',MSFT:'Microsoft'},crypto:{BTC:'Bitcoin',ETH:'Ethereum',SOL:'Solana',GTR:'GETTR'}};
+try{Object.assign(REC,JSON.parse(localStorage.getItem(RK))||{})}catch(e){}try{const n=JSON.parse(localStorage.getItem(NK))||{};for(const k in NM)Object.assign(NM[k],n[k]||{})}catch(e){}
+const DEF={tw:['2330','2317','2454','0050'],us:['NVDA','AAPL','TSLA','MSFT'],crypto:['BTC','ETH','SOL','GTR']};
+const chipsOf=mk=>[...new Set([...(REC[mk]||[]),...DEF[mk]])].slice(0,4);
+function addRecent(mk,sym){REC[mk]=[sym,...(REC[mk]||[]).filter(x=>x!==sym)].slice(0,4);try{localStorage.setItem(RK,JSON.stringify(REC))}catch(e){}}
+async function fetchName(mk,sym){if(NM[mk]&&NM[mk][sym]||mk==='crypto')return;try{const j=await getJ('https://api.finmindtrade.com/api/v4/data?dataset='+(mk==='tw'?'TaiwanStockInfo':'USStockInfo')+'&data_id='+encodeURIComponent(sym));const r=j&&j.data&&j.data[0];if(!r||!r.stock_name)return;
+ NM[mk][sym]=r.stock_name.replace(/,? (Common Stock|Class [A-Z].*|Ordinary Shares|Inc\.?|Corporation|Corp\.?|Holdings?|Ltd\.?|Company|Co\.).*$/i,'').trim();try{const o=JSON.parse(localStorage.getItem(NK))||{};(o[mk]=o[mk]||{})[sym]=NM[mk][sym];localStorage.setItem(NK,JSON.stringify(o))}catch(e){}if(C.mk===mk)ui()}catch(e){}}
+let tt=0;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1800)}
 const FEE={tw:[.001425,.004425],us:[.001,.001],crypto:[.001,.001]};/* 買/賣費率（台股賣出含證交稅 0.3%） */
 const INIT=100000;let DATA=null,RES=null;
 /* ---------- 資料：FinMind（台/美股）、Binance（幣）、GeckoTerminal（GTR），存 localStorage 12 小時 ---------- */
@@ -152,10 +161,10 @@ function ui(){document.querySelectorAll('#mode button').forEach(b=>b.classList.t
  document.querySelectorAll('#mk button').forEach(b=>b.classList.toggle('on',b.dataset.k===C.mk));
  document.querySelectorAll('#per button').forEach(b=>b.classList.toggle('on',+b.dataset.p===C.per));
  document.querySelectorAll('#stg button').forEach(b=>b.classList.toggle('on',b.dataset.s===C.s));
- $('chips').innerHTML=CHIPS[C.mk].map(s=>`<button class="chip ${s===C.sym?'on':''}" data-s="${s}">${s}</button>`).join('');
+ $('chips').innerHTML=chipsOf(C.mk).map(s=>{const n=(NM[C.mk]||{})[s];return`<button class="chip ${s===C.sym?'on':''}" data-s="${s}"><span>${s}</span>${n?`<small>${n.replace(/[<>&"]/g,'')}</small>`:''}</button>`}).join('');
  $('chips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{$('sym').value=b.dataset.s;load()});
  $('sym').value=C.sym;$('cfg').classList.toggle('hide',C.m!=='bt');$('aicfg').classList.toggle('hide',C.m!=='ai');$('aipn').classList.toggle('hide',C.m!=='ai');sliders()}
-let SEQ=0;
+let SEQ=0,first=true;
 function norm(mk,v){let x=(v||'').trim().toUpperCase().replace(/\s+/g,'');if(mk==='tw')x=x.replace(/\.(TW|TWO)$/,'');if(mk==='crypto')x=x.replace(/[-\/]?(USDT|USD)$/,'');return x}
 function busy(on,t){$('busy').classList.toggle('hide',!on);if(t)$('busyt').textContent=tr(t);$('load').disabled=on;$('respn').classList.toggle('stale',on)}
 function showErr(m){const e=$('err');if(!m){e.classList.add('hide');return}e.textContent='⚠️ '+tr(m);e.classList.remove('hide')}
@@ -166,8 +175,8 @@ async function load(){const sym=norm(C.mk,$('sym').value);if(!sym){showErr('請�
  try{const r=await getBars(C.mk,sym);if(my!==SEQ)return;/* 舊請求較慢回來時丟棄，避免蓋掉新選的股票 */
   DATA={d:r.d.map(x=>x[0]),c:r.d.map(x=>x[1]),sym,mk:C.mk};RES=null;
   $('st').textContent=sym+' · '+tr('已載入')+' '+DATA.c.length+' '+tr('筆日線資料')+(r.cached?' ('+tr('快取')+')':'');
-  $('src').textContent=C.mk==='crypto'?(sym==='GTR'?'GeckoTerminal':'Binance'):'FinMind';compute()}
- catch(e){if(my!==SEQ)return;DATA=null;RES=null;$('kp').innerHTML='';const x=$('eqc').getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,$('eqc').width,$('eqc').height);
+  $('src').textContent=C.mk==='crypto'?(sym==='GTR'?'GeckoTerminal':'Binance'):'FinMind';compute();addRecent(DATA.mk,sym);ui();fetchName(DATA.mk,sym);toast(sym+' '+tr('已載入'));if(!first)setTimeout(()=>$('respn').scrollIntoView({behavior:'smooth',block:'start'}),80);first=false}
+ catch(e){if(my!==SEQ)return;first=false;DATA=null;RES=null;$('kp').innerHTML='';const x=$('eqc').getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,$('eqc').width,$('eqc').height);
   const m=sym+'：'+tr('載入失敗')+' — '+tr(e.message||'請確認代號或稍後再試');$('st').innerHTML='<span class="up"></span>';$('st').firstChild.textContent=m;showErr(m)}
  finally{if(my===SEQ)busy(false)}}
 function compute(){if(!DATA)return;const c=DATA.c,N=c.length,fee=FEE[DATA.mk];if(N<30){showErr('資料太少');return}
@@ -208,7 +217,7 @@ const shareText=()=>RES?tr(RES.name)+' '+DATA.sym+' '+pct(RES.ret)+' vs '+tr('�
 $('tx').onclick=e=>{e.preventDefault();window.open('https://x.com/intent/post?text='+encodeURIComponent(shareText()),'_blank')};
 /* 事件 */
 $('mode').onclick=e=>{const b=e.target.closest('button');if(!b)return;C.m=b.dataset.m;saveC();ui();compute()};
-$('mk').onclick=e=>{const b=e.target.closest('button');if(!b)return;C.mk=b.dataset.k;C.sym=CHIPS[C.mk][0];saveC();ui();load()};
+$('mk').onclick=e=>{const b=e.target.closest('button');if(!b)return;C.mk=b.dataset.k;C.sym=chipsOf(C.mk)[0];saveC();ui();load()};
 $('per').onclick=e=>{const b=e.target.closest('button');if(!b)return;C.per=+b.dataset.p;saveC();ui();compute()};
 $('stg').onclick=e=>{const b=e.target.closest('button');if(!b)return;C.s=b.dataset.s;saveC();ui();compute()};
 $('symf').onsubmit=e=>{e.preventDefault();load()};
