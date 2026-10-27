@@ -51,8 +51,15 @@ const rt=(v,t)=>Math.round(Math.round(v/t)*t*100)/100;
 
 /* ---------- data ---------- */
 async function getJSON(u){const r=await fetch(u,{cache:'no-cache'});if(!r.ok)throw new Error(u+' '+r.status);return r.json()}
-async function loadSnap(){for(const m of['tw','us']){try{D[m]=await getJSON(`data/${m}.json`);D[m].map={};const A=D[m].asof;D[m].list.forEach(x=>{x.d=x.d||A;if(x.pc==null)x.pc=x.c;if(x.o==null){x.o=x.c;x.h=Math.max(x.c,x.pc);x.l=Math.min(x.c,x.pc);x.est=1}D[m].map[x.s]=x})}catch(e){D[m]=D[m]||{list:[],map:{},asof:null,updated:'讀取失敗'}}}try{IQ=await getJSON('data/tw_intraday.json')}catch(e){IQ=null}}
-let IQ=null;
+async function loadSnap(){for(const m of['tw','us']){try{D[m]=await getJSON(`data/${m}.json`);D[m].map={};const A=D[m].asof;D[m].list.forEach(x=>{x.d=x.d||A;if(x.pc==null)x.pc=x.c;if(x.o==null){x.o=x.c;x.h=Math.max(x.c,x.pc);x.l=Math.min(x.c,x.pc);x.est=1}D[m].map[x.s]=x})}catch(e){D[m]=D[m]||{list:[],map:{},asof:null,updated:'讀取失敗'}}}try{IQ=await getJSON('data/tw_intraday.json')}catch(e){IQ=null}
+ try{IDX.tw=await getJSON('data/tw_index.json')}catch(e){IDX.tw=IDX.tw||null}
+ try{IDX.us=await getJSON('data/us_indices.json')}catch(e){IDX.us=IDX.us||null}}
+let IQ=null;const IDX={tw:null,us:null};
+/* 大盤列：依目前帳戶顯示台股加權 or 美股三大指數，更新時間一律台北時區 */
+function idxFresh(m){const d=IDX[m];if(!d||!d.items||!d.items.length)return null;const st=mstat(m);const age=Date.now()-(d.t||0);const live=st.open&&age<20*60*1000;return{d,st,live,open:!!(st.open&&(d.open!==false||live))}}
+function idxHtml(m){const f=idxFresh(m);if(!f)return'';const ts=Math.max(0,...f.d.items.map(x=>x.ts||0))||f.d.t||Date.now();
+ const cells=f.d.items.map(x=>{const ch=x.pc?x.p-x.pc:0,cp=x.pc?ch/x.pc:0;return`<div class="ix"><span class="ixn">${esc(x.n)}</span><span class="ixp ${cls(ch)}">${(+x.p).toLocaleString(undefined,{maximumFractionDigits:2})}</span><span class="ixc ${cls(ch)}">${ch>0?'▲':ch<0?'▼':''}${pf(cp)}</span></div>`}).join('');
+ return`<div class="ixbar"><div class="ixmeta"><span class="pill ${f.open?'open':''}">${f.open?'盤中':'已收盤'}</span><span>更新於 ${hm(ts)}（台北時間）</span></div><div class="ixrow">${cells}</div></div>`}
 /* intraday (TW only): used only during market hours and when the quote is < 15 min old; else fall back to close data */
 function iq(m,s){if(m!=='tw'||!IQ||!IQ.q||!mstat('tw').open)return null;const r=IQ.q[s];if(!r||Date.now()-r[1]>9e5)return null;return{p:r[0],ts:r[1],y:r[2]||null,mid:r[3]}}
 const hm=t=>new Date(t).toLocaleTimeString(window.LOC||'zh-TW',{timeZone:'Asia/Taipei',hour:'2-digit',minute:'2-digit',hour12:false});
@@ -105,7 +112,7 @@ async function simBot(bot,m){const init=S.init,start=S.start[m];const a=newAcct(
 function setBody(){document.body.classList.toggle('us',S&&S.acct==='us')}
 function renderTop(){const m=S.acct,st=mstat(m),d=D[m]||{};
  $('#top').innerHTML=`<div class="hrow"><div class="logo">🪙 舞吉股市大亨</div><div class="sp"></div><button class="ibtn" onclick="menu()" aria-label="設定">⚙️</button></div><div class="seg tnav"><a href="crypto.html">₿ 虛擬幣</a><a href="backtest.html">📈 回測</a>${['tw','us'].map(x=>`<button class="${x===m?'on':''}" onclick="swAcct('${x}')">${MK[x].short}</button>`).join('')}</div>
- <div class="sub"><span class="pill ${st.open?'open':''}">${MK[m].short}${st.open?'盤中':'已收盤'}</span><span>${st.hrs}</span><span>資料日 ${d.asof||'—'}・更新 ${d.updated||'—'}</span>${m==='tw'&&st.open&&IQ&&Date.now()-IQ.t<9e5?`<span>盤中報價 ${hm(IQ.t)}</span>`:''}</div>`;
+ <div class="sub"><span class="pill ${st.open?'open':''}">${MK[m].short}${st.open?'盤中':'已收盤'}</span><span>${st.hrs}</span><span>資料日 ${d.asof||'—'}・更新 ${d.updated||'—'}</span>${m==='tw'&&st.open&&IQ&&Date.now()-IQ.t<9e5?`<span>盤中報價 ${hm(IQ.t)}</span>`:''}</div>${idxHtml(m)}`;
  document.documentElement.style.setProperty('--hh',$('#top').offsetHeight+'px')}
 function renderNav(){const T=[['list','📋','行情'],['quote','📈','個股'],['port','💼','庫存'],['ord','🧾','明細'],['battle','🏆','對戰']];
  $('#nav').innerHTML=T.map(([k,i,t])=>`<button class="${UI.tab===k?'on':''}" onclick="go('${k}')"><i>${i}</i>${t}</button>`).join('')}

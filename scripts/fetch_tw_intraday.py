@@ -36,6 +36,27 @@ def main():
             if p is None: bad += 1; continue
             q[r['c']] = [p, ts, num(r.get('y')), mid]
         time.sleep(1.2)
+    # 加權指數（t00）— 與個股同一來源，寫入 tw_index.json 供大盤列顯示
+    ix = None
+    try:
+        url = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?json=1&delay=0&ex_ch=tse_t00.tw'
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 wuji-tools', 'Referer': 'https://mis.twse.com.tw/stock/index.jsp'})
+        arr = json.load(urllib.request.urlopen(req, timeout=15)).get('msgArray', [])
+        r = arr[0] if arr else None
+        if r:
+            p = num(r.get('z')); ts = int(r.get('tlong') or 0); pc = num(r.get('y'))
+            if p and ts and (os.environ.get('MAX_AGE_MIN') or (r.get('d') == today and now - ts <= MAX_AGE)):
+                ix = {'s': 'TAIEX', 'n': '加權指數', 'p': p, 'pc': pc, 'ts': ts,
+                      'o': num(r.get('o')), 'h': num(r.get('h')), 'l': num(r.get('l'))}
+    except Exception as e:
+        print('index fetch failed:', e)
+    if ix:
+        # 盤中判斷：台北 09:00–13:30 且指數時間戳在 20 分鐘內
+        _p = dt.datetime.now(TZ); _mins=_p.hour*60+_p.minute
+        open_now = _p.weekday()<5 and 540<=_mins<810 and (now-ix['ts']<=20*60*1000)
+        json.dump({'t': now, 'open': open_now, 'src': '證交所 MIS 盤中（延遲約 5–40 秒）', 'items': [ix]},
+                  open(os.path.join(ROOT, 'tw_index.json'), 'w'), ensure_ascii=False, separators=(',', ':'))
+        print(f"index {ix['p']} @ {ix['ts']}")
     if not q:
         print('no fresh quotes (market closed or source stale); keeping previous file'); return
     out = {'t': now, 'src': '證交所 MIS 盤中（延遲約 5–40 秒）', 'n': len(q), 'q': q}

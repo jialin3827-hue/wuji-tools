@@ -1,0 +1,31 @@
+name: US index intraday
+on:
+  schedule:
+    # Union of EST/EDT regular session in UTC: 13:30–21:05 Mon–Fri.
+    # Script skips when America/New_York is outside 09:30–16:00, so DST shifts don't waste minutes.
+    - cron: '*/5 13-20 * * 1-5'
+    - cron: '0-5/5 21 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      force: { description: 'force=1 refresh even if closed', default: '0' }
+permissions:
+  contents: write
+concurrency: { group: us-intraday, cancel-in-progress: true }
+jobs:
+  quotes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch US indices
+        env:
+          FORCE: ${{ github.event.inputs.force || '0' }}
+        run: python3 scripts/fetch_us_indices.py || echo "fetch failed, keeping previous data"
+      - name: Commit if changed
+        run: |
+          git config user.name "wuji-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add market/data/us_indices.json 2>/dev/null || exit 0
+          git diff --cached --quiet && exit 0
+          git commit -q -m "us indices: $(TZ=Asia/Taipei date +%F_%H%M)"
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done

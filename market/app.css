@@ -57,3 +57,12 @@ select{font:inherit}
 
 html,body{overflow-x:hidden;max-width:100%}.row>*{min-width:0}.row .cd{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tnav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:6px;width:100%}.tnav a,.tnav button{min-height:44px;display:flex;align-items:center;justify-content:center;padding:3px 2px;font-size:12px;line-height:1.15;white-space:normal;overflow-wrap:anywhere;text-decoration:none;text-align:center}.tnav a{color:var(--ac);font-weight:700}.ibtn{min-width:44px;min-height:44px}
+
+.ixbar{margin-top:6px;padding:6px 8px;border:1px solid var(--ln);border-radius:8px;background:var(--p2)}
+.ixmeta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:11px;color:var(--mu);margin-bottom:4px}
+.ixrow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.ixrow::-webkit-scrollbar{display:none}
+.ix{flex:1 0 auto;min-width:96px;max-width:140px;padding:4px 6px;border-radius:6px;background:var(--bg)}
+.ixn{display:block;font-size:11px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ixp{display:block;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.ixc{display:block;font-size:11px;font-weight:700}
