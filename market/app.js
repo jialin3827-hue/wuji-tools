@@ -75,8 +75,8 @@ function reserved(m){let c=0;const sh={};for(const o of S.orders)if(o.a===m&&o.s
 function value(m,a=S.a[m]){let mv=0,cost=0;for(const s in a.pos){const p=a.pos[s];mv+=p.q*(last(m,s)||p.t/p.q);cost+=p.t}return{mv,cost,tot:a.cash+mv}}
 function fill(o,price,date){const m=o.a,a=S.a[m];const dtq=o.side==='S'&&m==='tw'?dtAvail(m,o.s,date):0;const k=costs(m,o.s,o.side,price,o.q,{date,dtq});let part,pl;
  if(o.side==='B'){if(a.cash<k.net){o.st='X';o.why='現金不足';return false}a.cash-=k.net;const p=a.pos[o.s]||(a.pos[o.s]={q:0,t:0});p.q+=o.q;p.t+=k.net}
- else{const p=a.pos[o.s];if(!p||p.q<o.q){o.st='X';o.why='庫存不足';return false}part=p.t*o.q/p.q;pl=k.net-part;a.cash+=k.net;a.realized+=pl;p.q-=o.q;p.t-=part;if(p.q<=0)delete a.pos[o.s]}
- a.fees+=k.fee+k.tax+k.reg;Object.assign(o,{st:'F',fpx:price,amt:k.amt,fee:k.fee,tax:k.tax,reg:k.reg,sec:k.sec,taf:k.taf,net:k.net,dtq:k.dtq,rate:k.rate,cost:part,pl,disc:m==='tw'?cfg().disc:undefined,fd:date,fts:Date.now(),cv:2});return true}
+ else{const p=a.pos[o.s];if(!p||p.q<o.q){o.st='X';o.why='庫存不足';return false}{const tv=value(m).tot;o.conc=tv>0?p.q*price/tv:0;o.hpct=p.t>0?null:null}part=p.t*o.q/p.q;pl=k.net-part;a.cash+=k.net;a.realized+=pl;p.q-=o.q;p.t-=part;if(p.q<=0)delete a.pos[o.s]}
+ a.fees+=k.fee+k.tax+k.reg;Object.assign(o,{st:'F',fpx:price,amt:k.amt,fee:k.fee,tax:k.tax,reg:k.reg,sec:k.sec,taf:k.taf,net:k.net,dtq:k.dtq,rate:k.rate,cost:part,pl,disc:m==='tw'?cfg().disc:undefined,fd:date,fts:Date.now(),cv:2});if(o.side==='S')REVQ.push(o);return true}
 /* ---------- dividends: credited on ex-date to shares held before ex-date (from fills) ---------- */
 let TWDIV=null;
 async function loadDiv(){try{TWDIV=(await getJSON('../budget/data/dividends.json')).list||[]}catch(e){TWDIV=TWDIV||[]}}
@@ -118,7 +118,7 @@ function renderNav(){const T=[['list','📋','行情'],['quote','📈','個股']
  $('#nav').innerHTML=T.map(([k,i,t])=>`<button class="${UI.tab===k?'on':''}" onclick="go('${k}')"><i>${i}</i>${t}</button>`).join('')}
 function go(t){if(t==='battle'&&UI.tab!=='battle')UI.lbm=S.acct;UI.tab=t;render();scrollTo(0,0)}
 function swAcct(m){S.acct=m;save();UI.px='';UI.qty=1;UI.lot='lot';render()}
-function render(){if(!S){startSheet();return}setBody();renderTop();renderNav();({list:vList,quote:vQuote,port:vPort,ord:vOrd,battle:vBattle})[UI.tab]()}
+function render(){if(!S){startSheet();return}setBody();renderTop();renderNav();({list:vList,quote:vQuote,port:vPort,ord:vOrd,battle:vBattle})[UI.tab]();if(REVQ.length)setTimeout(showReview,300)}
 const DISC='<div class="disc">模擬學習用，非投資建議，價格為盤後／延遲資料。全部為虛擬幣，無真錢、無儲值、無獎品。</div>';
 
 function vList(){const m=S.acct;
@@ -211,14 +211,76 @@ function vOrd(){const m=S.acct,F=UI.f,d=m==='us'?2:0;
  <div class="r">${o.st==='F'?`<b class="${o.side==='S'?'':'mu'}">${o.side==='B'?'−':'+'}${nf(k.net,d)}</b>${o.side==='S'&&o.pl!=null?`<br><span class="${cls(o.pl)}">${nf(o.pl,d)}</span>`:''}`:`<span class="mu">${ST[o.st]}</span>`}</div></div>`}).join(''):'<div class="empty">沒有符合條件的紀錄</div>')+'<div class="note">點一筆看完整明細。損益為模擬計算，非實際報稅依據。</div>'+DISC}
 function cancelO(id){const o=S.orders.find(x=>x.id===id);if(o&&o.st==='P'&&confirm('取消這筆委託？')){o.st='C';save();vOrd();toast('已取消')}}
 
-async function vBattle(){const m=UI.lbm;
- $('#view').innerHTML=`<div class="tabs2"><button class="${m==='tw'?'on':''}" onclick="UI.lbm='tw';vBattle()">台股排行</button><button class="${m==='us'?'on':''}" onclick="UI.lbm='us';vBattle()">美股排行</button></div><div class="card" id="lb"><div class="empty">計算中…</div></div>
+async function vBattle(){const m=UI.lbm;setTimeout(renderVS,0);
+ $('#view').innerHTML=`<div class="tabs2"><button class="${m==='tw'?'on':''}" onclick="UI.lbm='tw';vBattle()">台股排行</button><button class="${m==='us'?'on':''}" onclick="UI.lbm='us';vBattle()">美股排行</button></div><div class="card" id="vsai"><div class="empty">AI 實況計算中…</div></div><div class="card" id="lb"><div class="empty">計算中…</div></div>
  <div class="card"><h3>👥 真人對戰（即將推出）</h3><div class="mu" style="font-size:12px">跟朋友即時比報酬率、每週排行賽，需要雲端後台，之後開放。</div><button class="sec" disabled style="opacity:.5">即將推出</button></div>
  <div class="note">AI 對手和你同一天、同樣本金出發，每天用真實收盤價依固定規則自動操作（策略只是遊戲設定，不代表推薦）。排行依報酬率。</div>${DISC}`;
  if(S.mode!=='ai'){$('#lb').innerHTML=`<h3>🏆 對戰模式未開啟</h3><div class="mu" style="font-size:12px;margin-bottom:8px">你現在是單機模式。開啟後，4 位 AI 對手會從你投胎那天（${S.start[m]||'—'}）一起出發。</div><button class="cta" onclick="S.mode='ai';save();vBattle()">開啟 AI 對戰</button>`;return}
  const rows=[{e:'🙋',n:'你',r:`${S.tier}出身・自己操作`,v:value(m).tot,me:1}];for(const b of BOTS){const r=await simBot(b,m);rows.push({e:b.e,n:b.n,r:b.r,v:r.v})}
  if(UI.tab!=='battle'||UI.lbm!==m)return;rows.forEach(x=>x.ret=x.v/S.init-1);rows.sort((a,b)=>b.ret-a.ret);
  $('#lb').innerHTML=`<h3>🏆 ${MK[m].short}報酬率排行・起跑日 ${S.start[m]||'—'}</h3>${rows.map((x,i)=>`<div class="lb ${x.me?'me':''}"><div class="rk">${['🥇','🥈','🥉'][i]||i+1}</div><div><b>${x.e} ${x.n}</b><div class="rl">${x.r}</div></div><div class="r"><b class="${cls(x.ret)}">${pf(x.ret)}</b><div class="rl">${nf(x.v,0)}</div></div></div>`).join('')}`}
+
+
+/* ---------- 跟 AI 對戰：對齊日期區間，比較玩家 vs「AI 操盤實況」 ---------- */
+let AIL=null;
+async function aiLive(){if(!AIL){try{AIL=await getJSON('data/ai_live.json')}catch(e){AIL={}}}return AIL}
+function closeAt(b,d){let c=null;for(const x of b){if(x[0]>d)break;c=x[4]}return c}
+async function valueAt(m,d){/* 用已成交委託重播到日期 d，以 d 當天（或之前最近）收盤價估值；股利不計 */
+ let cash=S.init;const q={};for(const o of S.orders){if(o.a!==m||o.st!=='F'||!(o.fd<=d))continue;if(o.side==='B'){cash-=o.net;q[o.s]=(q[o.s]||0)+o.q}else{cash+=o.net;q[o.s]=(q[o.s]||0)-o.q}}
+ let mv=0;for(const s in q){if(q[s]<=0)continue;const c=closeAt(await bars(m,s),d);mv+=q[s]*(c||0)}return cash+mv}
+async function vsAI(m){const L=await aiLive(),A=L&&L[m];if(!A||!A.equity||!A.equity.length)return null;
+ const E=A.equity,last=E[E.length-1];
+ if(m==='crypto'){let W;try{W=JSON.parse(localStorage.getItem('wuji_crypto_v1'))}catch(e){}const start=A.start,t0=Date.parse(start+'T00:00:00Z');
+  const base=(E.find(x=>x[0]>=start)||E[0])[1],ai=last[1]/base-1;
+  const tr=(W&&W.trades||[]).filter(x=>x.ts>=t0);if(!tr.length)return{m,start,end:last[0],ai,me:null};
+  const pos={};let inv=0,back=0;for(const x of tr){if(x.side==='B'){inv+=x.amt;pos[x.s]=(pos[x.s]||0)+x.q}else{back+=x.amt;pos[x.s]=(pos[x.s]||0)-x.q}}
+  let mv=0;const ss=Object.keys(pos).filter(k=>pos[k]>1e-12&&k!=='GTR');
+  if(ss.length){try{const r=await getJSON('https://api.binance.com/api/v3/ticker/price?symbols='+encodeURIComponent(JSON.stringify(ss.map(k=>k+'USDT'))));for(const x of r)mv+=pos[x.symbol.replace(/USDT$/,'')]*+x.price}catch(e){}}
+  return{m,start,end:last[0],ai,me:inv>0?(mv+back)/inv-1:null,note:'以 AI 開始日後的虛擬幣交易計算'}}
+ const ps=S.start[m],start=ps&&ps>A.start?ps:A.start,end=last[0];
+ const b0=E.find(x=>x[0]>=start);if(!b0)return{m,start,end,ai:null,me:null};
+ const ai=last[1]/b0[1]-1;const v0=start===ps?S.init:await valueAt(m,start),v1=await valueAt(m,end);
+ return{m,start,end,ai,me:v0>0?v1/v0-1:null}}
+const MKL={tw:'台股',us:'美股',crypto:'虛擬幣'};
+function vsLine(r){if(!r)return'<div class="mu">AI 實況資料尚未產生</div>';
+ if(r.me==null)return`<div class="vs"><div><b>${MKL[r.m]}</b><span class="rl">${r.start} → ${r.end}</span></div><div class="r"><span class="mu">你：尚無交易</span><br>AI <b class="${cls(r.ai)}">${pf(r.ai)}</b></div></div>`;
+ const d=r.me-r.ai,lead=d>=0;return`<div class="vs"><div><b>${MKL[r.m]}</b><span class="rl">${r.start} → ${r.end}</span></div><div class="r">你 <b class="${cls(r.me)}">${pf(r.me)}</b> vs AI <b class="${cls(r.ai)}">${pf(r.ai)}</b><br><span class="${lead?'lead':'lag'}">${lead?'領先':'落後'} ${nf(Math.abs(d)*100,1)}%</span></div></div>`}
+let VS=[];
+async function renderVS(){const el=$('#vsai');if(!el)return;VS=[];for(const m of['tw','us','crypto']){try{VS.push(await vsAI(m))}catch(e){VS.push(null)}}
+ if(!$('#vsai'))return;el.innerHTML=`<h3>🤖 你 vs AI 操盤實況</h3>${VS.map(vsLine).join('')}<div class="note" style="padding:6px 0 0">區間從「你的起跑日」與「AI 開始日」較晚者算到 AI 最新資料日，雙方同一區間比較。台股、美股以收盤價估值，不含股利。</div><button class="cta" onclick="shareCard()">📤 分享戰績</button>`}
+const SITE='jialin3827-hue.github.io/wuji-tools/market/';
+function loadImg(u){return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=u})}
+async function shareCard(){const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+ const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0b0f17');g.addColorStop(1,'#141c2e');x.fillStyle=g;x.fillRect(0,0,W,H);
+ const F='"PingFang TC","Noto Sans TC",system-ui,sans-serif';const logo=await loadImg('assets/icon-192.png');
+ if(logo)x.drawImage(logo,72,72,128,128);x.fillStyle='#f0b90b';x.font='800 64px '+F;x.fillText('舞吉股市大亨',228,130);x.fillStyle='#8b98ad';x.font='36px '+F;x.fillText('我 vs AI 操盤實況',228,182);
+ let y=300;for(const r of VS){if(!r)continue;x.fillStyle='#1b2438';x.beginPath();x.roundRect?x.roundRect(60,y,W-120,220,28):x.rect(60,y,W-120,220);x.fill();
+  x.fillStyle='#e6edf3';x.font='700 48px '+F;x.fillText(MKL[r.m],100,y+72);x.fillStyle='#8b98ad';x.font='30px '+F;x.fillText(r.start+' → '+r.end,100,y+120);
+  const col=v=>v>0?'#ff4d6a':v<0?'#22c55e':'#c9d1d9';x.textAlign='right';x.font='700 44px '+F;
+  if(r.me==null){x.fillStyle='#8b98ad';x.fillText('你：尚無交易',W-100,y+72)}else{x.fillStyle=col(r.me);x.fillText('你 '+pf(r.me),W-100,y+72)}
+  x.fillStyle=col(r.ai);x.fillText('AI '+pf(r.ai),W-100,y+130);
+  if(r.me!=null){const d=r.me-r.ai;x.fillStyle=d>=0?'#f0b90b':'#8b98ad';x.font='700 36px '+F;x.fillText((d>=0?'領先 ':'落後 ')+nf(Math.abs(d)*100,1)+'%',W-100,y+186)}x.textAlign='left';y+=250}
+ x.fillStyle='#8b98ad';x.font='30px '+F;x.fillText('虛擬資金模擬遊戲・僅供學習，非投資建議',72,H-130);x.fillStyle='#f0b90b';x.font='700 34px '+F;x.fillText(SITE,72,H-76);
+ const blob=await new Promise(r=>c.toBlob(r,'image/png'));const f=new File([blob],'wuji-battle.png',{type:'image/png'});
+ try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'舞吉股市大亨戰績',text:'我 vs AI 操盤實況 https://'+SITE});return}}catch(e){if(e&&e.name==='AbortError')return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='wuji-battle.png';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);toast('已下載戰績圖')}
+
+/* ---------- 交易覆盤卡：賣出後依簡單規則給行為提醒（只描述行為，不給買賣建議） ---------- */
+const REVQ=[];const RVK='wuji_review_off';
+async function reviewOf(o){const m=o.a,tips=[];const buys=S.orders.filter(b=>b.a===m&&b.s===o.s&&b.side==='B'&&b.st==='F'&&(b.fts||0)<=(o.fts||Date.now())).sort((a,b)=>(b.fts||0)-(a.fts||0));const lb=buys[0];
+ const ret=o.cost>0?o.pl/o.cost:0;
+ if(lb&&o.pl>0&&(lb.fd===o.fd||((o.fts||0)-(lb.fts||0))<864e5))tips.push(['⏱️','持有不到 1 天就停利','這筆從買進到賣出不到一天就獲利了結。可以回想一下：賣出是依照事先訂好的計畫，還是看到小賺就想先落袋？把理由記下來，之後比較會更清楚自己的習慣。']);
+ if(lb){try{const b=(await bars(m,o.s)).find(x=>x[0]===lb.fd);if(b&&b[2]>b[3]&&lb.fpx>=b[2]-(b[2]-b[3])*0.1)tips.push(['📈','在當日高點附近買進（追高）','買進價格接近當天最高價。追高本身不是錯，但值得留意：是看到價格急漲才進場，還是早就規劃好的價位？'])}catch(e){}}
+ if(ret<=-0.10)tips.push(['🧯','虧損超過 10% 才賣出','這筆賣出時虧損約 '+nf(Math.abs(ret)*100,1)+'%。很多人會在買進前先想好「最多能接受虧多少」，這樣比較不會被情緒推著走。']);
+ if((o.conc||0)>=0.4)tips.push(['🎯','單一部位占總資產 '+nf(o.conc*100,0)+'%（集中度偏高）','賣出前這檔占了你帳戶的四成以上。集中持有時，一檔的漲跌會大幅影響整體成績，可以想想這是不是你刻意的安排。']);
+ return{o,ret,tips}}
+async function showReview(){if(!REVQ.length||localStorage.getItem(RVK)==='1'){REVQ.length=0;return}const o=REVQ.shift();REVQ.length=0;const r=await reviewOf(o),m=o.a;
+ let el=$('#revcard');if(!el){el=document.createElement('div');el.id='revcard';document.body.appendChild(el)}
+ el.innerHTML=`<div class="rvbox" role="dialog" aria-label="交易覆盤"><button class="rvx" onclick="closeReview()" aria-label="關閉">✕</button><div class="rvh">📝 交易覆盤</div>
+ <div class="rvs">賣出 ${esc(qname(m,o.s))}（${o.s}）・損益 <b class="${cls(o.pl)}">${nf(o.pl,m==='us'?2:0)}（${pf(r.ret)}）</b></div>
+ ${r.tips.length?r.tips.map(t=>`<div class="rvt"><span class="rve">${t[0]}</span><div><b>${t[1]}</b><p>${t[2]}</p></div></div>`).join(''):'<div class="rvt"><span class="rve">👍</span><div><b>這筆交易沒有觸發提醒</b><p>持有時間、進場位置、虧損幅度和集中度都在一般範圍。持續記錄每筆交易的理由，是進步最快的方法。</p></div></div>'}
+ <label class="rvn"><input type="checkbox" id="rvoff"> 不再提示</label><button class="sec" onclick="closeReview()">知道了</button><div class="rvd">僅供學習，非投資建議</div></div>`;el.classList.add('on')}
+function closeReview(){const c=$('#rvoff');if(c&&c.checked)localStorage.setItem(RVK,'1');const el=$('#revcard');if(el)el.classList.remove('on')}
 
 /* ---------- start / menu ---------- */
 function startSheet(re){const M=$('#modal');M.classList.add('on');
