@@ -1,0 +1,80 @@
+<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#121826"><title>舞吉倉儲大亨</title>
+<style>
+:root{--bg:#0b0f17;--p1:#121826;--p2:#1a2233;--ln:#263045;--tx:#e6edf3;--mu:#8b98ad;--ac:#f0b90b;--red:#f6465d;--grn:#0ecb81}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+header{position:sticky;top:0;z-index:5;background:var(--p1);border-bottom:1px solid var(--ln);padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;display:flex;align-items:center;gap:8px}
+.logo{font-weight:800;color:var(--ac);font-size:17px}.sp{flex:1}
+.pill{font-size:12px;padding:4px 10px;border-radius:12px;background:var(--p2);color:var(--mu);border:0}.pill.on{background:var(--ac);color:#0b0f17;font-weight:700}
+main{padding:12px 12px calc(80px + env(safe-area-inset-bottom));max-width:640px;margin:0 auto}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--p1);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;padding:12px 0;color:var(--mu);font-size:14px}nav button.on{color:var(--ac);font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.card{background:var(--p1);border:1px solid var(--ln);border-radius:12px;padding:12px}
+.card .n{font-size:24px;font-weight:800;color:var(--ac)}.card .l{font-size:12px;color:var(--mu)}.card.warn .n{color:var(--red)}
+h3{margin:16px 0 8px;font-size:15px}
+.row{display:flex;align-items:center;gap:10px;background:var(--p1);border:1px solid var(--ln);border-radius:10px;padding:12px;margin:6px 0}
+.row .t{flex:1;min-width:0}.row .s{font-size:12px;color:var(--mu)}.q{font-size:20px;font-weight:800;min-width:44px;text-align:right}.low{color:var(--red)}
+input,select,textarea{width:100%;background:var(--p2);border:1px solid var(--ln);border-radius:10px;padding:11px;margin:4px 0 10px}
+label{font-size:12px;color:var(--mu)}
+.btn{border:0;border-radius:10px;padding:13px;font-weight:700;background:var(--p2);width:100%;margin:4px 0}.btn.ac{background:var(--ac);color:#0b0f17}.btn.in{background:var(--grn);color:#0b0f17}.btn.out{background:var(--red)}.btn.dg{background:#5a1a22}
+.two{display:flex;gap:8px}.two>*{flex:1}
+.seg{display:flex;gap:6px;margin-bottom:8px}.seg button{flex:1}
+.modal{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;z-index:9}.modal.on{display:flex}
+.sheet{background:var(--p1);width:100%;max-width:640px;margin:0 auto;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.lk{color:var(--mu);font-size:12px}footer{text-align:center;font-size:12px;color:var(--mu);margin-top:20px}
+#toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--ac);color:#000;padding:8px 14px;border-radius:10px;display:none;z-index:10;font-weight:700}
+</style></head><body>
+<header><span class="logo">📦 舞吉倉儲大亨</span><span class="sp"></span><button class="pill" id="lockBtn" onclick="toggleLock()">🔒 唯讀</button></header>
+<main id="m"></main>
+<nav><button data-t="home" class="on">總覽</button><button data-t="inv">庫存</button><button data-t="log">進出</button><button data-t="set">設定</button></nav>
+<div class="modal" id="md" onclick="if(event.target==this)closeM()"><div class="sheet" id="sh"></div></div><div id="toast"></div>
+<script>
+const SEED={"切粒機":[["條紋鋼輪"],["切粒滾刀"],["固定刀"],["橡膠滾輪"],["皮帶","B-70"],["塑膠齒輪"],["培林","UCF205-16J;6206ZZCM;6208-ZZ/C3"],["切粒機變頻器"]],
+"押出機":[["感測溫度線"],["電磁開關","SC-0;TR-ON/3;S-P11;S-P21;S-P30T;S-P35T;MSO-P11;SP40T;MSO-SP21"],["溫度控制面板"],["FUSE","3A"],["皮帶","B-80;C-103;C-108;C-110;C-130;C-135;C-145;C-148;SPA-1457;SPA-1432;5V-710"],["斷路器","NF-250-CN;NF-100-CN 3P 50A;BH 2P 20A"],["方型電熱片","220V 1700W 228x75;220V 1800W 228x75;220V 3000W 280x120;220V 3200W 280x120"],["圓形電熱片","220V 1850W 127x150;220V 1350W 126x110;220V 2050W 126x145;220V 2500W 126x175;220V 2050W 126x160;220V 1700W 126x180"],["押出機散熱風車"],["主馬達","60HP;75HP"],["變頻器","60HP;75HP"],["變頻器","Mitsubishi FR-D720-070-NA"],["可程式定時器"],["濾網","40x0.25 165mm;46x0.25 150mm"],["震動台馬達"],["泵浦","四川川嶺 E2020 60HZ 2HP 2P"],["交織式防電擊電焊機"],["熱壓封口機","110V"],["天車遙控器"],["抽屜開關"]]};
+const CATN={"切粒機":"切粒機維修備品","押出機":"押出機／擠出機維修備品"};
+function seed(){const a=[];for(const c in SEED){let i=0;SEED[c].forEach(([n,s])=>(s?s.split(";"):[""]).forEach(sp=>a.push({id:(c=="切粒機"?"P":"E")+String(++i).padStart(3,"0"),category:c,name:n,spec:sp,unit:"個",qty:0,safety:1,location:"",note:""})))}return a}
+const K="wuji-wh-v1";let S=JSON.parse(localStorage.getItem(K)||"null");
+if(!S)S={items:seed(),log:[],pin:null};
+const save=()=>localStorage.setItem(K,JSON.stringify(S));save();
+async function h(p){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wuji-wh:"+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+const DEF="2580";let tab="home",cat="all",q="";
+const unlocked=()=>+sessionStorage.getItem("whU")>Date.now();
+function lockUI(){const b=document.getElementById("lockBtn");b.textContent=unlocked()?"🔓 管理中":"🔒 唯讀";b.className="pill"+(unlocked()?" on":"")}
+async function checkPin(p){return (await h(p))===(S.pin||await h(DEF))}
+function need(fn){if(unlocked())return fn();openM(`<h3>🔐 需要管理員密碼</h3><input id=pin type=password inputmode=numeric placeholder="輸入 PIN"><button class="btn ac" id=pok>解鎖 30 分鐘</button>`);
+ const go=async()=>{if(await checkPin(pin.value)){sessionStorage.setItem("whU",Date.now()+18e5);closeM();lockUI();toast("已解鎖");fn&&fn()}else toast("密碼錯誤")};pok.onclick=go;pin.onkeydown=e=>e.key=="Enter"&&go();setTimeout(()=>window.pin&&pin.focus(),50)}
+function toggleLock(){if(unlocked()){sessionStorage.removeItem("whU");lockUI();toast("已上鎖")}else need()}
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const tw=t=>new Date(t).toLocaleString("zh-TW",{timeZone:"Asia/Taipei",hour12:false});
+const label=it=>it.name+(it.spec?" "+it.spec:"");
+function toast(t){const e=document.getElementById("toast");e.textContent=t;e.style.display="block";clearTimeout(e._t);e._t=setTimeout(()=>e.style.display="none",1600)}
+function openM(x){sh.innerHTML=x;md.classList.add("on")}function closeM(){md.classList.remove("on")}
+const row=it=>`<div class="row" onclick="detail('${it.id}')"><div class="t"><b>${esc(label(it))}</b><div class="s">${it.id}・${CATN[it.category]||esc(it.category)}${it.location?"・📍"+esc(it.location):""}</div></div><div class="q ${it.qty<=it.safety?"low":""}">${it.qty}<span class="s"> ${esc(it.unit)}</span></div></div>`;
+function render(){document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t==tab));lockUI();let o="";
+if(tab=="home"){const low=S.items.filter(i=>i.qty<=i.safety);o=`<div class="cards"><div class="card"><div class="n">${S.items.length}</div><div class="l">品項數</div></div><div class="card"><div class="n">${S.items.reduce((a,i)=>a+i.qty,0)}</div><div class="l">總庫存數</div></div><div class="card warn"><div class="n">${low.length}</div><div class="l">低庫存警示</div></div></div>`;
+ for(const c in CATN){const it=S.items.filter(i=>i.category==c);o+=`<div class="row" onclick="cat='${c}';tab='inv';render()"><div class="t"><b>${CATN[c]}</b><div class="s">${it.length} 項・低庫存 ${it.filter(i=>i.qty<=i.safety).length}</div></div><div class="q">›</div></div>`}
+ o+=`<h3>最近進出</h3>`+(S.log.slice(-5).reverse().map(logRow).join("")||`<div class="s lk">尚無紀錄</div>`)+`<h3>⚠️ 低庫存（前 10）</h3>`+low.slice(0,10).map(row).join("")}
+if(tab=="inv"){o=`<input placeholder="🔍 搜尋名稱、規格、編號、位置" value="${esc(q)}" oninput="q=this.value;list()"><div class="seg">${[["all","全部"],["切粒機","切粒機"],["押出機","押出機"]].map(([k,v])=>`<button class="pill ${cat==k?"on":""}" onclick="cat='${k}';render()">${v}</button>`).join("")}</div><button class="btn ac" onclick="need(()=>edit())">＋ 新增品項</button><div id="ls"></div>`}
+if(tab=="log"){o=`<button class="btn ac" onclick="need(()=>move())">＋ 進貨／出貨登記</button><h3>進出紀錄</h3>`+(S.log.slice().reverse().map(logRow).join("")||`<div class="lk">尚無紀錄</div>`)}
+if(tab=="set"){o=`<h3>管理員</h3><div class="lk">新增、修改、刪除、進出貨都需要 PIN，解鎖後 30 分鐘有效。</div><button class="btn" onclick="toggleLock()">${unlocked()?"立即上鎖":"解鎖"}</button><button class="btn" onclick="need(chPin)">變更 PIN</button><button class="btn" onclick="exp()">匯出備份 JSON</button><button class="btn dg" onclick="need(reset)">⚠️ 重置為初始清單（清空數量與紀錄）</button>`}
+o+=`<footer>內部備品管理，非正式 ERP・資料僅存在本機瀏覽器</footer>`;m.innerHTML=o;if(tab=="inv")list()}
+function list(){const k=q.trim().toLowerCase();ls.innerHTML=S.items.filter(i=>(cat=="all"||i.category==cat)&&(!k||[i.id,i.name,i.spec,i.location,i.note].join(" ").toLowerCase().includes(k))).map(row).join("")||`<div class="lk">找不到</div>`}
+const logRow=l=>`<div class="row"><div class="t"><b>${l.type=="in"?"🟢 進":l.type=="out"?"🔴 出":"✏️"} ${esc(l.label)}</b><div class="s">${tw(l.t)}・${esc(l.who)}${l.note?"・"+esc(l.note):""}</div></div><div class="q">${l.type=="in"?"+":l.type=="out"?"-":""}${l.n??""}</div></div>`;
+const find=id=>S.items.find(i=>i.id==id);
+function addLog(type,it,n,note){S.log.push({t:Date.now(),type,id:it.id,label:label(it),n,note,who:"管理員"});if(S.log.length>2000)S.log.shift();save()}
+function detail(id){const it=find(id);openM(`<h3>${esc(label(it))}</h3><div class="lk">${it.id}・${CATN[it.category]||esc(it.category)}</div><div class="cards" style="margin:12px 0"><div class="card"><div class="n ${it.qty<=it.safety?"low":""}">${it.qty}</div><div class="l">庫存(${esc(it.unit)})</div></div><div class="card"><div class="n">${it.safety}</div><div class="l">安全存量</div></div><div class="card"><div class="n" style="font-size:14px">${esc(it.location)||"—"}</div><div class="l">位置</div></div></div>${it.note?`<div class="lk">備註：${esc(it.note)}</div>`:""}
+<div class="two"><button class="btn in" onclick="need(()=>move('${id}','in'))">＋ 進貨</button><button class="btn out" onclick="need(()=>move('${id}','out'))">－ 出貨</button></div><button class="btn" onclick="need(()=>edit('${id}'))">✏️ 編輯</button><button class="btn dg" onclick="need(()=>del('${id}'))">🗑 刪除</button>`)}
+function move(id,type="in"){const opts=S.items.map(i=>`<option value="${i.id}" ${i.id==id?"selected":""}>${esc(label(i))}（${i.qty}）</option>`).join("");
+ openM(`<h3>進貨／出貨</h3><label>品項</label><select id=mi>${opts}</select><div class="seg"><button class="btn ${type=="in"?"in":""}" id=bi onclick="mt='in';bi.className='btn in';bo.className='btn'">進貨</button><button class="btn ${type=="out"?"out":""}" id=bo onclick="mt='out';bo.className='btn out';bi.className='btn'">出貨</button></div><label>數量</label><input id=mn type=number inputmode=numeric min=1 value=1><label>備註（領用人、機台…）</label><input id=mo><button class="btn ac" onclick="doMove()">確認</button>`);window.mt=type}
+function doMove(){if(!unlocked())return need();const it=find(mi.value),n=parseInt(mn.value);if(!(n>0))return toast("數量錯誤");if(mt=="out"&&n>it.qty)return toast("庫存不足");it.qty+=mt=="in"?n:-n;addLog(mt,it,n,mo.value.trim());closeM();toast("已登記");render()}
+function edit(id){const it=id?find(id):{category:cat=="押出機"?"押出機":"切粒機",name:"",spec:"",unit:"個",qty:0,safety:1,location:"",note:""};const f=(k,l,t="text")=>`<label>${l}</label><input id=f_${k} type=${t} value="${esc(it[k])}">`;
+ openM(`<h3>${id?"編輯":"新增"}品項</h3><label>分類</label><select id=f_category>${Object.keys(CATN).map(c=>`<option value="${c}" ${it.category==c?"selected":""}>${CATN[c]}</option>`).join("")}</select>${f("name","名稱")}${f("spec","規格")}${f("unit","單位")}${id?"":f("qty","初始數量","number")}${f("safety","安全存量","number")}${f("location","位置")}${f("note","備註")}<button class="btn ac" onclick="saveEdit('${id||""}')">儲存</button>`)}
+function saveEdit(id){if(!unlocked())return need();const g=k=>document.getElementById("f_"+k).value.trim();if(!g("name"))return toast("請填名稱");let it=id&&find(id);
+ if(!it){const c=g("category"),p=c=="切粒機"?"P":"E",mx=Math.max(0,...S.items.filter(i=>i.id[0]==p).map(i=>+i.id.slice(1)));it={id:p+String(mx+1).padStart(3,"0"),qty:Math.max(0,parseInt(g("qty"))||0)};S.items.push(it)}
+ Object.assign(it,{category:g("category"),name:g("name"),spec:g("spec"),unit:g("unit")||"個",safety:Math.max(0,parseInt(g("safety"))||0),location:g("location"),note:g("note")});addLog("edit",it,null,id?"修改":"新增");closeM();toast("已儲存");render()}
+function del(id){const it=find(id);if(!confirm("確定刪除「"+label(it)+"」？"))return;S.items=S.items.filter(i=>i.id!=id);addLog("edit",it,null,"刪除");closeM();toast("已刪除");render()}
+function chPin(){openM(`<h3>變更 PIN</h3><label>新 PIN（至少 4 碼）</label><input id=np type=password inputmode=numeric><button class="btn ac" id=npok>儲存</button>`);npok.onclick=async()=>{if(np.value.length<4)return toast("至少 4 碼");S.pin=await h(np.value);save();closeM();toast("PIN 已更新")}}
+function reset(){if(!confirm("會清空所有數量、紀錄與自訂品項，確定？"))return;const pin=S.pin;S={items:seed(),log:[],pin};save();toast("已重置");render()}
+function exp(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S.items,null,1)],{type:"application/json"}));a.download="warehouse-"+new Date().toISOString().slice(0,10)+".json";a.click()}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});render();
+</script><script data-goatcounter="https://wujitycoon.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script></body></html>
