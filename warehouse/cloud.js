@@ -1,5 +1,5 @@
 (()=>{const C=window.WH_CLOUD||{};const on=!!(C.url&&C.anon);let rev=-1,busy=0,t=null;
-const rpc=(f,b)=>fetch(C.url+"/rest/v1/rpc/"+f,{method:"POST",headers:{apikey:C.anon,Authorization:"Bearer "+C.anon,"Content-Type":"application/json"},body:JSON.stringify(b)}).then(async r=>{const j=await r.json().catch(()=>null);if(!r.ok)throw new Error((j&&j.message)||r.status);return j});
+const rpc=(f,b)=>fetch(C.url+"/rest/v1/rpc/"+f,{method:"POST",headers:{apikey:C.anon,Authorization:"Bearer "+C.anon,"Content-Type":"application/json"},body:JSON.stringify((({p_u,...r})=>p_u===undefined?r:{u:p_u,...r})(b))}).then(async r=>{const j=await r.json().catch(()=>null);if(!r.ok)throw new Error((j&&j.message)||r.status);return j});
 const cred=()=>JSON.parse(sessionStorage.getItem("whC")||"null");
 function banner(txt,c){let b=document.getElementById("cloudBar");if(!b){b=document.createElement("div");b.id="cloudBar";b.style.cssText="position:fixed;top:0;left:0;right:0;z-index:99;font-size:12px;text-align:center;padding:2px;color:#fff";document.body.appendChild(b)}b.textContent=txt;b.style.background=c}
 async function pull(force){const c=cred();if(!on||!c||busy)return;try{const r=await rpc("wh_rev",c);if(!force&&r==rev)return;
