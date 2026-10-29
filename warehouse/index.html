@@ -24,7 +24,8 @@ label{font-size:12px;color:var(--mu)}
 .lk{color:var(--mu);font-size:12px}footer{text-align:center;font-size:12px;color:var(--mu);margin-top:20px}
 #toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--ac);color:#000;padding:8px 14px;border-radius:10px;display:none;z-index:10;font-weight:700}
 </style></head><body>
-<header><span class="logo">📦 舞吉倉儲大亨</span><span class="sp"></span><button class="pill" id="lockBtn" onclick="toggleLock()">🔒 唯讀</button></header>
+<header><span class="logo">📦 舞吉倉儲大亨</span><span class="sp"></span><button class="pill" id="lockBtn" onclick="logout()">登出</button></header>
+<div id="lg" style="position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px"><div style="width:100%;max-width:360px"><div class="logo" style="font-size:24px;text-align:center">📦 舞吉倉儲大亨</div><div class="lk" style="text-align:center;margin:6px 0 18px">僅限授權人員登入</div><label>帳號</label><input id=lu autocomplete=username><label>密碼</label><input id=lp type=password autocomplete=current-password><button class="btn ac" id=lb>登入</button><div class="lk" style="text-align:center;margin-top:12px">內部備品管理，非正式 ERP・前端簡易登入，非企業級資安</div></div></div>
 <main id="m"></main>
 <nav><button data-t="home" class="on">總覽</button><button data-t="inv">庫存</button><button data-t="log">進出</button><button data-t="set">設定</button></nav>
 <div class="modal" id="md" onclick="if(event.target==this)closeM()"><div class="sheet" id="sh"></div></div><div id="toast"></div>
@@ -34,16 +35,18 @@ const SEED={"切粒機":[["條紋鋼輪"],["切粒滾刀"],["固定刀"],["橡�
 const CATN={"切粒機":"切粒機維修備品","押出機":"押出機／擠出機維修備品"};
 function seed(){const a=[];for(const c in SEED){let i=0;SEED[c].forEach(([n,s])=>(s?s.split(";"):[""]).forEach(sp=>a.push({id:(c=="切粒機"?"P":"E")+String(++i).padStart(3,"0"),category:c,name:n,spec:sp,unit:"個",qty:0,safety:1,location:"",note:""})))}return a}
 const K="wuji-wh-v1";let S=JSON.parse(localStorage.getItem(K)||"null");
-if(!S)S={items:seed(),log:[],pin:null};
+if(!S)S={items:seed(),log:[]};
 const save=()=>localStorage.setItem(K,JSON.stringify(S));save();
 async function h(p){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wuji-wh:"+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
-const DEF="2580";let tab="home",cat="all",q="";
-const unlocked=()=>+sessionStorage.getItem("whU")>Date.now();
-function lockUI(){const b=document.getElementById("lockBtn");b.textContent=unlocked()?"🔓 管理中":"🔒 唯讀";b.className="pill"+(unlocked()?" on":"")}
-async function checkPin(p){return (await h(p))===(S.pin||await h(DEF))}
-function need(fn){if(unlocked())return fn();openM(`<h3>🔐 需要管理員密碼</h3><input id=pin type=password inputmode=numeric placeholder="輸入 PIN"><button class="btn ac" id=pok>解鎖 30 分鐘</button>`);
- const go=async()=>{if(await checkPin(pin.value)){sessionStorage.setItem("whU",Date.now()+18e5);closeM();lockUI();toast("已解鎖");fn&&fn()}else toast("密碼錯誤")};pok.onclick=go;pin.onkeydown=e=>e.key=="Enter"&&go();setTimeout(()=>window.pin&&pin.focus(),50)}
-function toggleLock(){if(unlocked()){sessionStorage.removeItem("whU");lockUI();toast("已上鎖")}else need()}
+const DEFU={admin:{pw:"2580",role:"admin"},viewer:{pw:"0000",role:"viewer"}};let tab="home",cat="all",q="";
+async function users(){if(!S.users){S.users={};for(const u in DEFU)S.users[u]={h:await h(u+":"+DEFU[u].pw),role:DEFU[u].role};save()}return S.users}
+const me=()=>{const x=JSON.parse(sessionStorage.getItem("whS")||"null");return x&&x.exp>Date.now()&&S.users&&S.users[x.u]?x:null};
+const unlocked=()=>me()?.role=="admin";
+function lockUI(){const x=me();lockBtn.textContent=x?(x.role=="admin"?"🔓 ":"👁 ")+x.u+"｜登出":"登出";lockBtn.className="pill"+(unlocked()?" on":"")}
+async function doLogin(){const U=await users(),u=lu.value.trim();if(U[u]&&U[u].h===await h(u+":"+lp.value)){sessionStorage.setItem("whS",JSON.stringify({u,role:U[u].role,exp:Date.now()+8*36e5}));lp.value="";gate()}else toast("帳號或密碼錯誤")}
+function logout(){sessionStorage.removeItem("whS");closeM();gate()}
+function gate(){const ok=!!me();lg.style.display=ok?"none":"flex";m.style.display=ok?"":"none";document.querySelector("nav").style.display=ok?"":"none";if(ok)render();else m.innerHTML=""}
+function need(fn){if(!me())return gate();if(!unlocked())return toast("檢視者無此權限，請用管理員登入");fn&&fn()}
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const tw=t=>new Date(t).toLocaleString("zh-TW",{timeZone:"Asia/Taipei",hour12:false});
 const label=it=>it.name+(it.spec?" "+it.spec:"");
@@ -56,7 +59,7 @@ if(tab=="home"){const low=S.items.filter(i=>i.qty<=i.safety);o=`<div class="card
  o+=`<h3>最近進出</h3>`+(S.log.slice(-5).reverse().map(logRow).join("")||`<div class="s lk">尚無紀錄</div>`)+`<h3>⚠️ 低庫存（前 10）</h3>`+low.slice(0,10).map(row).join("")}
 if(tab=="inv"){o=`<input placeholder="🔍 搜尋名稱、規格、編號、位置" value="${esc(q)}" oninput="q=this.value;list()"><div class="seg">${[["all","全部"],["切粒機","切粒機"],["押出機","押出機"]].map(([k,v])=>`<button class="pill ${cat==k?"on":""}" onclick="cat='${k}';render()">${v}</button>`).join("")}</div><button class="btn ac" onclick="need(()=>edit())">＋ 新增品項</button><div id="ls"></div>`}
 if(tab=="log"){o=`<button class="btn ac" onclick="need(()=>move())">＋ 進貨／出貨登記</button><h3>進出紀錄</h3>`+(S.log.slice().reverse().map(logRow).join("")||`<div class="lk">尚無紀錄</div>`)}
-if(tab=="set"){o=`<h3>管理員</h3><div class="lk">新增、修改、刪除、進出貨都需要 PIN，解鎖後 30 分鐘有效。</div><button class="btn" onclick="toggleLock()">${unlocked()?"立即上鎖":"解鎖"}</button><button class="btn" onclick="need(chPin)">變更 PIN</button><button class="btn" onclick="exp()">匯出備份 JSON</button><button class="btn dg" onclick="need(reset)">⚠️ 重置為初始清單（清空數量與紀錄）</button>`}
+if(tab=="set"){o=`<h3>帳號</h3><div class="lk">目前：${esc(me()?.u)}（${unlocked()?"管理員":"檢視者"}）。管理員可新增、修改、刪除、進出貨；檢視者只能瀏覽。<br>預設帳號：admin／2580（管理員）、viewer／0000（檢視者），請登入後立即修改密碼。<br>帳密存在本機瀏覽器（雜湊），屬前端簡易登入，非企業級資安。</div><button class="btn" onclick="chPw()">變更我的密碼</button>${unlocked()?`<button class="btn" onclick="chPin()">管理帳號（新增／改密碼／刪除）</button>`:""}<button class="btn" onclick="logout()">登出</button><button class="btn" onclick="exp()">匯出備份 JSON</button><button class="btn dg" onclick="need(reset)">⚠️ 重置為初始清單（清空數量與紀錄）</button>`}
 o+=`<footer>內部備品管理，非正式 ERP・資料僅存在本機瀏覽器</footer>`;m.innerHTML=o;if(tab=="inv")list()}
 function list(){const k=q.trim().toLowerCase();ls.innerHTML=S.items.filter(i=>(cat=="all"||i.category==cat)&&(!k||[i.id,i.name,i.spec,i.location,i.note].join(" ").toLowerCase().includes(k))).map(row).join("")||`<div class="lk">找不到</div>`}
 const logRow=l=>`<div class="row"><div class="t"><b>${l.type=="in"?"🟢 進":l.type=="out"?"🔴 出":"✏️"} ${esc(l.label)}</b><div class="s">${tw(l.t)}・${esc(l.who)}${l.note?"・"+esc(l.note):""}</div></div><div class="q">${l.type=="in"?"+":l.type=="out"?"-":""}${l.n??""}</div></div>`;
@@ -73,8 +76,10 @@ function saveEdit(id){if(!unlocked())return need();const g=k=>document.getElemen
  if(!it){const c=g("category"),p=c=="切粒機"?"P":"E",mx=Math.max(0,...S.items.filter(i=>i.id[0]==p).map(i=>+i.id.slice(1)));it={id:p+String(mx+1).padStart(3,"0"),qty:Math.max(0,parseInt(g("qty"))||0)};S.items.push(it)}
  Object.assign(it,{category:g("category"),name:g("name"),spec:g("spec"),unit:g("unit")||"個",safety:Math.max(0,parseInt(g("safety"))||0),location:g("location"),note:g("note")});addLog("edit",it,null,id?"修改":"新增");closeM();toast("已儲存");render()}
 function del(id){const it=find(id);if(!confirm("確定刪除「"+label(it)+"」？"))return;S.items=S.items.filter(i=>i.id!=id);addLog("edit",it,null,"刪除");closeM();toast("已刪除");render()}
-function chPin(){openM(`<h3>變更 PIN</h3><label>新 PIN（至少 4 碼）</label><input id=np type=password inputmode=numeric><button class="btn ac" id=npok>儲存</button>`);npok.onclick=async()=>{if(np.value.length<4)return toast("至少 4 碼");S.pin=await h(np.value);save();closeM();toast("PIN 已更新")}}
-function reset(){if(!confirm("會清空所有數量、紀錄與自訂品項，確定？"))return;const pin=S.pin;S={items:seed(),log:[],pin};save();toast("已重置");render()}
+function chPw(){openM(`<h3>變更我的密碼</h3><label>新密碼（至少 4 碼）</label><input id=np type=password><button class="btn ac" id=npok>儲存</button>`);npok.onclick=async()=>{if(np.value.length<4)return toast("至少 4 碼");const u=me().u;S.users[u].h=await h(u+":"+np.value);save();closeM();toast("密碼已更新")}}
+function chPin(){need(()=>{openM(`<h3>管理帳號</h3>${Object.entries(S.users).map(([u,x])=>`<div class="row"><div class="t"><b>${esc(u)}</b><div class="s">${x.role=="admin"?"管理員":"檢視者"}</div></div>${u!=me().u?`<button class="pill" onclick="delU('${esc(u)}')">刪除</button>`:""}</div>`).join("")}<h3>新增／重設帳號</h3><label>帳號</label><input id=nu><label>密碼（至少 4 碼）</label><input id=np type=password><label>角色</label><select id=nr><option value=viewer>檢視者（只讀）</option><option value=admin>管理員</option></select><button class="btn ac" id=nok>儲存</button>`);nok.onclick=async()=>{const u=nu.value.trim();if(!/^[\w.-]{2,20}$/.test(u))return toast("帳號 2-20 英數");if(np.value.length<4)return toast("密碼至少 4 碼");S.users[u]={h:await h(u+":"+np.value),role:nr.value};save();toast("已儲存");chPin()}})}
+function delU(u){if(confirm("刪除帳號 "+u+"？")){delete S.users[u];save();chPin()}}
+function reset(){if(!confirm("會清空所有數量、紀錄與自訂品項，確定？"))return;S={items:seed(),log:[],users:S.users};save();toast("已重置");render()}
 function exp(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S.items,null,1)],{type:"application/json"}));a.download="warehouse-"+new Date().toISOString().slice(0,10)+".json";a.click()}
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});render();
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});lb.onclick=doLogin;lp.onkeydown=e=>e.key=="Enter"&&doLogin();users().then(gate);
 </script><script data-goatcounter="https://wujitycoon.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script></body></html>
