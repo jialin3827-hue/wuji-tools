@@ -41,9 +41,10 @@ if(!S)S={items:seed(),log:[]};
 const save=()=>localStorage.setItem(K,JSON.stringify(S));
 if(!S.items.some(i=>i.category=="其他")&&!S.v2)S.items.push(...seed().filter(i=>i.category=="其他"));S.v2=1;save();
 async function h(p){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wuji-wh:"+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
-const DEFU={admin:{pw:"1127",role:"admin"},hyman:{pw:"27397449",role:"stock"},viewer:{pw:"0000",role:"viewer"}};const RN={admin:"管理員",stock:"進貨管理",viewer:"檢視者"};let tab="home",cat="all",q="";
+const DEFU={admin:{pw:"1127",role:"admin"},hyman:{pw:"27397449",role:"stock"},viewer:{pw:"0000",role:"viewer"},"999":{pw:"0000",role:"viewer"}};const RN={admin:"管理員",stock:"進貨管理",viewer:"檢視者"};let tab="home",cat="all",q="";
 async function users(){if(!S.users){S.users={};for(const u in DEFU)S.users[u]={h:await h(u+":"+DEFU[u].pw),role:DEFU[u].role};save()}
- if((S.uv||0)<2){for(const u of["admin","hyman"])S.users[u]={h:await h(u+":"+DEFU[u].pw),role:DEFU[u].role};S.uv=2;save()}return S.users}
+ if((S.uv||0)<2){for(const u of["admin","hyman"])S.users[u]={h:await h(u+":"+DEFU[u].pw),role:DEFU[u].role};S.uv=2;save()}
+ if(S.uv<3){S.users["999"]={h:await h("999:0000"),role:"viewer"};S.uv=3;save()}return S.users}
 const me=()=>{const x=JSON.parse(sessionStorage.getItem("whS")||"null");return x&&x.exp>Date.now()&&S.users&&S.users[x.u]?x:null};
 const unlocked=()=>["admin","stock"].includes(me()?.role);const isAdmin=()=>me()?.role=="admin";
 function needA(fn){if(!isAdmin())return toast("僅限管理員");fn&&fn()}
