@@ -29,7 +29,7 @@ label{font-size:12px;color:var(--mu)}
 <main id="m"></main>
 <nav><button data-t="home" class="on">總覽</button><button data-t="inv">庫存</button><button data-t="log">進出</button><button data-t="set">設定</button></nav>
 <div class="modal" id="md" onclick="if(event.target==this)closeM()"><div class="sheet" id="sh"></div></div><div id="toast"></div>
-<script>
+<script src="config.js"></script><script src="cloud.js"></script><script>
 const SEED={"切粒機":[["條紋鋼輪"],["切粒滾刀"],["固定刀"],["橡膠滾輪"],["皮帶","B-70"],["塑膠齒輪"],["培林","UCF205-16J;6206ZZCM;6208-ZZ/C3"],["切粒機變頻器"]],
 "押出機":[["感測溫度線"],["電磁開關","SC-0;TR-ON/3;S-P11;S-P21;S-P30T;S-P35T;MSO-P11;SP40T;MSO-SP21"],["溫度控制面板"],["FUSE","3A"],["皮帶","B-80;C-103;C-108;C-110;C-130;C-135;C-145;C-148;SPA-1457;SPA-1432;5V-710"],["斷路器","NF-250-CN;NF-100-CN 3P 50A;BH 2P 20A"],["方型電熱片","220V 1700W 228x75;220V 1800W 228x75;220V 3000W 280x120;220V 3200W 280x120"],["圓形電熱片","220V 1850W 127x150;220V 1350W 126x110;220V 2050W 126x145;220V 2500W 126x175;220V 2050W 126x160;220V 1700W 126x180"],["押出機散熱風車"],["主馬達","60HP;75HP"],["變頻器","60HP;75HP"],["變頻器","Mitsubishi FR-D720-070-NA"],["可程式定時器"],["濾網","40x0.25 165mm;46x0.25 150mm"],["震動台馬達"],["泵浦","四川川嶺 E2020 60HZ 2HP 2P"],["交織式防電擊電焊機"],["熱壓封口機","110V"],["天車遙控器"],["抽屜開關"]],
 "其他":[["螺絲組"],["潤滑油"],["清潔布"],["手套"],["膠帶"]]};
@@ -38,7 +38,7 @@ const MACH={"切粒機":["A","B","C","D","E","F"].map(x=>x+" 號機"),"押出機
 function seed(){const a=[];for(const c in SEED){let i=0;SEED[c].forEach(([n,s])=>(s?s.split(";"):[""]).forEach(sp=>a.push({id:PFX[c]+String(++i).padStart(3,"0"),category:c,name:n,spec:sp,unit:"個",qty:0,safety:1,location:"",note:""})))}return a}
 const K="wuji-wh-v1";let S=JSON.parse(localStorage.getItem(K)||"null");
 if(!S)S={items:seed(),log:[]};
-const save=()=>localStorage.setItem(K,JSON.stringify(S));
+const save=()=>{localStorage.setItem(K,JSON.stringify(S));window.WHC&&WHC.save()};
 if(!S.items.some(i=>i.category=="其他")&&!S.v2)S.items.push(...seed().filter(i=>i.category=="其他"));S.v2=1;save();
 async function h(p){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("wuji-wh:"+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 const DEFU={admin:{pw:"1127",role:"admin"},hyman:{pw:"27397449",role:"stock"},viewer:{pw:"0000",role:"viewer"},"999":{pw:"0000",role:"viewer"}};const RN={admin:"管理員",stock:"進貨管理",viewer:"檢視者"};let tab="home",cat="all",q="";
@@ -49,7 +49,7 @@ const me=()=>{const x=JSON.parse(sessionStorage.getItem("whS")||"null");return x
 const unlocked=()=>["admin","stock"].includes(me()?.role);const isAdmin=()=>me()?.role=="admin";
 function needA(fn){if(!isAdmin())return toast("僅限管理員");fn&&fn()}
 function lockUI(){const x=me();lockBtn.textContent=x?(x.role=="viewer"?"👁 ":"🔓 ")+x.u+"｜登出":"登出";lockBtn.className="pill"+(unlocked()?" on":"")}
-async function doLogin(){const U=await users(),u=lu.value.trim();if(U[u]&&U[u].h===await h(u+":"+lp.value)){sessionStorage.setItem("whS",JSON.stringify({u,role:U[u].role,exp:Date.now()+8*36e5}));lp.value="";gate()}else toast("帳號或密碼錯誤")}
+async function doLogin(){let U=await users();const u=lu.value.trim(),ph=await h(u+":"+lp.value);if(window.WHC&&WHC.on){try{await WHC.login(u,ph);U=S.users}catch(e){return toast(e.message=="auth"?"帳號或密碼錯誤":"雲端連線失敗")}}if(U[u]&&U[u].h===ph){sessionStorage.setItem("whS",JSON.stringify({u,role:U[u].role,exp:Date.now()+8*36e5}));lp.value="";gate()}else toast("帳號或密碼錯誤")}
 function logout(){sessionStorage.removeItem("whS");closeM();gate()}
 function gate(){const ok=!!me();lg.style.display=ok?"none":"flex";m.style.display=ok?"":"none";document.querySelector("nav").style.display=ok?"":"none";if(ok)render();else m.innerHTML=""}
 function need(fn){if(!me())return gate();if(!unlocked())return toast("檢視者無此權限，請用管理員登入");fn&&fn()}
