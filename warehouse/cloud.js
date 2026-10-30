@@ -3,14 +3,14 @@ const rpc=(f,b)=>fetch(C.url+"/rest/v1/rpc/"+f,{method:"POST",headers:{apikey:C.
 const cred=()=>JSON.parse(sessionStorage.getItem("whC")||"null");
 function banner(txt,c){let b=document.getElementById("cloudBar");if(!b){b=document.createElement("div");b.id="cloudBar";b.style.cssText="position:fixed;top:0;left:0;right:0;z-index:99;font-size:12px;text-align:center;padding:2px;color:#fff";document.body.appendChild(b)}b.textContent=txt;b.style.background=c}
 async function pull(force){const c=cred();if(!on||!c||busy||t)return;if(dirty)return push();try{const r=await rpc("wh_rev",c);if(!force&&r==rev)return;
- const g=await rpc("wh_get",c);if(g.empty){if(c.p_u&&S.users[c.p_u]?.role=="admin")push();return}
- rev=g.rev;const keep=S;S=g.data;localStorage.setItem("wuji-wh-v1",JSON.stringify(S));banner("☁️ 雲端同步中","#2e7d32");if(JSON.stringify(keep)!==JSON.stringify(S))try{render()}catch(e){}}
+ const g=await rpc("wh_get",c);if(dirty)return;if(g.empty){if(c.p_u&&S.users[c.p_u]?.role=="admin")push();return}
+ rev=g.rev;const keep=S;S=g.data;localStorage.setItem("wuji-wh-v1",JSON.stringify(S));banner("☁️ 已同步","#2e7d32");if(JSON.stringify(keep)!==JSON.stringify(S))try{render()}catch(e){}}
  catch(e){banner("⚠️ 雲端連線失敗："+e.message,"#c62828");if(e.message=="auth")tst("雲端驗證失敗，請重新登入")}}
 async function push(){t=null;const c=cred();if(!on||!c||busy)return;const r=S.users?.[c.p_u]?.role;if(r=="viewer"){dirty=0;return}busy=1;
  try{rev=await rpc("wh_put",{...c,d:S});dirty=0;banner("☁️ 已同步","#2e7d32");
   if(S.users?.[c.p_u]&&S.users[c.p_u].h!==c.ph){c.ph=S.users[c.p_u].h;sessionStorage.setItem("whC",JSON.stringify(c))}}
  catch(e){const m=e.message=="users-admin-only"?"帳號設定只有管理員能改":e.message=="auth"?"雲端驗證失敗，請重新登入":e.message;banner("⚠️ 上傳失敗（資料保留在本機，會自動重試）："+m,"#c62828");tst("⚠️ 雲端儲存失敗："+m)}busy=0}
 window.WHC={on,async login(u,ph){const c={p_u:u,ph};const g=await rpc("wh_get",c);sessionStorage.setItem("whC",JSON.stringify(c));if(g.empty){if(S.users?.[u]?.role=="admin")await push();return}rev=g.rev;S=g.data;localStorage.setItem("wuji-wh-v1",JSON.stringify(S));banner("☁️ 雲端同步中","#2e7d32")},
- save(){if(!on)return;dirty=1;clearTimeout(t);t=setTimeout(push,600)},pull,get dirty(){return dirty}};
+ save(){if(!on)return;dirty=1;clearTimeout(t);t=setTimeout(push,200)},pull,get dirty(){return dirty}};
 addEventListener("load",()=>{if(!on)banner("尚未接雲端（資料只存在本機）","#757575");else{pull(true);setInterval(pull,4000)}});
 })();
