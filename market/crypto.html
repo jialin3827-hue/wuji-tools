@@ -47,7 +47,7 @@ header{display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1
 </div>
 <div class="spk" id="spk"></div>
 <div id="toast" style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f1c2a;border:1px solid var(--cy);padding:8px 14px;opacity:0;transition:opacity .3s;z-index:9"></div>
-<script src="i18n.js?v=22"></script><script src="store.js?v=22"></script>
+<script src="i18n.js?v=23"></script><script src="store.js?v=23"></script>
 <script>
 let S=null;
 const TOP=[["BTC","比特幣"],["ETH","以太幣"],["BNB","幣安幣"],["SOL","索拉納"],["XRP","瑞波幣"],["DOGE","狗狗幣"],["ADA","艾達幣"],["TRX","波場"],["AVAX","雪崩"],["LINK","Chainlink"],["DOT","波卡"],["TON","TON"],["SHIB","柴犬幣"],["LTC","萊特幣"],["BCH","比特現金"],["NEAR","NEAR"],["UNI","Uniswap"],["APT","Aptos"],["SUI","Sui"],["XLM","恆星幣"]];
@@ -71,13 +71,13 @@ const $=id=>document.getElementById(id);
 const CK='wuji_crypto_v1',FEE=0.001;
 const nfu=v=>Number(v).toLocaleString(window.LOC||'en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 function gameLoad(){const g=load();return g&&g.a&&g.a.us?g:null}
-function wLoad(){try{const w=JSON.parse(localStorage.getItem(CK));if(w&&w.v===1)return w}catch(e){}return{v:1,pos:{},trades:[],realized:0,fees:0}}
+function wLoad(){try{const w=JSON.parse(localStorage.getItem(CK));if(w&&w.v===1){w.firstTrade=!!w.firstTrade;return w}}catch(e){}return{v:1,pos:{},trades:[],realized:0,fees:0,firstTrade:false}}
 function wSave(w){localStorage.setItem(CK,JSON.stringify(w))}
 function say(t){const e=$('toast');e.textContent=t;e.style.opacity=1;clearTimeout(e._t);e._t=setTimeout(()=>e.style.opacity=0,2500)}
 function trade2(side){const p=T[sel]?.p,v=parseFloat($('amt').value);if(sel==='GTR'?!gtrOK:!live)return say('目前沒有真實報價，暫停交易');if(!p||!(v>0))return say('請輸入'+(side==='B'?'金額':'數量'));
  S=gameLoad();if(!S)return say('請先到股市頁建立帳戶');const W=wLoad(),a=S.a.us;
- if(side==='B'){if(v>a.cash)return say('美股帳戶現金不足');const fee=v*FEE,q=(v-fee)/p;a.cash=+(a.cash-v).toFixed(6);const P=W.pos[sel]||(W.pos[sel]={q:0,t:0});P.q+=q;P.t+=v;W.fees+=fee;W.trades.push({ts:Date.now(),s:sel,side,q,p,amt:v,fee});save();wSave(W);say(`買進 ${sel} ${q.toPrecision(6)}，花費 $${nfu(v)}`);}
- else{const P=W.pos[sel];if(!P||P.q<v-1e-12)return say('持有數量不足');const q=Math.min(v,P.q),gross=q*p,fee=gross*FEE,net=gross-fee,part=P.t*q/P.q;a.cash=+(a.cash+net).toFixed(6);W.realized+=net-part;W.fees+=fee;P.q-=q;P.t-=part;if(P.q<1e-10)delete W.pos[sel];W.trades.push({ts:Date.now(),s:sel,side,q,p,amt:net,fee});save();wSave(W);say(`賣出 ${sel} ${q.toPrecision(6)}，入帳 $${nfu(net)}`);}
+ if(side==='B'){if(v>a.cash)return say('美股帳戶現金不足');const fee=v*FEE,q=(v-fee)/p;a.cash=+(a.cash-v).toFixed(6);const P=W.pos[sel]||(W.pos[sel]={q:0,t:0});P.q+=q;P.t+=v;W.fees+=fee;W.trades.push({ts:Date.now(),s:sel,side,q,p,amt:v,fee});if(!W.firstTrade){W.firstTrade=true;if(typeof track==='function')track('first-trade-crypto');}save();wSave(W);say(`買進 ${sel} ${q.toPrecision(6)}，花費 $${nfu(v)}`);}
+ else{const P=W.pos[sel];if(!P||P.q<v-1e-12)return say('持有數量不足');const q=Math.min(v,P.q),gross=q*p,fee=gross*FEE,net=gross-fee,part=P.t*q/P.q;a.cash=+(a.cash+net).toFixed(6);W.realized+=net-part;W.fees+=fee;P.q-=q;P.t-=part;if(P.q<1e-10)delete W.pos[sel];W.trades.push({ts:Date.now(),s:sel,side,q,p,amt:net,fee});if(!W.firstTrade){W.firstTrade=true;if(typeof track==='function')track('first-trade-crypto');}save();wSave(W);say(`賣出 ${sel} ${q.toPrecision(6)}，入帳 $${nfu(net)}`);}
  $('amt').value='';tick();}
 function fake(){const base={BTC:80750,ETH:3120,BNB:610,SOL:182,XRP:2.41,DOGE:.198,ADA:.72,TRX:.31,AVAX:31.2,LINK:17.4,DOT:5.6,TON:4.1,SHIB:.0000168,LTC:96,BCH:410,NEAR:4.3,UNI:9.8,APT:7.2,SUI:3.6,XLM:.38};
  BN.forEach(([s])=>T[s]={p:base[s],c:(Math.random()-.45)*8,v:Math.random()*2e9});
@@ -101,7 +101,7 @@ function connect(){let ws;try{ws=new WebSocket('wss://stream.binance.com:9443/st
  ws.onclose=()=>{wsOK=false;startPoll('串流中斷，10 秒後重連');setTimeout(connect,10000);};}
 async function boot(){try{await rest(true);badge('連線中…');connect();}catch(e){fake();badge('示意資料（無法取得報價，暫停交易）');setInterval(sim,400);}
  init();}
-function init(){coins();setInterval(tick,1000);requestAnimationFrame(net);sparks();tick();}
+function init(){coins();setInterval(tick,1000);requestAnimationFrame(net);sparks();tick();if(typeof checkReturnDay==='function')checkReturnDay();}
 function sim(){const b=KL[KL.length-1];const p=b.c+(Math.random()-.5)*25;b.c=p;b.h=Math.max(b.h,p);b.l=Math.min(b.l,p);T.BTC.p=p;
  if(Math.random()<.04){KL.push({o:p,c:p,h:p,l:p});KL.shift();}
  const bi=[],as=[];for(let i=0;i<10;i++){bi.push([p-1-i*2.5,Math.random()*2]);as.push([p+1+i*2.5,Math.random()*2]);}book(bi,as);trade(p,Math.random()*.5,Math.random()>.5);

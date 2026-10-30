@@ -11,7 +11,7 @@ const $=s=>document.querySelector(s);
 let S=load(),D={tw:null,us:null},BARS={},UI={f:{q:'',from:'',to:'',side:''},open:null,tab:(['list','quote','port','ord','battle'].includes(location.hash.slice(1))?location.hash.slice(1):'list'),q:'',side:'B',type:'L',lot:'lot',px:'',qty:1,lbm:(load()||{}).acct||'tw',oh:'P',tier:'存款',mode:'ai'},chart=null;
 
 function newAcct(m){return{cash:m,pos:{},realized:0,fees:0}}
-function fresh(tier,mode){const t=TIERS.find(x=>x.id===tier);return{v:1,divs:[],cfg:S&&S.cfg||{},tier,init:t.m,mode,born:Date.now(),acct:S?S.acct:'tw',start:{tw:D.tw&&D.tw.asof,us:D.us&&D.us.asof},a:{tw:newAcct(t.m),us:newAcct(t.m)},orders:[],cur:{tw:'2330',us:'AAPL'},seq:1}}
+function fresh(tier,mode){const t=TIERS.find(x=>x.id===tier);return{v:1,divs:[],cfg:S&&S.cfg||{},tier,init:t.m,mode,born:Date.now(),acct:S?S.acct:'tw',start:{tw:D.tw&&D.tw.asof,us:D.us&&D.us.asof},a:{tw:newAcct(t.m),us:newAcct(t.m)},orders:[],cur:{tw:'2330',us:'AAPL'},seq:1,track:{firstTrade:false,lastActiveDay:null}}}
 
 /* ---------- formatting ---------- */
 const nf=(v,d=0)=>(v==null||isNaN(v))?'—':Number(v).toLocaleString(window.LOC||'zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -168,9 +168,10 @@ async function place(){const m=S.acct,s=S.cur[m],x=D[m].map[s],a=S.a[m],lot=m===
  if(n<1)return toast('數量要大於 0');if(m==='tw'&&!lot&&n>999)return toast('零股一次最多 999 股');const px=UI.type==='M'?null:+UI.px;if(UI.type==='L'&&!(px>0))return toast('請輸入限價');
  const rs=reserved(m),{k}=preview();if(UI.side==='B'){if(k.net>a.cash-rs.c)return toast('可用現金不足')}else if(q>((a.pos[s]||{}).q||0)-(rs.sh[s]||0))return toast('可賣股數不足');
  const st=mstat(m),d=m==='us'?2:0;const desc=`${UI.side==='B'?'買進':'賣出'} ${x.n}（${s}）\n${lot?n+' 張':q+' 股'}・${UI.type==='M'?'市價':'限價 '+px}\n成交金額 ${nf(k.amt,d)}\n${m==='tw'?'手續費 '+nf(k.fee)+(UI.side==='S'?'・證交稅 '+nf(k.tax):''):'佣金 '+nf(k.fee,2)+(UI.side==='S'?'・規費 '+nf(k.reg,2):'')}\n${UI.side==='B'?'預估應付':'預估應收'} ${nf(k.net,d)}${k.pl!=null?'\n預估實現損益 '+nf(k.pl,d):''}\n${st.open?'目前盤中':'目前已收盤，將排隊到下一次價格更新'}\n（模擬交易，虛擬幣；實際以成交價計算）`;
- if(!confirm(desc))return;const o={id:S.seq++,a:m,s,side:UI.side,type:UI.type,px,q,unit:lot?'張':'股',ts:Date.now(),dd:x.d,st:'P'};S.orders.unshift(o);
- if(st.open&&(UI.type==='M'||(UI.side==='B'?px>=x.c:px<=x.c))){fill(o,x.c,x.d)?toast('已成交 @ '+pxf(x.c,m)):toast('委託失敗：'+o.why)}else toast('委託已送出，等待下一次價格更新');
- save();renderOp()}
+  if(!confirm(desc))return;const o={id:S.seq++,a:m,s,side:UI.side,type:UI.type,px,q,unit:lot?'張':'股',ts:Date.now(),dd:x.d,st:'P'};S.orders.unshift(o);
+  if(st.open&&(UI.type==='M'||(UI.side==='B'?px>=x.c:px<=x.c))){fill(o,x.c,x.d)?toast('已成交 @ '+pxf(x.c,m)):toast('委託失敗：'+o.why)}else toast('委託已送出，等待下一次價格更新');
+  if(!S.track)S.track={firstTrade:false,lastActiveDay:null};if(!S.track.firstTrade){S.track.firstTrade=true;track('first-trade');}
+  save();renderOp()}
 function ma(b,n){const o=[];let s=0;b.forEach((x,i)=>{s+=x[4];if(i>=n)s-=b[i-n][4];if(i>=n-1)o.push({time:x[0],value:+(s/n).toFixed(3)})});return o}
 function drawChart(b,m){const el=$('#chart');if(!el||!window.LightweightCharts)return;el.innerHTML='';if(!b.length){el.innerHTML='<div class="empty">K 線資料累積中</div>';return}
  const up=m==='tw'?'#f6465d':'#0ecb81',dn=m==='tw'?'#0ecb81':'#f6465d';
@@ -289,7 +290,7 @@ function startSheet(re){const M=$('#modal');M.classList.add('on');
  <div class="lbl" style="margin-top:12px;font-size:12px">遊戲模式</div><div class="modes"><button class="${UI.mode==='solo'?'on':''}" onclick="UI.mode='solo';startSheet(${!!re})">🎮 單機模式</button><button class="${UI.mode==='ai'?'on':''}" onclick="UI.mode='ai';startSheet(${!!re})">🤖 對戰模式<br><small class="mu">vs AI</small></button><button disabled>👥 真人對戰<br><small>即將推出</small></button></div>
  <button class="cta" onclick="born()">投胎！</button>${re?'<button class="sec" onclick="closeM()">取消</button>':''}
  <div class="disc" style="margin-top:12px">模擬學習用，非投資建議，價格為盤後／延遲資料。全部為虛擬幣，不能儲值、不能換現金、沒有獎品。</div></div>`}
-function born(){if(S&&!confirm(`確定重新投胎成「${UI.tier}」？\n目前兩個帳戶的庫存和紀錄都會清空。`))return;const acct=S?S.acct:'tw';S=fresh(UI.tier,UI.mode);S.acct=acct;save();closeM();UI.tab='list';render();toast(`投胎成功！你是${UI.tier}出身`)}
+function born(){if(S&&!confirm(`確定重新投胎成「${UI.tier}」？\n目前兩個帳戶的庫存和紀錄都會清空。`))return;const acct=S?S.acct:'tw';S=fresh(UI.tier,UI.mode);S.acct=acct;save();track('start');closeM();UI.tab='list';render();toast(`投胎成功！你是${UI.tier}出身`)}
 function closeM(){$('#modal').classList.remove('on');$('#modal').innerHTML=''}
 function setCfg(k,v){S.cfg=Object.assign({},S.cfg,{[k]:v});save();menu()}
 function menu(){const M=$('#modal'),c=cfg();M.classList.add('on');const D2=[[1,'無折扣'],[0.6,'6 折'],[0.5,'5 折'],[0.38,'3.8 折'],[0.28,'2.8 折'],[0.2,'2 折']];const custom=!D2.some(x=>x[0]===c.disc);
@@ -305,7 +306,7 @@ function menu(){const M=$('#modal'),c=cfg();M.classList.add('on');const D2=[[1,'
  <button class="sec" onclick="location.href='../budget/'">🌙 回月光存股模擬人生</button><button class="sec" onclick="closeM();render()">關閉</button>
  <div class="note">資料只存在你的手機（瀏覽器 localStorage）。台股行情：臺灣證券交易所、證券櫃檯買賣中心開放資料；美股：${esc((D.us||{}).src||'—')}。圖表：TradingView Lightweight Charts™（Apache-2.0）。</div></div>`}
 
-(async function init(){await loadSnap();await loadDiv();if(S){S.divs=S.divs||[];S.cfg=S.cfg||{};if(!S.start.tw)S.start.tw=D.tw.asof;if(!S.start.us)S.start.us=D.us.asof;await processOrders();await processDivs();save()}render();
- setInterval(()=>{if(S)renderTop()},60000);
- document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&S){await loadSnap();await loadDiv();BARS={};for(const k in FILES)delete FILES[k];await processOrders();await processDivs();render()}})})();
+(async function init(){await loadSnap();await loadDiv();if(S){S.divs=S.divs||[];S.cfg=S.cfg||{};if(!S.start.tw)S.start.tw=D.tw.asof;if(!S.start.us)S.start.us=D.us.asof;S.track=S.track||{firstTrade:false,lastActiveDay:null};checkReturnDay();await processOrders();await processDivs();save()}render();
+  setInterval(()=>{if(S)renderTop()},60000);
+  document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&S){await loadSnap();await loadDiv();BARS={};for(const k in FILES)delete FILES[k];checkReturnDay();await processOrders();await processDivs();render()}})})();
 
