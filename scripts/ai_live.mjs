@@ -1,4 +1,5 @@
 // AI 跟單實戰模擬（每日前進式、虛擬錢）。只用「到今天為止」的資料，每個市場每天最多處理一次。
+// PROFIT_TARGET_MODE 2026-10-30：偏動能達標——現金補滿只買近1週報酬>0；cash>8%就補；連虧1筆換交易員；開局偏 Rocket/Flash/Dragon/Wave。虛擬錢不保證收益。
 // 用法：node scripts/ai_live.mjs tw|us|crypto|all [--catchup-fill]
 import fs from 'node:fs';
 const FILE='market/data/ai_live.json',INIT=100000;
@@ -34,7 +35,7 @@ async function runMarket(mk,S,catchup=false){
   today=useDate;const syms2=Object.keys(C),w=WK[mk];const ones=Array(999).fill(1);
  const score=TR.map(([n,f,a],ti)=>{let t=0;for(const s of syms2){const sg=(SG[s+ti]=sig(C[s],f,a));t+=wkRet(C[s],sg,w)}return{ti,n,w:t/syms2.length}}).sort((a,b)=>b.w-a.w);
  M.ranking=score.map(x=>({n:x.n,w:+x.w.toFixed(4)}));
-  if(M.trader==null){M.trader=score[0].ti;M.switches.push({date:today,from:null,to:TR[M.trader][0],why:'開始跟單'})}
+  if(M.trader==null){const prefer=new Set(['🚀 Rocket','⚡ Flash','🐉 Dragon','🌊 Wave']);const top=score[0].w;const hit=score.find(x=>prefer.has(x.n)&&x.w>=top-0.005)||score[0];M.trader=hit.ti;M.switches.push({date:today,from:null,to:TR[M.trader][0],why:'開始跟單(偏動能)'})}
   // 分散持股：台/美 max5 各~20%；crypto BTC/ETH 25%核心 +1 AI。idle-cash fill(after4): while sat<maxN && cash>eq*0.15 buy next-best wkRet non-core(ignore sig) amt=slotW*E, trader=TR[], why:'cash-fill'/'ai-pick'(crypto)
   if(M.pos!==undefined){M.positions=M.pos?[M.pos]:[];delete M.pos} // 舊版單一持股 → 轉換
   M.positions=M.positions||[];
@@ -48,7 +49,7 @@ async function runMarket(mk,S,catchup=false){
    const t={date:today,side:'BUY',sym,px:pr,sh:+sh.toFixed(6),trader:core?'core':TR[M.trader][0]};if(why)t.why=why;M.trades.push(t);todayTr.push(t)};
   // 1) 出場：非核心持股若跟隨交易員訊號轉空 → 全賣，計算連虧
   if(!catchup)for(const p of M.positions.slice()){if(CORE[p.sym]||!C[p.sym]||SG[p.sym+M.trader].at(-1))continue;const pnl=sell(p,p.sh,'signal');
-   if(pnl<0){M.loss++;if(M.loss>=2){const nx=score.find(x=>x.ti!==M.trader).ti;M.switches.push({date:today,from:TR[M.trader][0],to:TR[nx][0],why:'連續虧損兩筆'});M.trader=nx;M.loss=0}}else M.loss=0}
+   if(pnl<0){M.loss++;if(M.loss>=1){const nx=score.find(x=>x.ti!==M.trader).ti;M.switches.push({date:today,from:TR[M.trader][0],to:TR[nx][0],why:'連續虧損兩筆'});M.trader=nx;M.loss=0}}else M.loss=0}
   M.positions=M.positions.filter(p=>p.sh>1e-9);
   // 2) 再平衡：超過目標權重 1.25 倍的部位減碼回目標（舊的單一持股會在這裡分散）
   const slotW=mk==='crypto'?.5:.2,maxN=mk==='crypto'?1:5;
@@ -59,9 +60,9 @@ async function runMarket(mk,S,catchup=false){
   if(!catchup){const E=eqNow(),held=new Set(M.positions.map(p=>p.sym)),sat=M.positions.filter(p=>!CORE[p.sym]).length;
    const cand=syms2.filter(s=>!CORE[s]&&!held.has(s)&&SG[s+M.trader].at(-1)).map(s=>[s,wkRet(C[s],SG[s+M.trader],w)]).sort((a,b)=>b[1]-a[1]);
    for(const [s] of cand.slice(0,Math.max(0,maxN-sat)))buy(s,slotW*E)}
-  // 5) idle-cash fill (cash-fill/ai-pick)
+  // 5) PROFIT_TARGET_MODE idle-cash fill: only positive 1w return; deploy when cash>8%
   {let E=eqNow(),held=new Set(M.positions.map(p=>p.sym)),sat=M.positions.filter(p=>!CORE[p.sym]).length;const fy=mk==='crypto'?'ai-pick':'cash-fill';
-   while(sat<maxN&&M.cash>E*0.15){const cand=syms2.filter(s=>!CORE[s]&&!held.has(s)).map(s=>[s,wkRet(C[s],ones,w)]).sort((a,b)=>b[1]-a[1]);if(!cand.length)break;const [s]=cand[0];const pre=M.cash;buy(s,slotW*E,false,fy);if(M.cash===pre)break;held.add(s);sat++;E=eqNow()}}
+   while(sat<maxN&&M.cash>E*0.08){const cand=syms2.filter(s=>!CORE[s]&&!held.has(s)).map(s=>[s,wkRet(C[s],ones,w)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);if(!cand.length)break;const [s]=cand[0];const pre=M.cash;buy(s,slotW*E,false,fy);if(M.cash===pre)break;held.add(s);sat++;E=eqNow()}}
   const bp=D[BENCH[mk]].at(-1)[1];if(!M.benchUnits)M.benchUnits=INIT/bp;
   const eq=eqNow();M.positions.forEach(p=>{p.w=+(p.sh*px(p.sym)/eq).toFixed(4);p.sh=+p.sh.toFixed(6);p.cost=+p.cost.toFixed(2)});
   if(!catchup){M.equity.push([today,+eq.toFixed(2),+(M.benchUnits*bp).toFixed(2)]);M.lastDate=today;M.day=M.equity.length;M.today=todayTr;
