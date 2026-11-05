@@ -41,7 +41,8 @@ header .bell{margin-left:auto;position:relative;font-size:24px;border:0;backgrou
 const K='wuji_moon_v1',$=s=>document.querySelector(s),fmt=n=>'$'+Math.round(n).toLocaleString('zh-TW'),f2=n=>(+n).toLocaleString('zh-TW',{maximumFractionDigits:2});
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const CATS=[['餐飲','n'],['交通','n'],['日用','n'],['醫療','n'],['家庭','n'],['娛樂','f'],['購物','f'],['社交','f'],['其他','f']];
-const BK={n:'必要',f:'娛樂'};
+const ICATS=[['其他收入','i']];
+const BK={n:'必要',f:'娛樂',i:'收入'};
 const DEF_FIXED=[['房租',0],['伙食',0],['水電瓦斯',0],['家庭支出',0],['交通費',0]];
 const DEMO=new URLSearchParams(location.search).has('demo'),DEMO_NOPAY=DEMO&&!new URLSearchParams(location.search).has('payday');
 let S=DEMO?null:JSON.parse(localStorage.getItem(K)||'null');S=S||{setup:null,entries:[],buys:[],draw:{}};
@@ -52,13 +53,14 @@ function payOn(y,m,p){const last=new Date(y,m+1,0).getDate();return new Date(y,m
 function cycleOf(t){const p=S.setup.payday;let s=payOn(t.getFullYear(),t.getMonth(),p);if(s>t)s=payOn(t.getFullYear(),t.getMonth()-1,p);return{s,n:payOn(s.getFullYear(),s.getMonth()+1,p)}}
 function cyc(s,n){const st=S.setup,[rn,rs,rf]=st.rule,S0=ds(s),sal=salOf(S0),N0=ds(n);
  const ex=S.entries.filter(e=>e.d>=S0&&e.d<N0),nec=ex.filter(e=>e.b=='n').reduce((a,e)=>a+e.a,0),fun=ex.filter(e=>e.b=='f').reduce((a,e)=>a+e.a,0);
+ const inc=ex.filter(e=>e.b=='i').reduce((a,e)=>a+e.a,0);
  const fixed=st.fixed.reduce((a,f)=>a+(+f.a||0),0),N=sal*rn/100,Sv=sal*rs/100,F=sal*rf/100;
  const necLeft=N-fixed-nec,funLeft=F-fun;
- // over-spend in one bucket eats savings first
- const save_=Sv+Math.min(0,necLeft)+Math.min(0,funLeft);
- const investable=Math.max(0,save_+Math.max(0,necLeft)); // 儲蓄投資 + 沒花完的必要開銷（娛樂餘額不算）
+ // over-spend in one bucket eats savings first；其他收入先算進儲蓄（可存股）
+ const save_=Sv+Math.min(0,necLeft)+Math.min(0,funLeft)+inc;
+ const investable=Math.max(0,save_+Math.max(0,necLeft)); // 儲蓄投資 + 沒花完的必要開銷 + 其他收入（娛樂餘額不算）
  const invested=S.buys.filter(b=>b.d>=S0&&b.d<N0).reduce((a,b)=>a+b.amt,0);
- return{s,n,S0,N0,ex,nec,fun,fixed,N,Sv,F,necLeft,funLeft,investable,invested,remain:Math.max(0,sal-fixed-nec-fun-invested)}}
+ return{s,n,S0,N0,ex,nec,fun,inc,fixed,N,Sv,F,necLeft,funLeft,investable,invested,remain:Math.max(0,sal+inc-fixed-nec-fun-invested)}}
 function salOf(k){const P=S.pay||{};if(P[k]!=null)return +P[k];const ks=Object.keys(P).filter(x=>x<k).sort();return ks.length?+P[ks.at(-1)]:+S.setup.salary}
 function cycles(){const t=today(),r=[];let s=cycleOf(new Date(S.setup.start+'T00:00')).s;for(let k=0;k<240&&s<=t;k++){const n=payOn(s.getFullYear(),s.getMonth()+1,S.setup.payday);r.push([s,n]);s=n}return r}
 // 把過去沒記錄的月份固定下來，之後改預設月薪也不會動到舊月份
@@ -94,7 +96,7 @@ function spark(code,w=120,h=34){const i=HI&&HI.c[code];if(!i)return'<span class=
  const mn=Math.min(...v),mx=Math.max(...v),r=mx-mn||1,pts=v.map((y,k)=>(k/(v.length-1)*w).toFixed(1)+','+(h-2-(y-mn)/r*(h-4)).toFixed(1)).join(' ');
  return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline fill="none" stroke="#7a5a1e" stroke-width="1.6" points="${pts}"/></svg>`}
 // ---------- 畫面 ----------
-let tab=(new URLSearchParams(location.search).get('tab')||'home').replace('tianji','draw'),cat='餐飲',bk='n',lm=null,q='',pick=null;
+let tab=(new URLSearchParams(location.search).get('tab')||'home').replace('tianji','draw'),cat='餐飲',bk='n',mode='out',lm=null,q='',pick=null;
 function nav(){$('#nav').innerHTML=[['home','🏠','首頁'],['add','✏️','記帳'],['book','📒','帳本'],['inv','📈','存股'],['draw','🔮','天機'],['set','⚙️','設定']].map(([k,i,l])=>`<button class="${tab==k?'on':''}" onclick="go('${k}')">${i}<br>${l}</button>`).join('')}
 function go(k){tab=S.setup?k:'set';scrollTo(0,0);render()}
 // ===== AA 分帳 =====
@@ -182,24 +184,28 @@ function home(A){const c=calc(),SV=saved(),P=c.P,F=foodOf(c),fun=Math.max(0,c.re
  <div id="invBox"></div></div>
  ${payList()}<div class="card"><div class="row"><b>🔥 連續記帳 ${st} 天</b><span><a href="#" onclick="go('draw');return false">看今日天機 →</a></span></div></div>`;
  const box=document.createElement('div');inv(box,1);$('#invBox').innerHTML=box.innerHTML}
-function add(A){const T=ds(today()),list=S.entries.filter(e=>e.d==T).reverse();
- A.innerHTML=`<div class="card"><h3>✏️ 記一筆支出</h3><input id="amt" type="number" inputmode="numeric" placeholder="金額">
- <div class="chips">${CATS.map(([k,b])=>`<button class="chip ${cat==k?'on':''}" onclick="cat='${k}';bk='${b}';render()">${k}</button>`).join('')}</div>
- <div class="chips"><span class="note" style="align-self:center">算在：</span>${['n','f'].map(b=>`<button class="chip ${bk==b?'on':''}" onclick="bk='${b}';render()">${BK[b]}</button>`).join('')}</div>
+function add(A){const T=ds(today()),list=S.entries.filter(e=>e.d==T).reverse(),isIn=mode=='in';
+ A.innerHTML=`<div class="card"><h3>✏️ 記一筆${isIn?'收入':'支出'}</h3>
+ <div class="chips"><button class="chip ${!isIn?'on':''}" onclick="mode='out';cat='餐飲';bk='n';render()">支出</button><button class="chip ${isIn?'on':''}" onclick="mode='in';cat='其他收入';bk='i';render()">收入</button></div>
+ <input id="amt" type="number" inputmode="numeric" placeholder="金額">
+ <div class="chips">${(isIn?ICATS:CATS).map(([k,b])=>`<button class="chip ${cat==k?'on':''}" onclick="cat='${k}';bk='${b}';render()">${k}</button>`).join('')}</div>
+ ${isIn?'<p class="note">其他收入先算進儲蓄，可拿來模擬存股（不進娛樂可花）。</p>':`<div class="chips"><span class="note" style="align-self:center">算在：</span>${['n','f'].map(b=>`<button class="chip ${bk==b?'on':''}" onclick="bk='${b}';render()">${BK[b]}</button>`).join('')}</div>`}
  <input id="nt" placeholder="備註（選填）"><button class="btn" onclick="addE()">記下來</button></div>
  <div class="card"><div class="row"><b>👥 AA 分帳</b><button class="chip" onclick="aaId=null;go('aa')">跟朋友分帳 →</button></div><p class="note">像 Splid 一樣算清楚誰該付誰，算完自動記帳。</p></div>
  <div class="card"><h3>今天的帳（${list.length} 筆）</h3><ul>${list.map(li).join('')||'<p class="note">今天還沒記帳，記一筆就能延續連續天數！</p>'}</ul></div>`}
-const li=e=>`<li><span>${esc(e.c)}<span class="tag">${BK[e.b]}</span> <span class="note">${esc(e.note||'')}</span></span><span>${fmt(e.a)} <button class="x" onclick="delE(${e.id})">✕</button></span></li>`;
-function addE(){const a=+$('#amt').value;if(!(a>0))return alert('請輸入金額');S.entries.push({id:Date.now(),d:ds(today()),a,c:cat,b:bk,note:$('#nt').value.trim().slice(0,40)});save();render()}
+const li=e=>`<li><span>${esc(e.c)}<span class="tag">${BK[e.b]||e.b}</span> <span class="note">${esc(e.note||'')}</span></span><span>${e.b=='i'?'+':''}${fmt(e.a)} <button class="x" onclick="delE(${e.id})">✕</button></span></li>`;
+function addE(){const a=+$('#amt').value;if(!(a>0))return alert('請輸入金額');const b=mode=='in'?'i':bk,c=mode=='in'?(ICATS.some(x=>x[0]==cat)?cat:'其他收入'):cat;S.entries.push({id:Date.now(),d:ds(today()),a,c,b,note:$('#nt').value.trim().slice(0,40)});save();render()}
 function delE(id){if(!confirm('刪除這筆？'))return;S.entries=S.entries.filter(e=>e.id!=id);save();render()}
 function book(A){const ms=[...new Set(S.entries.map(e=>e.d.slice(0,7)).concat(ds(today()).slice(0,7)))].sort().reverse();lm=lm&&ms.includes(lm)?lm:ms[0];
- const ex=S.entries.filter(e=>e.d.startsWith(lm)),tot=ex.reduce((a,e)=>a+e.a,0),bc={};ex.forEach(e=>bc[e.c]=(bc[e.c]||0)+e.a);const mx=Math.max(1,...Object.values(bc));
- const days={};ex.forEach(e=>(days[e.d]=days[e.d]||[]).push(e));
+ const all=S.entries.filter(e=>e.d.startsWith(lm)),ex=all.filter(e=>e.b!='i'),inc=all.filter(e=>e.b=='i');
+ const tot=ex.reduce((a,e)=>a+e.a,0),inct=inc.reduce((a,e)=>a+e.a,0),bc={};ex.forEach(e=>bc[e.c]=(bc[e.c]||0)+e.a);const mx=Math.max(1,...Object.values(bc));
+ const days={};all.forEach(e=>(days[e.d]=days[e.d]||[]).push(e));
  A.innerHTML=`<div class="card"><h3>📒 帳本</h3><select onchange="lm=this.value;render()">${ms.map(m=>`<option ${m==lm?'selected':''}>${m}</option>`).join('')}</select>
  <div class="row" style="margin-top:8px"><span>本月支出 ${ex.length} 筆</span><b>${fmt(tot)}</b></div>
- ${Object.entries(bc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="row"><span>${k}</span><span>${fmt(v)}・${Math.round(v/tot*100)}%</span></div><div class="bar"><i style="width:${v/mx*100}%"></i></div>`).join('')||'<p class="note">這個月還沒有紀錄</p>'}
- <p class="note">💡 常回來看帳本，找出最常漏財的分類，是增加存款最快的方法。</p></div>
- ${Object.keys(days).sort().reverse().map(d=>`<div class="card"><div class="row"><b>${d}</b><span>${fmt(days[d].reduce((a,e)=>a+e.a,0))}</span></div><ul>${days[d].map(li).join('')}</ul></div>`).join('')}`}
+ <div class="row"><span>本月其他收入 ${inc.length} 筆</span><b style="color:#2e7d32">${inct?('+'+fmt(inct)):fmt(0)}</b></div>
+ ${Object.entries(bc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="row"><span>${k}</span><span>${fmt(v)}・${Math.round(v/tot*100)}%</span></div><div class="bar"><i style="width:${v/mx*100}%"></i></div>`).join('')||'<p class="note">這個月還沒有支出紀錄</p>'}
+ <p class="note">💡 常回來看帳本，找出最常漏財的分類，是增加存款最快的方法。其他收入會加進本月剩餘與可存股資金。</p></div>
+ ${Object.keys(days).sort().reverse().map(d=>{const day=days[d],net=day.reduce((a,e)=>a+(e.b=='i'?e.a:-e.a),0);return`<div class="card"><div class="row"><b>${d}</b><span>${net>=0?'+':''}${fmt(net).replace('$-','-$')}</span></div><ul>${day.map(li).join('')}</ul></div>`}).join('')}`}
 function inv(A,emb){const c=calc(),P=c.P,ql=q.trim().toUpperCase();let res=[];
  if(ql&&PR)res=Object.entries(PR.stocks).filter(([k,v])=>k.startsWith(ql)||v.n.toUpperCase().includes(ql)).sort((a,b)=>a[0]<b[0]?-1:1).slice(0,20);
  const p=pick&&stk(pick);
