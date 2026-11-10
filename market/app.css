@@ -187,7 +187,41 @@ header .ixc.fl{background:rgba(255,255,255,.25);color:#fff}
   nav{padding-left:max(12px,calc(50vw - 360px));padding-right:max(12px,calc(50vw - 360px))}
   nav button{max-width:160px}
 }
+
+/* 今日焦點卡：行情頁頂部，電光掃描圈 */
+#focus{padding:0;margin:0}
+.focus{position:relative;overflow:hidden;margin:10px 12px 4px;padding:14px;border-radius:20px;background:rgba(255,255,255,.92);border:1px solid rgba(34,211,238,.45);box-shadow:var(--shadow),0 0 24px rgba(34,211,238,.16)}
+.focus.ph{padding:12px;color:var(--mu);font-size:13px;text-align:center;box-shadow:var(--shadow-sm)}
+.focus::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(34,211,238,.22) 50%,transparent 65%);transform:translateX(-120%);animation:focusweep 4.2s ease-in-out infinite}
+.focus-hd{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.focus-tag{font-size:11px;font-weight:800;letter-spacing:.06em;color:#fff;background:var(--grad);border-radius:999px;padding:2px 9px;box-shadow:0 0 10px rgba(34,211,238,.4)}
+.focus-hd .sp{flex:1}
+.focus-body{display:flex;align-items:center;gap:12px;min-width:0}
+.focus-scan{position:relative;flex:0 0 76px;width:76px;height:76px;display:grid;place-items:center}
+.focus-scan i{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(34,211,238,.4);box-shadow:0 0 16px rgba(34,211,238,.4),inset 0 0 14px rgba(34,211,238,.12);pointer-events:none}
+.focus-scan i.arc{inset:-2px;border:0;box-shadow:none;background:conic-gradient(from 0deg,transparent 0 68%,#22D3EE 82%,#A78BFA 92%,transparent 100%);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));animation:focuspin 2.8s linear infinite}
+.focus-scan b{position:relative;z-index:1;font:800 13px/1.15 var(--mono);font-variant-numeric:tabular-nums;text-align:center;padding:0 4px;text-shadow:0 0 10px rgba(34,211,238,.35)}
+.focus.up .focus-scan b{color:var(--up);text-shadow:0 0 10px rgba(225,29,72,.35)}
+.focus.dn .focus-scan b{color:var(--dn);text-shadow:0 0 10px rgba(5,150,105,.35)}
+.focus.fl .focus-scan b{color:var(--mu)}
+.focus-meta{min-width:0;flex:1}
+.focus-meta .nm{font-weight:800;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.focus-meta .cd{font-size:11px;color:var(--mu);font-family:var(--mono)}
+.focus-meta .px{font-size:22px;font-weight:800;font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin-top:2px}
+.focus-why{margin:10px 0 0;font-size:13px;line-height:1.65;color:var(--tx)}
+.focus-acts{display:flex;gap:8px;margin-top:12px}
+.focus-acts button{flex:1;min-height:44px;border-radius:12px;font-weight:800;font-size:14px;padding:8px 10px}
+.focus-acts .buy{border:0;color:#fff;background:var(--red);box-shadow:0 8px 16px rgba(225,29,72,.22),0 0 14px rgba(225,29,72,.2)}
+.focus-acts .det{border:1px solid rgba(14,116,144,.35);background:var(--p1);color:var(--ac);box-shadow:var(--shadow-sm)}
+body.us .focus-acts .buy{background:var(--grn);box-shadow:0 8px 16px rgba(5,150,105,.22),0 0 14px rgba(5,150,105,.2)}
+.focus-disc{margin-top:8px;font-size:10px;color:var(--mu);text-align:center;line-height:1.5}
+@keyframes focuspin{to{transform:rotate(360deg)}}
+@keyframes focusweep{0%,22%{transform:translateX(-120%)}62%,100%{transform:translateX(120%)}}
+@media(hover:hover){
+  .focus:hover{border-color:rgba(34,211,238,.65);box-shadow:0 10px 24px rgba(30,40,90,.12),0 0 22px rgba(34,211,238,.24)}
+  .focus-acts .buy:hover,.focus-acts .det:hover{transform:translateY(-1px)}
+}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-  header::after,.ix::after{animation:none!important}
+  header::after,.ix::after,.focus::after,.focus-scan i.arc{animation:none!important}
 }

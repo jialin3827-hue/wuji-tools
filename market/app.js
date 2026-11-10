@@ -121,9 +121,39 @@ function swAcct(m){S.acct=m;save();UI.px='';UI.qty=1;UI.lot='lot';render()}
 function render(){if(!S){startSheet();return}setBody();renderTop();renderNav();({list:vList,quote:vQuote,port:vPort,ord:vOrd,battle:vBattle})[UI.tab]();if(REVQ.length)setTimeout(showReview,300)}
 const DISC='<div class="disc">模擬帳戶・非投資建議。價格為盤後／延遲資料；無真錢、無儲值、無獎品。</div>';
 
+
+/* 今日焦點：從目前行情清單（熱門＋持有）挑 |漲跌幅| 最大者，說明只依頁面已有數據 */
+function focusPool(m){return (D[m]&&D[m].list||[]).filter(x=>x.f||(S&&S.a[m]&&S.a[m].pos[x.s]))}
+function focusPick(m){let best=null,abs=0;for(const x of focusPool(m)){const lp=lpx(m,x);if(!(lp.pc>0)||lp.p==null||isNaN(lp.p))continue;const cp=lp.p/lp.pc-1,a=Math.abs(cp);if(a>abs){abs=a;best={x,lp,cp,abs}}}return best}
+function idxChg(m){const f=idxFresh(m);if(!f||!f.d.items||!f.d.items[0])return null;const x=f.d.items[0];if(!(x.pc>0)||x.p==null)return null;return{n:x.n,cp:(x.p-x.pc)/x.pc}}
+function focusWhy(m,x,lp,cp,volMul){const bits=[];const pct=nf(Math.abs(cp*100),2);
+ if(cp>1e-9)bits.push('今天漲 '+pct+'%');else if(cp<-1e-9)bits.push('今天跌 '+pct+'%');else bits.push('今天平盤');
+ const ix=idxChg(m);if(ix){const d=(cp-ix.cp)*100,ad=nf(Math.abs(d),2),nm=/[A-Za-z0-9]/.test(ix.n)?' '+esc(ix.n)+' ':esc(ix.n);if(Math.abs(d)>=0.15){
+  if(cp>=0&&ix.cp>=0)bits.push(d>0?`比${nm}多漲 ${ad} 個百分點`:`比${nm}少漲 ${ad} 個百分點`);
+  else if(cp<=0&&ix.cp<=0)bits.push(d<0?`比${nm}多跌 ${ad} 個百分點`:`比${nm}少跌 ${ad} 個百分點`);
+  else if(cp>0&&ix.cp<0)bits.push(`大盤（${nm}）下跌時它上漲`);
+  else bits.push(`大盤（${nm}）上漲時它下跌`);}}
+ if(m==='tw'){if(cp>=0.1-1e-9)bits.push('觸及漲停');else if(cp>=0.09)bits.push('接近漲停');else if(cp<=-(0.1-1e-9))bits.push('觸及跌停');else if(cp<=-0.09)bits.push('接近跌停')}
+ if(volMul!=null&&volMul>=1.5)bits.push('成交量是平常的 '+(volMul>=10?nf(volMul,0):nf(volMul,1))+' 倍');
+ return bits.join('，')+'。'}
+function paintFocus(m,volMul){const el=$('#focus');if(!el)return;
+ if(!D[m]||!D[m].list||!D[m].list.length){el.innerHTML='<div class="focus ph">行情載入中，焦點稍後出現</div>';return}
+ const f=focusPick(m);
+ if(!f||f.abs<0.001){el.innerHTML='<div class="focus ph">今日各檔漲跌幅都很小，暫無焦點</div>';return}
+ const{x,lp,cp}=f,why=focusWhy(m,x,lp,cp,volMul);
+ el.dataset.s=x.s;el.innerHTML=`<article class="focus ${cls(cp)}" aria-label="今日焦點"><div class="focus-hd"><span class="focus-tag">今日焦點</span><span class="sp"></span>${lp.q?`<span class="mu" style="font-size:11px">盤中 ${hm(lp.q.ts)}</span>`:''}</div>
+ <div class="focus-body"><div class="focus-scan" aria-hidden="true"><i></i><i class="arc"></i><b class="${cls(cp)}">${pf(cp)}</b></div>
+ <div class="focus-meta"><div class="nm">${esc(x.n)}</div><div class="cd">${esc(x.s)}${x.m?'・'+esc(x.m):''}</div><div class="px ${cls(cp)}">${pxf(lp.p,m)}</div></div></div>
+ <p class="focus-why">${why}</p>
+ <div class="focus-acts"><button type="button" class="buy" onclick="openFocusTrade('${x.s}')">模擬買進</button><button type="button" class="det" onclick="openQ('${x.s}')">看詳情</button></div>
+ <div class="focus-disc">依行情數據自動判讀，非投資建議</div></article>`;
+ if(volMul==null)enrichFocusVol(m,x)}
+async function enrichFocusVol(m,x){try{const b=await bars(m,x.s);const vs=(b||[]).filter(r=>r[0]!==x.d&&r[5]>0).slice(-20).map(r=>r[5]);if(vs.length<5||!(x.v>0))return;const avg=vs.reduce((a,c)=>a+c,0)/vs.length;if(!(avg>0))return;const mul=x.v/avg;const el=$('#focus');if(!el||el.dataset.s!==x.s||UI.tab!=='list'||S.acct!==m)return;if(mul>=1.5)paintFocus(m,mul)}catch(e){}}
+function openFocusTrade(s){UI.side='B';openQ(s)}
+
 function vList(){const m=S.acct;
- $('#view').innerHTML=`<div class="srch"><input id="sq" placeholder="搜尋代號或名稱（${m==='tw'?'例：2330、台積':'例：AAPL、Apple'}）" value="${esc(UI.q)}" oninput="UI.q=this.value;vListRows()"></div><div class="lhead"><span>名稱／代號</span><span class="r">成交價</span><span class="r">漲跌幅</span></div><div id="rows"></div>
- <div class="note">未搜尋時顯示熱門標的；可搜尋全部 ${nf((D[m].list||[]).length)} 檔${m==='tw'?'上市櫃股票與 ETF':'美股與 ETF'}，依代號排列，不代表推薦或評等。${m==='tw'?'台股紅漲綠跌':'美股綠漲紅跌'}。資料來源：${esc(D[m].src||'—')}</div>${DISC}`;vListRows()}
+ $('#view').innerHTML=`<div id="focus"></div><div class="srch"><input id="sq" placeholder="搜尋代號或名稱（${m==='tw'?'例：2330、台積':'例：AAPL、Apple'}）" value="${esc(UI.q)}" oninput="UI.q=this.value;vListRows()"></div><div class="lhead"><span>名稱／代號</span><span class="r">成交價</span><span class="r">漲跌幅</span></div><div id="rows"></div>
+ <div class="note">未搜尋時顯示熱門標的；可搜尋全部 ${nf((D[m].list||[]).length)} 檔${m==='tw'?'上市櫃股票與 ETF':'美股與 ETF'}，依代號排列，不代表推薦或評等。${m==='tw'?'台股紅漲綠跌':'美股綠漲紅跌'}。資料來源：${esc(D[m].src||'—')}</div>${DISC}`;paintFocus(m);vListRows()}
 function vListRows(){const m=S.acct,q=UI.q.trim().toLowerCase(),L=findSyms(m,q);
  $('#rows').innerHTML=L.length?L.map(x=>{const lp=lpx(m,x),c=lp.p/lp.pc-1;return`<div class="row" onclick="openQ('${x.s}')"><div><div class="nm">${esc(x.n)}</div><div class="cd">${x.s}${x.m?'・'+esc(x.m):''}${S.a[m].pos[x.s]?'・<span style="color:var(--ac)">持有</span>':''}</div></div><div class="r b ${cls(c)}">${pxf(lp.p,m)}${lp.q?'<br><small class="mu">盤中 '+hm(lp.q.ts)+'</small>':''}</div><div class="chg ${cls(c)}">${pf(c)}</div></div>`}).join(''):'<div class="empty">找不到符合的標的，請換個代號或名稱試試</div>'}
 function findSyms(m,q){const A=D[m].list||[];if(!q)return A.filter(x=>x.f||S.a[m].pos[x.s]);const sc=x=>{const s=x.s.toLowerCase(),n=x.n.toLowerCase();return s===q?0:s.startsWith(q)?1:n.startsWith(q)?2:s.includes(q)?3:n.includes(q)?4:9};

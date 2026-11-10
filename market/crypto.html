@@ -65,12 +65,40 @@ header a{color:#fff!important;border-color:rgba(34,211,238,.35)!important;border
 .tbtn button:disabled{opacity:.45;animation:none;box-shadow:none;filter:none}
 .flick{animation:flick .18s ease}@keyframes flick{0%{transform:scale(1.04)}100%{transform:none}}
 #toast{border-radius:16px;background:#12203A!important;color:#fff;border:0!important;box-shadow:0 8px 28px rgba(30,40,90,.18),0 0 16px rgba(34,211,238,.2)}
+@media(min-width:901px){.focus-acts{max-width:480px}}
 @media(max-width:900px){.grid{grid-template-columns:1fr}.spk{grid-template-columns:1fr 1fr}.big{font-size:28px}header{flex-wrap:wrap}.clock{font-size:13px}}
 @media(max-width:520px){.grid{gap:8px;padding:8px}.ob td{padding:3px 6px}.tape{height:140px}.blk{min-width:84px}}
 @media(hover:hover){.cr:hover{transform:translateX(2px)}}
+
+#focus{padding:10px 10px 0}
+.focus{position:relative;overflow:hidden;padding:14px;border-radius:16px;background:rgba(255,255,255,.88);border:1px solid rgba(34,211,238,.5);box-shadow:0 8px 28px rgba(30,40,90,.08),0 0 22px rgba(124,58,237,.14),0 0 18px rgba(34,211,238,.12)}
+.focus.ph{text-align:center;color:var(--mu);font-size:13px;padding:12px;box-shadow:0 2px 10px rgba(30,40,90,.06)}
+.focus::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(167,139,250,.22) 48%,rgba(34,211,238,.22) 55%,transparent 68%);transform:translateX(-120%);animation:focusweep 4.2s ease-in-out infinite}
+.focus-hd{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.focus-tag{font-size:11px;font-weight:800;letter-spacing:.06em;color:#fff;background:var(--grad);border-radius:999px;padding:2px 9px;box-shadow:0 0 10px rgba(34,211,238,.4)}
+.focus-hd .sp{flex:1}
+.focus-body{display:flex;align-items:center;gap:12px;min-width:0}
+.focus-scan{position:relative;flex:0 0 76px;width:76px;height:76px;display:grid;place-items:center}
+.focus-scan i{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(34,211,238,.45);box-shadow:0 0 16px rgba(124,58,237,.35),inset 0 0 14px rgba(34,211,238,.12);pointer-events:none}
+.focus-scan i.arc{inset:-2px;border:0;box-shadow:none;background:conic-gradient(from 0deg,transparent 0 68%,#22D3EE 82%,#A78BFA 92%,transparent 100%);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));animation:focuspin 2.8s linear infinite}
+.focus-scan b{position:relative;z-index:1;font:800 13px/1.15 var(--mono);font-variant-numeric:tabular-nums;text-align:center;padding:0 4px}
+.focus.u .focus-scan b,.focus-meta .px.u{color:var(--r);text-shadow:0 0 10px rgba(225,29,72,.35)}
+.focus.d .focus-scan b,.focus-meta .px.d{color:var(--g);text-shadow:0 0 10px rgba(5,150,105,.35)}
+.focus-meta{min-width:0;flex:1}
+.focus-meta .nm{font-weight:800;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.focus-meta .cd{font-size:11px;color:var(--mu);font-family:var(--mono)}
+.focus-meta .px{font-size:22px;font-weight:800;font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin-top:2px}
+.focus-why{margin:10px 0 0;font-size:13px;line-height:1.65;color:var(--tx)}
+.focus-acts{display:flex;gap:8px;margin-top:12px}
+.focus-acts button{flex:1;min-height:44px;border-radius:12px;font-weight:800;font-size:14px;padding:8px 10px;cursor:pointer}
+.focus-acts .buy{border:0;color:#fff;background:var(--r);box-shadow:0 0 8px #E11D48,0 0 18px rgba(225,29,72,.4)}
+.focus-acts .det{border:1px solid rgba(34,211,238,.45);background:rgba(255,255,255,.9);color:var(--ac);box-shadow:0 2px 10px rgba(30,40,90,.06)}
+.focus-disc{margin-top:8px;font-size:10px;color:var(--mu);text-align:center;line-height:1.5}
+@keyframes focuspin{to{transform:rotate(360deg)}}
+@keyframes focusweep{0%,22%{transform:translateX(-120%)}62%,100%{transform:translateX(120%)}}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-  header::after,.pn-book::after,.buy,.sell,#mq{animation:none!important}
+  header::after,.pn-book::after,.buy,.sell,#mq,.focus::after,.focus-scan i.arc{animation:none!important}
   #mq{padding-left:8px;transform:none;display:flex;flex-wrap:nowrap;overflow:auto;max-width:100%}
 }
 html,body{overflow-x:hidden;max-width:100%}
@@ -78,6 +106,7 @@ html,body{overflow-x:hidden;max-width:100%}
 <canvas id="bgnet" aria-hidden="true"></canvas>
 <header><a href="./" style="color:var(--cy);text-decoration:none;border:1px solid var(--ln);padding:1px 6px">← 股市</a><span class="logo">舞吉・虛擬幣</span><span class="tag">模擬帳戶</span><span class="live" id="live">LIVE</span><span class="stat" id="src">BOOT</span><span class="sp"></span><span id="utc" class="utc"></span><span class="clock" id="clk"></span></header>
 <div class="mq"><div id="mq"></div></div>
+<div id="focus"></div>
 <div class="grid">
  <div class="pn"><h3>帳戶總資產<em id="acctn">美股帳戶現金＋虛擬幣</em></h3><div class="bd">
   <div class="big" id="eq">—</div><div id="pnl">—</div>
@@ -95,7 +124,7 @@ html,body{overflow-x:hidden;max-width:100%}
 </div>
 <div class="spk" id="spk"></div>
 <div id="toast" style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1A1F3C;border:0;border-radius:16px;color:#fff;padding:8px 14px;opacity:0;transition:opacity .3s;z-index:9"></div>
-<script src="i18n.js?v=30"></script><script src="store.js?v=30"></script>
+<script src="i18n.js?v=31"></script><script src="store.js?v=31"></script>
 <script>
 let S=null;
 const TOP=[["BTC","比特幣"],["ETH","以太幣"],["BNB","幣安幣"],["SOL","索拉納"],["XRP","瑞波幣"],["DOGE","狗狗幣"],["ADA","艾達幣"],["TRX","波場"],["AVAX","雪崩"],["LINK","Chainlink"],["DOT","波卡"],["TON","TON"],["SHIB","柴犬幣"],["LTC","萊特幣"],["BCH","比特現金"],["NEAR","NEAR"],["UNI","Uniswap"],["APT","Aptos"],["SUI","Sui"],["XLM","恆星幣"]];
@@ -162,9 +191,35 @@ function startBgNet(){const c=$('bgnet');if(!c)return;const reduce=matchMedia('(
   resize();addEventListener('resize',resize,{passive:true});
   document.addEventListener('visibilitychange',()=>{run=!document.hidden;if(run&&!reduce)requestAnimationFrame(frame)});
   if(reduce)frame(0);else requestAnimationFrame(frame);}
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function focusPickC(){let best=null,abs=0;for(const[s,n] of TOP){const x=T[s];if(!x||!(x.p>0)||x.c==null||isNaN(x.c))continue;const a=Math.abs(+x.c);if(a>abs){abs=a;best={s,n,x,abs}}}return best}
+function focusWhyC(s,n,x){const c=+x.c,pct=Math.abs(c).toFixed(2),bits=[];
+ bits.push(`${esc(s)} 24h ${c>=0?'漲':'跌'} ${pct}%`);
+ const ref=s==='BTC'?['ETH','以太幣']:['BTC','比特幣'],rx=T[ref[0]];
+ if(rx&&rx.c!=null&&!isNaN(rx.c)&&Math.abs(c)>Math.abs(+rx.c)+0.05)bits.push(`波動比 ${esc(ref[0])} 大`);
+ if(x.dex)bits.push('此報價來自 DEX，流動性較低');
+ return bits.join('，')+'。'}
+function openFocusTradeC(s){pick(s);const a=$('amt'),box=a&&a.closest('.pn');if(box)box.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});if(a)try{a.focus()}catch(e){}}
+function openFocusQuoteC(s){pick(s);const k=$('kc'),box=k&&k.closest('.pn');if(box)box.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}
+function paintFocusC(){const el=$('focus');if(!el)return;
+ const ready=TOP.some(([s])=>T[s]&&T[s].p>0);
+ if(!ready){if(el.dataset.sig!=='load'){el.dataset.sig='load';el.innerHTML='<div class="focus ph">行情載入中，焦點稍後出現</div>'}return}
+ const f=focusPickC();
+ if(!f||f.abs<0.1){if(el.dataset.sig!=='flat'){el.dataset.sig='flat';el.innerHTML='<div class="focus ph">今日各檔漲跌幅都很小，暫無焦點</div>'}return}
+ const{s,n,x,abs}=f,dir=x.c>=0?'u':'d',sig=s+'|'+x.c.toFixed(2)+'|'+(x.dex?1:0);
+ if(el.dataset.sig===sig){const px=$('fpx');if(px)px.textContent=fmt(x.p);return}
+ el.dataset.sig=sig;
+ el.innerHTML=`<article class="focus ${dir}" aria-label="今日焦點"><div class="focus-hd"><span class="focus-tag">今日焦點</span><span class="sp"></span><span class="cd" style="font-size:11px;color:var(--mu);font-family:var(--mono)">24h</span></div>
+ <div class="focus-body"><div class="focus-scan" aria-hidden="true"><i></i><i class="arc"></i><b class="${dir}">${x.c>=0?'+':'-'}${Math.abs(x.c).toFixed(2)}%</b></div>
+ <div class="focus-meta"><div class="nm">${esc(n)}（${esc(s)}）</div><div class="cd">${x.dex?'DEX 報價・流動性低':'USDT'}</div><div class="px ${dir}" id="fpx">${fmt(x.p)}</div></div></div>
+ <p class="focus-why">${focusWhyC(s,n,x)}</p>
+ <div class="focus-acts"><button type="button" class="buy" onclick="openFocusTradeC('${s}')">模擬買進</button><button type="button" class="det" onclick="openFocusQuoteC('${s}')">看詳情</button></div>
+ <div class="focus-disc">依行情數據自動判讀，非投資建議</div></article>`;
+}
 async function boot(){try{await rest(true);setStatus('BIN',true);connect();}catch(e){fake();setStatus('SIM',false);setInterval(sim,400);}
   init();}
-function init(){startBgNet();coins();setInterval(tick,1000);requestAnimationFrame(net);sparks();tick();if(typeof checkReturnDay==='function')checkReturnDay();}
+function init(){startBgNet();coins();setInterval(tick,1000);requestAnimationFrame(net);sparks();tick();paintFocusC();if(typeof checkReturnDay==='function')checkReturnDay();}
 function sim(){const b=KL[KL.length-1];const p=b.c+(Math.random()-.5)*25;b.c=p;b.h=Math.max(b.h,p);b.l=Math.min(b.l,p);T.BTC.p=p;
  if(Math.random()<.04){KL.push({o:p,c:p,h:p,l:p});KL.shift();}
  const bi=[],as=[];for(let i=0;i<10;i++){bi.push([p-1-i*2.5,Math.random()*2]);as.push([p+1+i*2.5,Math.random()*2]);}book(bi,as);trade(p,Math.random()*.5,Math.random()>.5);
@@ -192,7 +247,7 @@ function tick(){const d=new Date();$('clk').textContent=d.toLocaleTimeString(win
   $('pnl').className=u>=0?'u':'d';$('pnl').textContent=`虛擬幣未實現 ${u>=0?'+':'-'}$${nfu(Math.abs(u))}${cost?` (${(u/cost*100).toFixed(2)}%)`:''}`;
   const p=W.pos[sel];$('hold').innerHTML=p?`持有 ${sel} ${p.q.toFixed(8).replace(/0+$/,'')}・均價 $${fmt(p.t/p.q)}・現值 $${nfu(p.q*(T[sel]?.p||0))}`:`未持有 ${sel}`;}
  const parts=[];TOP.forEach(([s],i)=>{const x=T[s]||{p:0,c:0},px=x.p,ch=mqPrev[s]!=null&&mqPrev[s]!==px;mqPrev[s]=px;if(i)parts.push('<span class="chn" aria-hidden="true"></span>');parts.push(`<span class="blk${ch?' blink':''}"><b>${s}</b><em>${fmt(x.p)}</em><i class="${x.c>=0?'u':'d'}">${x.c>=0?'▲':'▼'}${Math.abs(x.c).toFixed(2)}%</i></span>`)});parts.push('<span class="chn" aria-hidden="true"></span><span class="blk note-blk">實盤行情・模擬帳戶</span>');$('mq').innerHTML=parts.join('');const dec=$('deco');if(dec){const ts=Date.now(),h=decoHash(ts);dec.innerHTML=`<span><b>區塊高度</b>#${Math.floor(ts/12000)}</span>  <span><b>雜湊</b>${h}</span><span class="warn">裝飾模擬・非真實鏈上資料</span>`;}
-  window.KLb=KL;const kp=$('kp');const was=kp.textContent;kp.textContent=sel==='GTR'?fmt(T.GTR.p):fmt(T.BTC.p,2);if(was&&was!==kp.textContent)flash(kp);drawK();if(document.activeElement!==$('q'))coins();sparks();}
+  window.KLb=KL;const kp=$('kp');const was=kp.textContent;kp.textContent=sel==='GTR'?fmt(T.GTR.p):fmt(T.BTC.p,2);if(was&&was!==kp.textContent)flash(kp);drawK();if(document.activeElement!==$('q'))coins();sparks();paintFocusC();}
 /* 只讀固定高度容器的尺寸；DPR 上限 2、每張 canvas 最多 4M 像素；尺寸沒變就不重設，避免回饋迴圈 */
 function fit(c){const b=c.parentElement,w=Math.max(1,b.clientWidth),h=Math.max(1,b.clientHeight);let d=Math.min(2,window.devicePixelRatio||1);if(w*h*d*d>4e6)d=Math.sqrt(4e6/(w*h));
  const W=Math.round(w*d),H=Math.round(h*d);if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,w,h);return[x,w,h];}
