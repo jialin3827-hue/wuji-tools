@@ -1,42 +1,116 @@
-<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#121826"><title>花壇備品倉儲</title>
+<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#1E1B4B"><title>花壇備品倉儲</title>
 <style>
-:root{--bg:#0b0f17;--p1:#121826;--p2:#1a2233;--ln:#263045;--tx:#e6edf3;--mu:#8b98ad;--ac:#f0b90b;--red:#f6465d;--grn:#0ecb81}
-*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#E8EEF8;
+  --p1:#FFFFFF;
+  --p2:#E8F2F8;
+  --ln:rgba(14,116,144,.18);
+  --tx:#12203A;
+  --mu:#4A5270;
+  --ac:#0E7490;
+  --cyan:#22D3EE;
+  --indigo:#312E81;
+  --red:#E11D48;
+  --grn:#059669;
+  --pend:#B45309;
+  --rep:#C2410C;
+  --shadow:0 8px 28px rgba(30,40,90,.10);
+  --shadow-sm:0 2px 10px rgba(30,40,90,.08);
+  --glow:0 0 16px rgba(34,211,238,.22);
+  --grad:linear-gradient(135deg,#1E1B4B 0%,#312E81 42%,#0E7490 100%);
+  --mono:ui-monospace,"SF Mono","Cascadia Mono","Segoe UI Mono",Menlo,Monaco,Consolas,monospace;
+  --radius:16px
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;-webkit-tap-highlight-color:transparent;color-scheme:light;overflow-x:hidden;max-width:100%}
+body{background-image:
+  linear-gradient(rgba(49,46,129,.05) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(14,116,144,.05) 1px,transparent 1px),
+  radial-gradient(900px 420px at 8% -8%,rgba(49,46,129,.16),transparent 55%),
+  radial-gradient(700px 380px at 100% 0%,rgba(34,211,238,.14),transparent 50%),
+  radial-gradient(600px 300px at 80% 100%,rgba(14,116,144,.08),transparent 50%);
+  background-size:24px 24px,24px 24px,auto,auto,auto}
 button,input,select,textarea{font:inherit;color:inherit}
-header{position:sticky;top:0;z-index:5;background:var(--p1);border-bottom:1px solid var(--ln);padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;display:flex;align-items:center;gap:8px}
-.logo{font-weight:800;color:var(--ac);font-size:17px}.sp{flex:1}
-.pill{font-size:12px;padding:4px 10px;border-radius:12px;background:var(--p2);color:var(--mu);border:0}.pill.on{background:var(--ac);color:#0b0f17;font-weight:700}
-.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;line-height:1.5;vertical-align:middle;margin:0 6px 0 0;border:0;pointer-events:none;letter-spacing:0}
-.badge.pend{background:#4a3a00;color:#ffd24d}
-.badge.rep{background:#4a2508;color:#ff8c42}
-.badge.back{background:#0a3d2a;color:#3dd68c}
-.badge.scrap{background:#3a1a20;color:#d0808a}
-main{padding:12px 12px calc(80px + env(safe-area-inset-bottom));max-width:640px;margin:0 auto}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--p1);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom)}
-nav button{flex:1;border:0;background:none;padding:12px 2px;color:var(--mu);font-size:13px}nav button.on{color:var(--ac);font-weight:700}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.card{background:var(--p1);border:1px solid var(--ln);border-radius:12px;padding:12px}
-.card .n{font-size:24px;font-weight:800;color:var(--ac)}.card .l{font-size:12px;color:var(--mu)}.card.warn .n{color:var(--red)}
-h3{margin:16px 0 8px;font-size:15px}
-.row{display:flex;align-items:center;gap:10px;background:var(--p1);border:1px solid var(--ln);border-radius:10px;padding:12px;margin:6px 0}
-.row .t{flex:1;min-width:0}.row .s{font-size:12px;color:var(--mu)}.q{font-size:20px;font-weight:800;min-width:44px;text-align:right}.low{color:var(--red)}
-input,select,textarea{width:100%;background:var(--p2);border:1px solid var(--ln);border-radius:10px;padding:11px;margin:4px 0 10px}
+button{cursor:pointer;transition:background-color .15s ease,color .15s ease,border-color .15s ease,box-shadow .15s ease,transform .15s ease}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;background:var(--grad);color:#fff;border-bottom:0;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;box-shadow:0 10px 32px rgba(30,27,75,.35);overflow:hidden}
+header::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(34,211,238,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.10) 1px,transparent 1px);background-size:22px 22px;opacity:.55;mask-image:linear-gradient(180deg,#000 40%,transparent);-webkit-mask-image:linear-gradient(180deg,#000 40%,transparent)}
+header::after{content:"";position:absolute;inset:-30% -15%;pointer-events:none;background:radial-gradient(ellipse 50% 60% at 82% 10%,rgba(34,211,238,.42),transparent 55%),radial-gradient(ellipse 40% 50% at 8% 110%,rgba(167,139,250,.28),transparent 50%);animation:halo 8s ease-in-out infinite alternate;will-change:transform,opacity}
+@keyframes halo{from{transform:translate3d(0,0,0);opacity:.8}to{transform:translate3d(-3%,5%,0);opacity:1}}
+header>*{position:relative;z-index:1}
+.logo{font-weight:800;color:var(--indigo);font-size:17px;letter-spacing:.04em}
+header .logo{color:#fff;text-shadow:0 0 12px rgba(34,211,238,.45)}
+.sp{flex:1}
+.pill{font-size:12px;padding:4px 10px;border-radius:12px;background:var(--p2);color:var(--mu);border:1px solid var(--ln)}
+.pill.on{background:var(--grad);color:#fff;font-weight:700;border-color:transparent;box-shadow:0 0 12px rgba(34,211,238,.35)}
+header .pill{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(34,211,238,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+header .pill.on{background:var(--cyan);color:#07202A;box-shadow:0 0 10px rgba(34,211,238,.55)}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;line-height:1.5;vertical-align:middle;margin:0 6px 0 0;border:1px solid transparent;pointer-events:none;letter-spacing:0}
+.badge.pend{background:#FEF3C7;color:#92400E;border-color:#F59E0B;box-shadow:0 0 10px rgba(245,158,11,.4)}
+.badge.rep{background:#FFEDD5;color:#9A3412;border-color:#FB923C;box-shadow:0 0 10px rgba(251,146,60,.4)}
+.badge.back{background:#D1FAE5;color:#065F46;border-color:#34D399;box-shadow:0 0 10px rgba(16,185,129,.35)}
+.badge.scrap{background:#F3E8EB;color:#9F1239;border-color:#E8A0A8;box-shadow:0 0 8px rgba(159,18,57,.22)}
+main{padding:12px 12px calc(80px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;background:rgba(255,255,255,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(34,211,238,.28);padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -8px 24px rgba(30,40,90,.08),0 -1px 12px rgba(34,211,238,.08);border-radius:20px 20px 0 0}
+nav button{flex:1;border:0;background:none;padding:14px 2px 10px;color:var(--mu);font-size:13px;position:relative}
+nav button.on{color:var(--ac);font-weight:700}
+nav button.on::before{content:"";position:absolute;top:5px;left:50%;transform:translateX(-50%);width:18px;height:3px;border-radius:99px;background:var(--cyan);box-shadow:0 0 8px #22D3EE,0 0 16px rgba(34,211,238,.7)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.card{background:rgba(255,255,255,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(14,116,144,.22);border-radius:16px;padding:12px;box-shadow:var(--shadow-sm),0 0 20px rgba(34,211,238,.1)}
+.card .n{font-size:24px;font-weight:800;color:var(--ac);font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em;text-shadow:0 0 14px rgba(34,211,238,.28)}
+.card .l{font-size:12px;color:var(--mu)}.card.warn .n{color:var(--red);text-shadow:0 0 14px rgba(225,29,72,.32)}
+h3{margin:16px 0 8px;font-size:15px;color:var(--indigo)}
+.row{display:flex;align-items:center;gap:10px;background:var(--p1);border:1px solid rgba(14,116,144,.2);border-radius:14px;padding:12px;margin:6px 0;box-shadow:var(--shadow-sm),0 0 0 1px rgba(255,255,255,.7) inset;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}
+.row .t{flex:1;min-width:0}.row .s{font-size:12px;color:var(--mu)}
+.q{font-size:20px;font-weight:800;min-width:44px;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}.low{color:var(--red)}
+.row.st-pend{border-color:rgba(245,158,11,.55);box-shadow:var(--shadow-sm),0 0 14px rgba(245,158,11,.22)}
+.row.st-rep{border-color:rgba(251,146,60,.6);box-shadow:var(--shadow-sm),0 0 14px rgba(251,146,60,.22)}
+.row.buywarn{border-color:var(--red);background:#FEF2F2;box-shadow:var(--shadow-sm),0 0 14px rgba(225,29,72,.16)}
+input,select,textarea{width:100%;background:var(--p1);border:1px solid var(--ln);border-radius:10px;padding:11px;margin:4px 0 10px;box-shadow:var(--shadow-sm)}
+input:focus,select:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(34,211,238,.22),0 0 16px rgba(34,211,238,.18);outline:0}
 label{font-size:12px;color:var(--mu)}
-.btn{border:1.5px solid #4a6080;border-radius:8px;padding:12px;font-weight:700;background:transparent;width:100%;margin:4px 0;color:#c5d4ea}
-.btn.ac{background:#2a4a8a;border-color:#2a4a8a;color:#fff}
-.btn.in{background:transparent;border-color:#3d7a5c;color:#8fd4b0}
-.btn.out{background:transparent;border-color:#8a3a48;color:#f08090}
-.btn.dg{background:transparent;border-color:#8a3038;color:#f09090}
+.btn{border:1.5px solid rgba(14,116,144,.4);border-radius:8px;padding:12px;font-weight:700;background:rgba(255,255,255,.85);width:100%;margin:4px 0;color:#1E3A5F}
+.btn.ac{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 8px 18px rgba(30,27,75,.25),0 0 14px rgba(34,211,238,.28)}
+.btn.in{background:transparent;border-color:#059669;color:#047857}
+.btn.out{background:transparent;border-color:#E11D48;color:#BE123C}
+.btn.dg{background:transparent;border-color:#9F1239;color:#9F1239}
 .btn.sm{width:auto;flex:0 0 auto;padding:8px 12px;margin:0;font-size:13px;white-space:nowrap;align-self:center}
 .two{display:flex;gap:8px}.two>*{flex:1}
 .seg{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}.seg button{flex:1;min-width:70px}
-.modal{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;z-index:9}.modal.on{display:flex}
-.sheet{background:var(--p1);width:100%;max-width:640px;margin:0 auto;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.modal{position:fixed;inset:0;background:rgba(30,27,75,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;align-items:flex-end;z-index:9}.modal.on{display:flex}
+.sheet{background:rgba(255,255,255,.96);width:100%;max-width:640px;margin:0 auto;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto;border:1px solid rgba(34,211,238,.28);box-shadow:var(--shadow),0 0 24px rgba(34,211,238,.16)}
 .lk{color:var(--mu);font-size:12px}footer{text-align:center;font-size:12px;color:var(--mu);margin-top:20px}
 .catr{padding:20px 16px;min-height:96px;border-width:2px}.catr b{font-size:24px;letter-spacing:1px}.catr .s{font-size:17px;margin-top:4px}.catr .q{font-size:30px}
-#toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--ac);color:#000;padding:8px 14px;border-radius:10px;display:none;z-index:10;font-weight:700}
-#lg{z-index:100!important}
+#toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:#12203A;color:#fff;padding:8px 14px;border-radius:10px;display:none;z-index:10;font-weight:700;box-shadow:var(--shadow),0 0 16px rgba(34,211,238,.2)}
+#lg{z-index:100!important;background:var(--bg)!important;background-image:linear-gradient(rgba(49,46,129,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(14,116,144,.05) 1px,transparent 1px),radial-gradient(700px 380px at 50% 0%,rgba(34,211,238,.16),transparent 55%)!important;background-size:24px 24px,24px 24px,auto!important}
+#lf{background:rgba(255,255,255,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(34,211,238,.28);border-radius:20px;padding:22px 18px;box-shadow:var(--shadow),0 0 24px rgba(34,211,238,.16)}
 #lg input{pointer-events:auto;-webkit-user-select:text;user-select:text;ime-mode:inactive}
 #cloudBar{pointer-events:none;z-index:90!important}
+.buypop{position:fixed;inset:0;background:rgba(30,27,75,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:999;display:flex;align-items:center;justify-content:center;padding:12px}
+.buypop-box{background:var(--p1);border:1px solid var(--red);border-radius:16px;max-width:480px;width:100%;max-height:85vh;overflow:auto;padding:14px;color:var(--tx);box-shadow:var(--shadow),0 0 20px rgba(225,29,72,.18)}
+.buypop-hd{display:flex;justify-content:space-between;align-items:center}
+.buypop-hd b{color:var(--red);font-size:17px}
+.buypop-x{font-size:18px;background:none;border:0;color:var(--mu);width:44px;height:44px}
+.buypop-item{border-bottom:1px solid var(--ln);padding:8px 0}
+@media(hover:hover){
+  .row:hover,.card:hover{transform:translateY(-1px);border-color:rgba(34,211,238,.55);box-shadow:0 10px 24px rgba(30,40,90,.12),0 0 18px rgba(34,211,238,.22)}
+  .row.buywarn:hover{border-color:var(--red)}
+  .row.st-pend:hover{border-color:rgba(245,158,11,.8)}
+  .row.st-rep:hover{border-color:rgba(251,146,60,.85)}
+  .btn:hover,.pill:hover{transform:translateY(-1px)}
+  nav button:hover{color:var(--ac)}
+}
+@media(min-width:800px){
+  header{padding-left:max(14px,calc(50vw - 360px));padding-right:max(14px,calc(50vw - 360px))}
+  nav{padding-left:max(12px,calc(50vw - 360px));padding-right:max(12px,calc(50vw - 360px))}
+  nav button{max-width:160px}
+  .modal{align-items:center;padding:24px 12px}
+  .sheet{border-radius:16px;max-height:85vh}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  header::after{animation:none!important}
+}
 </style></head><body>
 <header><span class="logo">📦 花壇備品倉儲</span><span class="sp"></span><button class="pill" id="lockBtn" onclick="logout()">登出</button></header>
 <div id="lg" style="position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px"><form id="lf" style="width:100%;max-width:360px" autocomplete="on"><div class="logo" style="font-size:24px;text-align:center">📦 花壇備品倉儲</div><div class="lk" style="text-align:center;margin:6px 0 18px">僅限授權人員登入</div><label for="lu">帳號</label><input id="lu" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" autofocus><label for="lp">密碼</label><input id="lp" name="password" type="password" autocomplete="current-password" inputmode="numeric" lang="en"><button class="btn ac" id="lb" type="submit">登入</button><div class="lk" style="text-align:center;margin-top:12px">內部備品管理，非正式 ERP・前端簡易登入，非企業級資安<br>電腦請用英文／數字鍵盤輸入密碼</div></form></div>
@@ -81,9 +155,9 @@ function badgePend(){return `<span class="badge pend">⏳待修</span>`}
 function badgeRep(dateStr){return `<span class="badge rep">🛠送修中${daysLabel(dateStr)}</span>`}
 function badgeBack(){return `<span class="badge back">✅已回廠</span>`}
 function badgeScrap(){return `<span class="badge scrap">🗑已報廢</span>`}
-const row=it=>`<div class="row" onclick="detail('${it.id}')" style="${it.pend||it.rep?"border-color:"+(it.rep?"#ff8c4266":"#f0b90b66"):""}"><div class="t"><b>${esc(label(it))} ${it.pend?badgePend():""}${it.rep?badgeRep(oldestRepDate(it.id)):""}</b><div class="s">${it.id}・${CATN[it.category]||esc(it.category)}${it.location?"・📍"+esc(it.location):""}</div></div><div class="q ${TOT(it)<=it.safety?"low":""}">${TOT(it)}<span class="s"> ${esc(it.unit)}</span><div class="s" style="font-size:11px">倉${it.qty}・場${it.floor||0}・待${it.pend||0}・修${it.rep||0}</div></div></div>`;
+const row=it=>`<div class="row${it.rep?" st-rep":it.pend?" st-pend":""}" onclick="detail('${it.id}')"><div class="t"><b>${esc(label(it))} ${it.pend?badgePend():""}${it.rep?badgeRep(oldestRepDate(it.id)):""}</b><div class="s">${it.id}・${CATN[it.category]||esc(it.category)}${it.location?"・📍"+esc(it.location):""}</div></div><div class="q ${TOT(it)<=it.safety?"low":""}">${TOT(it)}<span class="s"> ${esc(it.unit)}</span><div class="s" style="font-size:11px">倉${it.qty}・場${it.floor||0}・待${it.pend||0}・修${it.rep||0}</div></div></div>`;
 function render(){document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t==tab));lockUI();mig();_ors=null;let o="";
-if(tab=="home"){const low=S.items.filter(i=>TOT(i)<=i.safety);o=`<div class="cards"><div class="card"><div class="n">${S.items.length}</div><div class="l">品項數</div></div><div class="card"><div class="n">${S.items.reduce((a,i)=>a+TOT(i),0)}</div><div class="l">總庫存數</div><div class="s" style="font-size:11px">倉 ${S.items.reduce((a,i)=>a+i.qty,0)}・現場 ${S.items.reduce((a,i)=>a+(i.floor||0),0)}・待修 ${S.items.reduce((a,i)=>a+(i.pend||0),0)}・送修 ${S.items.reduce((a,i)=>a+(i.rep||0),0)}</div></div><div class="card warn"><div class="n">${low.length}</div><div class="l">低於最低庫存</div></div></div>`+(low.length?`<div class="row" style="border-color:var(--red);background:#2a1218" onclick="buyPop()"><div class="t"><b style="color:var(--red)">🛒 提醒採購：${low.length} 項已達最低庫存</b><div class="s">點一下查看全部待採購項目 ›</div></div></div>`:"");
+if(tab=="home"){const low=S.items.filter(i=>TOT(i)<=i.safety);o=`<div class="cards"><div class="card"><div class="n">${S.items.length}</div><div class="l">品項數</div></div><div class="card"><div class="n">${S.items.reduce((a,i)=>a+TOT(i),0)}</div><div class="l">總庫存數</div><div class="s" style="font-size:11px">倉 ${S.items.reduce((a,i)=>a+i.qty,0)}・現場 ${S.items.reduce((a,i)=>a+(i.floor||0),0)}・待修 ${S.items.reduce((a,i)=>a+(i.pend||0),0)}・送修 ${S.items.reduce((a,i)=>a+(i.rep||0),0)}</div></div><div class="card warn"><div class="n">${low.length}</div><div class="l">低於最低庫存</div></div></div>`+(low.length?`<div class="row buywarn" onclick="buyPop()"><div class="t"><b style="color:var(--red)">🛒 提醒採購：${low.length} 項已達最低庫存</b><div class="s">點一下查看全部待採購項目 ›</div></div></div>`:"");
  const ors=openRsend(),repN=S.items.reduce((a,i)=>a+(i.rep||0),0),pendN=S.items.reduce((a,i)=>a+(i.pend||0),0),scrapN=S.items.reduce((a,i)=>a+(i.scrap||0),0);
  if(pendN){o+=`<h3>⏳ 待修（${pendN} 件）</h3>`+S.items.filter(i=>(i.pend||0)>0).map(pendRow).join("")}
  if(ors.length||repN){o+=`<h3>🛠 送修中（${repN} 件・${ors.length} 筆未回）</h3>`+(ors.map(repRow).join("")||S.items.filter(i=>i.rep>0).map(row).join("")||`<div class="lk">無明細</div>`)}
@@ -99,8 +173,8 @@ o+=`<footer>內部備品管理，非正式 ERP・${window.WHC&&WHC.on?"資料雲
 function list(){const k=q.trim().toLowerCase();const ors=cat=="rep"?openRsend():null;if(cat=="pend"){ls.innerHTML=S.items.filter(i=>(i.pend||0)>0&&(!k||[i.id,i.name,i.spec,i.location,i.note].join(" ").toLowerCase().includes(k))).map(pendRow).join("")||`<div class="lk">目前沒有待修品項</div>`;return}if(cat=="rep"){ls.innerHTML=(ors.length?ors.filter(e=>!k||[e.label,e.vendor,e.date,e.id].join(" ").toLowerCase().includes(k)).map(repRow).join(""):S.items.filter(i=>(i.rep||0)>0).map(row).join(""))||`<div class="lk">目前沒有送修中品項</div>`;return}ls.innerHTML=S.items.filter(i=>(cat=="all"||i.category==cat)&&(!k||[i.id,i.name,i.spec,i.location,i.note].join(" ").toLowerCase().includes(k))).map(row).join("")||`<div class="lk">找不到</div>`}
 const aliveLog=()=>(S.log||[]).filter(l=>!l.deleted);
 function openRsend(){const q=[];const by={};for(const l of aliveLog()){if(l.type=="rsend"){const e={lid:l.lid,id:l.id,label:l.label,n:l.n,left:l.n,date:l.date,vendor:l.vendor||"",machine:l.machine||"",from:l.from,t:l.t,who:l.who};q.push(e);(by[l.id]=by[l.id]||[]).push(e)}else if(l.type=="rback"||(l.type=="scrap"&&l.from=="rep")){let n=l.n;(by[l.id]||[]).forEach(e=>{if(n<=0)return;const take=Math.min(e.left,n);e.left-=take;n-=take})}else if(l.type=="unscrap"&&l.from=="rep"){let n=l.n;[...(by[l.id]||[])].reverse().forEach(e=>{if(n<=0)return;const add=Math.min(e.n-e.left,n);e.left+=add;n-=add})}}return q.filter(e=>e.left>0)}
-function pendRow(it){const u=it.unit||"個";return`<div class="row" style="border-color:#f0b90b66"><div class="t" onclick="detail('${it.id}')"><b>${esc(label(it))} ${badgePend()}</b><div class="s">有 ${it.pend} ${esc(u)}待修・${it.id}${it.location?"・📍"+esc(it.location):""}</div></div>${unlocked()?`<button type="button" class="btn sm" onclick="event.stopPropagation();need(()=>rep('${it.id}','rsend','','pend'))">登記送修</button>`:""}</div>`}
-const repRow=e=>{const it=find(e.id);const pv=esc(e.vendor||"");const u=(it&&it.unit)||"個";const plain=e.left===e.n?`${e.left} ${u}在外送修`:`還有 ${e.left} ${u}在外送修（共送 ${e.n} ${u}）`;return`<div class="row" style="border-color:#ff8c4266"><div class="t" onclick="detail('${e.id}')"><b>${esc(e.label)} ${badgeRep(e.date)}</b><div class="s">${plain}・📅 ${esc(e.date||"")}${e.vendor?"・廠商："+esc(e.vendor):"・廠商未指定"}${e.machine?"・機台："+esc(e.machine):""}${e.from?"・自"+esc(fromTxt(e.from)):""}</div></div>${unlocked()?`<button type="button" class="btn sm" onclick="event.stopPropagation();need(()=>askRback('${e.id}','${pv}'))">登記回廠</button>`:""}</div>`};
+function pendRow(it){const u=it.unit||"個";return`<div class="row st-pend"><div class="t" onclick="detail('${it.id}')"><b>${esc(label(it))} ${badgePend()}</b><div class="s">有 ${it.pend} ${esc(u)}待修・${it.id}${it.location?"・📍"+esc(it.location):""}</div></div>${unlocked()?`<button type="button" class="btn sm" onclick="event.stopPropagation();need(()=>rep('${it.id}','rsend','','pend'))">登記送修</button>`:""}</div>`}
+const repRow=e=>{const it=find(e.id);const pv=esc(e.vendor||"");const u=(it&&it.unit)||"個";const plain=e.left===e.n?`${e.left} ${u}在外送修`:`還有 ${e.left} ${u}在外送修（共送 ${e.n} ${u}）`;return`<div class="row st-rep"><div class="t" onclick="detail('${e.id}')"><b>${esc(e.label)} ${badgeRep(e.date)}</b><div class="s">${plain}・📅 ${esc(e.date||"")}${e.vendor?"・廠商："+esc(e.vendor):"・廠商未指定"}${e.machine?"・機台："+esc(e.machine):""}${e.from?"・自"+esc(fromTxt(e.from)):""}</div></div>${unlocked()?`<button type="button" class="btn sm" onclick="event.stopPropagation();need(()=>askRback('${e.id}','${pv}'))">登記回廠</button>`:""}</div>`};
 
 const logTypeTxt=l=>l.type=="in"?"🟢 進":l.type=="out"?"🔴 領用→現場":l.type=="use"?"🔧 現場耗用":l.type=="wuse"?"📦 倉內耗用":l.type=="ret"?"↩ 退回倉庫":l.type=="rsend"?"🛠 送修("+(fromTxt(l.from)||"倉庫")+"→送修中)":l.type=="rback"?"回廠→倉庫":l.type=="pend"?"⏳ 轉待修("+(fromTxt(l.from)||"倉庫")+"→待修)":l.type=="pret"?"↩ 待修退回(待修→"+(fromTxt(l.from)||"倉庫")+")":l.type=="scrap"?"報廢("+(fromTxt(l.from)||"倉庫")+")":l.type=="unscrap"?"↩️ 撤銷報廢(→"+(fromTxt(l.from)||"倉庫")+")":"✏️";
 const logQtyTxt=l=>(l.type=="in"?"+":l.type=="out"||l.type=="use"||l.type=="wuse"||l.type=="scrap"?"-":l.type=="ret"||l.type=="pret"||l.type=="unscrap"||l.type=="rback"?"↩":l.type=="rsend"||l.type=="pend"?"→":"")+(l.n??"");
@@ -221,6 +295,6 @@ async function doReset(){if(!isAdmin())return toast("僅限管理員");const u=m
 function exp(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({items:S.items,log:S.log,hist:S.hist||[],vendors:S.vendors||[]},null,1)],{type:"application/json"}));a.download="warehouse-"+new Date().toISOString().slice(0,10)+".json";a.click()}
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});lf.onsubmit=e=>{e.preventDefault();doLogin()};users().then(()=>{gate();try{lu.focus()}catch(e){}});
 </script><script data-goatcounter="https://wujitycoon.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script><script>
-function buyPop(){const low=S.items.filter(i=>TOT(i)<=i.safety);const d=document.createElement('div');d.id='buypop';d.style.cssText='position:fixed;inset:0;background:#000a;z-index:999;display:flex;align-items:center;justify-content:center;padding:12px';d.onclick=e=>{if(e.target==d)d.remove()};
-d.innerHTML=`<div style="background:#161b26;border:1px solid var(--red);border-radius:12px;max-width:480px;width:100%;max-height:85vh;overflow:auto;padding:14px;color:#eee"><div style="display:flex;justify-content:space-between;align-items:center"><b style="color:var(--red);font-size:17px">🛒 需要採購（${low.length} 項）</b><button onclick="this.closest('#buypop').remove()" style="font-size:18px;background:none;border:0;color:#eee">✕</button></div>`+(low.map(i=>`<div style="border-bottom:1px solid #333;padding:8px 0"><b>${esc(label(i))}</b><div style="font-size:12px;opacity:.8">${CATN[i.category]||''}・總庫存 ${TOT(i)}（倉 ${i.qty}・現場 ${i.floor||0}・待修 ${i.pend||0}・送修 ${i.rep||0}）・最低 ${i.safety}・建議補 ${Math.max(1,i.safety-TOT(i)+1)}</div></div>`).join('')||'<p>目前沒有需要採購的項目</p>')+`</div>`;document.body.appendChild(d)}
+function buyPop(){const low=S.items.filter(i=>TOT(i)<=i.safety);const d=document.createElement('div');d.id='buypop';d.className='buypop';d.onclick=e=>{if(e.target==d)d.remove()};
+d.innerHTML=`<div class="buypop-box"><div class="buypop-hd"><b>🛒 需要採購（${low.length} 項）</b><button type="button" class="buypop-x" onclick="this.closest('#buypop').remove()">✕</button></div>`+(low.map(i=>`<div class="buypop-item"><b>${esc(label(i))}</b><div class="s">${CATN[i.category]||''}・總庫存 ${TOT(i)}（倉 ${i.qty}・現場 ${i.floor||0}・待修 ${i.pend||0}・送修 ${i.rep||0}）・最低 ${i.safety}・建議補 ${Math.max(1,i.safety-TOT(i)+1)}</div></div>`).join('')||'<p>目前沒有需要採購的項目</p>')+`</div>`;document.body.appendChild(d)}
 </script></body></html>
