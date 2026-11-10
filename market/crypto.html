@@ -1,46 +1,51 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#5B5CFF"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="assets/icon-192.png">
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#312E81"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="assets/icon-192.png">
 <title>舞吉股市大亨・虛擬幣交易</title>
 <style>
-:root{--bg:#F3F5FF;--p:#FFFFFF;--ln:#DDE3F5;--tx:#1A1F3C;--mu:#4A5270;--g:#059669;--r:#E11D48;--ac:#5B5CFF;--cy:#3B82F6;--pu:#7C3AED}
+:root{--bg:#E8EEF8;--p:#FFFFFF;--ln:rgba(14,116,144,.18);--tx:#12203A;--mu:#4A5270;--g:#059669;--r:#E11D48;--ac:#0E7490;--cy:#22D3EE;--pu:#7C3AED;--grad:linear-gradient(135deg,#1E1B4B 0%,#312E81 42%,#0E7490 100%);--mono:ui-monospace,"SF Mono","Cascadia Mono","Segoe UI Mono",Menlo,Monaco,Consolas,monospace}
 *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.45 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif;color-scheme:light}
-body{background-image:radial-gradient(900px 420px at 8% -8%,rgba(109,94,246,.2),transparent 55%),radial-gradient(700px 380px at 100% 0%,rgba(59,155,255,.14),transparent 50%);background-attachment:fixed}
-header{display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));border-bottom:0;background:linear-gradient(135deg,#6D5EF6 0%,#4F7CFF 52%,#3B9BFF 100%);color:#fff;flex-wrap:wrap;box-shadow:0 10px 28px rgba(79,82,255,.28)}
-header a{color:#fff!important;border-color:rgba(255,255,255,.35)!important;border-radius:999px;padding:4px 10px!important}
-.logo{color:#fff;font-weight:800;font-size:16px;letter-spacing:.02em}
-.tag{border:1px solid rgba(255,255,255,.4);color:#fff;padding:1px 8px;font-size:11px;line-height:18px;border-radius:999px;background:rgba(255,255,255,.14)}
-.tag.r{border-color:#fff;color:#4F46E5;background:#fff}
-.sp{flex:1}.clock{font-size:14px;color:#fff;font-variant-numeric:tabular-nums;font-weight:700}.utc{font-size:11px;color:rgba(255,255,255,.8);margin-right:4px}
-.live{display:inline-block;border:1px solid rgba(255,255,255,.4);color:#fff;padding:0 6px;font-size:11px;margin-right:2px;border-radius:999px;background:rgba(16,185,129,.25)}
+body{background-image:linear-gradient(rgba(49,46,129,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(14,116,144,.05) 1px,transparent 1px),radial-gradient(900px 420px at 8% -8%,rgba(49,46,129,.16),transparent 55%),radial-gradient(700px 380px at 100% 0%,rgba(34,211,238,.14),transparent 50%);background-size:24px 24px,24px 24px,auto,auto}
+header{position:relative;overflow:hidden;display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));border-bottom:0;background:var(--grad);color:#fff;flex-wrap:wrap;box-shadow:0 10px 32px rgba(30,27,75,.35)}
+header::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(34,211,238,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.10) 1px,transparent 1px);background-size:22px 22px;opacity:.55}
+header::after{content:"";position:absolute;inset:-30% -15%;pointer-events:none;background:radial-gradient(ellipse 50% 60% at 82% 10%,rgba(34,211,238,.42),transparent 55%),radial-gradient(ellipse 40% 50% at 8% 110%,rgba(167,139,250,.28),transparent 50%);animation:halo 8s ease-in-out infinite alternate}
+@keyframes halo{from{transform:translate3d(0,0,0);opacity:.8}to{transform:translate3d(-3%,5%,0);opacity:1}}
+header>*{position:relative;z-index:1}
+header a{color:#fff!important;border-color:rgba(34,211,238,.35)!important;border-radius:999px;padding:4px 10px!important}
+.logo{color:#fff;font-weight:800;font-size:16px;letter-spacing:.04em;text-shadow:0 0 12px rgba(34,211,238,.45)}
+.tag{border:1px solid rgba(34,211,238,.4);color:#fff;padding:1px 8px;font-size:11px;line-height:18px;border-radius:999px;background:rgba(255,255,255,.12)}
+.tag.r{border-color:var(--cy);color:#07202A;background:var(--cy)}
+.sp{flex:1}.clock{font-size:14px;color:#fff;font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;text-shadow:0 0 10px rgba(34,211,238,.45)}.utc{font-size:11px;color:rgba(255,255,255,.8);margin-right:4px;font-family:var(--mono)}
+.live{display:inline-block;border:1px solid rgba(34,211,238,.5);color:#fff;padding:0 6px;font-size:11px;margin-right:2px;border-radius:999px;background:rgba(16,185,129,.28);box-shadow:0 0 8px rgba(34,211,238,.25)}
 .stat{font-size:11px;color:#fff;border:1px solid rgba(255,255,255,.35);padding:0 6px;border-radius:999px}
-.mq{overflow:hidden;white-space:nowrap;border-bottom:0;background:rgba(255,255,255,.7);padding:6px 0;font-size:12px;box-shadow:0 2px 10px rgba(70,80,180,.06)}
+.mq{overflow:hidden;white-space:nowrap;border-bottom:0;background:rgba(255,255,255,.72);padding:6px 0;font-size:12px;box-shadow:0 2px 10px rgba(30,40,90,.06);font-family:var(--mono)}
 .mq div{display:inline-block;animation:mq 45s linear infinite;padding-left:100%}@keyframes mq{to{transform:translateX(-100%)}}
 .mq span{margin-right:22px}.u{color:var(--r)}.d{color:var(--g)}
 .grid{display:grid;gap:10px;padding:10px;grid-template-columns:280px 1fr 280px}
-.pn{background:var(--p);border:1px solid var(--ln);position:relative;min-width:0;border-radius:16px;box-shadow:0 8px 28px rgba(70,80,180,.08)}
-.pn h3{margin:0;font-size:12px;font-weight:700;color:var(--ac);padding:8px 12px;border-bottom:1px solid var(--ln);letter-spacing:0;display:flex;justify-content:space-between;background:linear-gradient(180deg,#F8F9FF,#fff);border-radius:16px 16px 0 0}
+.pn{background:rgba(255,255,255,.9);border:1px solid rgba(14,116,144,.22);position:relative;min-width:0;border-radius:16px;box-shadow:0 8px 28px rgba(30,40,90,.08),0 0 18px rgba(34,211,238,.08);transition:border-color .15s,box-shadow .15s}
+.pn:hover{border-color:rgba(34,211,238,.5);box-shadow:0 8px 28px rgba(30,40,90,.1),0 0 20px rgba(34,211,238,.2)}
+.pn h3{margin:0;font-size:12px;font-weight:700;color:var(--ac);padding:8px 12px;border-bottom:1px solid var(--ln);letter-spacing:0;display:flex;justify-content:space-between;background:linear-gradient(180deg,#F0FBFF,#fff);border-radius:16px 16px 0 0}
 .pn h3 em{font-style:normal;color:var(--mu);font-weight:500}.bd{padding:10px 12px}
-.big{font-size:32px;font-weight:800;color:var(--tx);letter-spacing:-.03em;font-variant-numeric:tabular-nums;transition:color .25s ease}
-.kv{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}.kv b{display:block;font-size:15px;color:var(--tx);font-variant-numeric:tabular-nums}.kv small{color:var(--mu);font-size:11px}
+.big{font-size:32px;font-weight:800;color:var(--tx);letter-spacing:-.03em;font-family:var(--mono);font-variant-numeric:tabular-nums;transition:color .25s ease;text-shadow:0 0 16px rgba(34,211,238,.28)}
+.kv{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}.kv b{display:block;font-size:15px;color:var(--tx);font-family:var(--mono);font-variant-numeric:tabular-nums}.kv small{color:var(--mu);font-size:11px}
 .cv{position:relative;overflow:hidden;width:100%;background:#fff;border-radius:0 0 16px 16px}.cv>canvas{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
-.ob{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}.ob td{padding:3px 8px;text-align:right;border-bottom:1px solid var(--ln)}.ob td:first-child{text-align:left}
-.ob tr.f{animation:fl .4s}@keyframes fl{0%{background:rgba(91,92,255,.16)}100%{background:transparent}}
-.mid{font-size:14px;text-align:center;padding:6px;border-block:1px solid var(--ln);color:var(--tx);background:#F8F9FF;font-weight:800}
-#list input,.amt{width:100%;background:#F8F9FF;border:1px solid var(--ln);color:var(--tx);padding:8px 10px;font:inherit;outline:none;font-size:13px;border-radius:10px}
-#list input:focus,.amt:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(91,92,255,.18)}
-#coins{max-height:220px;overflow:auto;margin-top:8px}.cr{display:flex;justify-content:space-between;padding:8px 6px;border-bottom:1px solid var(--ln);cursor:pointer;font-size:13px;border-radius:8px;transition:background .15s}.cr:hover,.cr.on{background:#EEF0FF}
-.tape{height:160px;overflow:hidden;font-size:12px}.tape div{display:grid;grid-template-columns:64px 48px 1fr 1fr;padding:4px 10px;border-bottom:1px solid var(--ln)}
+.ob{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono);font-variant-numeric:tabular-nums}.ob td{padding:3px 8px;text-align:right;border-bottom:1px solid var(--ln)}.ob td:first-child{text-align:left}
+.ob tr.f{animation:fl .4s}@keyframes fl{0%{background:rgba(34,211,238,.16)}100%{background:transparent}}
+.mid{font-size:14px;text-align:center;padding:6px;border-block:1px solid var(--ln);color:var(--tx);background:#F0FBFF;font-weight:800;font-family:var(--mono)}
+#list input,.amt{width:100%;background:#F0FBFF;border:1px solid var(--ln);color:var(--tx);padding:8px 10px;font:inherit;outline:none;font-size:13px;border-radius:10px}
+#list input:focus,.amt:focus{border-color:var(--cy);box-shadow:0 0 0 3px rgba(34,211,238,.2),0 0 12px rgba(34,211,238,.16)}
+#coins{max-height:220px;overflow:auto;margin-top:8px}.cr{display:flex;justify-content:space-between;padding:8px 6px;border-bottom:1px solid var(--ln);cursor:pointer;font-size:13px;border-radius:8px;transition:background .15s}.cr:hover,.cr.on{background:#ECFEFF}.cr>span:last-child{font-family:var(--mono)}
+.tape{height:160px;overflow:hidden;font-size:12px;font-family:var(--mono)}.tape div{display:grid;grid-template-columns:64px 48px 1fr 1fr;padding:4px 10px;border-bottom:1px solid var(--ln)}
 .spk{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 10px 16px}
 .spk .pn .bd{padding:6px 10px}.spk b{font-size:13px}
 .wide{grid-column:1/-1}.note{color:var(--mu);font-size:11px;line-height:1.6}
 .tbtn{display:flex;gap:8px;margin-top:8px}.tbtn button{flex:1;padding:10px;border:0;border-radius:12px;font:inherit;font-weight:800;cursor:pointer;font-size:14px;transition:transform .15s,box-shadow .15s}
-.buy{color:#fff;background:var(--r);box-shadow:0 8px 18px rgba(225,29,72,.25)}.sell{color:#fff;background:var(--g);box-shadow:0 8px 18px rgba(5,150,105,.25)}
+.buy{color:#fff;background:var(--r);box-shadow:0 8px 18px rgba(225,29,72,.25),0 0 12px rgba(225,29,72,.25)}.sell{color:#fff;background:var(--g);box-shadow:0 8px 18px rgba(5,150,105,.25),0 0 12px rgba(5,150,105,.25)}
 .tbtn button:hover{transform:translateY(-1px)}.tbtn button:active{transform:scale(.98)}
 .flick{animation:flick .18s ease}@keyframes flick{0%{transform:scale(1.04)}100%{transform:none}}
-#toast{border-radius:16px;background:#1A1F3C!important;color:#fff;border:0!important;box-shadow:0 8px 28px rgba(70,80,180,.18)}
+#toast{border-radius:16px;background:#12203A!important;color:#fff;border:0!important;box-shadow:0 8px 28px rgba(30,40,90,.18),0 0 16px rgba(34,211,238,.2)}
 @media(max-width:900px){.grid{grid-template-columns:1fr}.spk{grid-template-columns:1fr 1fr}.big{font-size:28px}header{flex-wrap:wrap}.clock{font-size:13px}}
 @media(max-width:520px){.grid{gap:8px;padding:8px}.ob td{padding:3px 6px}.tape{height:140px}}
 @media(hover:hover){.cr:hover{transform:translateX(2px)}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}header::after{animation:none!important}}
 html,body{overflow-x:hidden;max-width:100%}
 </style></head><body>
 <header><a href="./" style="color:var(--cy);text-decoration:none;border:1px solid var(--ln);padding:1px 6px">← 股市</a><span class="logo">舞吉・虛擬幣</span><span class="tag">模擬帳戶</span><span class="live" id="live">LIVE</span><span class="stat" id="src">BOOT</span><span class="sp"></span><span id="utc" class="utc"></span><span class="clock" id="clk"></span></header>
@@ -61,7 +66,7 @@ html,body{overflow-x:hidden;max-width:100%}
 </div>
 <div class="spk" id="spk"></div>
 <div id="toast" style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1A1F3C;border:0;border-radius:16px;color:#fff;padding:8px 14px;opacity:0;transition:opacity .3s;z-index:9"></div>
-<script src="i18n.js?v=28"></script><script src="store.js?v=28"></script>
+<script src="i18n.js?v=29"></script><script src="store.js?v=29"></script>
 <script>
 let S=null;
 const TOP=[["BTC","比特幣"],["ETH","以太幣"],["BNB","幣安幣"],["SOL","索拉納"],["XRP","瑞波幣"],["DOGE","狗狗幣"],["ADA","艾達幣"],["TRX","波場"],["AVAX","雪崩"],["LINK","Chainlink"],["DOT","波卡"],["TON","TON"],["SHIB","柴犬幣"],["LTC","萊特幣"],["BCH","比特現金"],["NEAR","NEAR"],["UNI","Uniswap"],["APT","Aptos"],["SUI","Sui"],["XLM","恆星幣"]];
