@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="2027 丁未羊年免費犯太歲查詢：輸入出生年即可查屬羊／牛／狗／鼠是否犯太歲，支援民俗與立春算法、全家一起查、下載安太歲行事曆。">
+<title>2027 犯太歲查詢｜炭武吉工作室</title>
+<style>
+:root{--bg:#faf7f2;--card:#fff;--ink:#1a1a1a;--muted:#5c5c5c;--brand:#7a1f1f;--gold:#d4a017;--ok:#1b5e20;--warn:#9a3412;--line:#e8e0d4}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:linear-gradient(160deg,#7a1f1f,#9b2c2c);color:#fff;padding:1.25rem 1rem 1.5rem}
+header h1{margin:0 0 .35rem;font-size:1.35rem}
+header p{margin:0;opacity:.92;font-size:.95rem}
+main{max-width:720px;margin:0 auto;padding:1rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1rem;margin-bottom:1rem;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+label{display:block;font-weight:600;margin:.55rem 0 .25rem;font-size:.92rem}
+input[type=number],input[type=date],input[type=time],input[type=text],select,textarea{width:100%;padding:.65rem .75rem;border:1px solid #d6cbb8;border-radius:10px;font-size:1rem;background:#fff}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+@media(max-width:520px){.row{grid-template-columns:1fr}}
+.seg{display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0 .8rem}
+.seg button{flex:1;min-width:8rem;padding:.6rem .7rem;border-radius:999px;border:1px solid #d6cbb8;background:#fff;font-size:.92rem;cursor:pointer}
+.seg button.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn{display:inline-block;width:100%;padding:.85rem 1rem;border:0;border-radius:12px;background:var(--brand);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;text-align:center;text-decoration:none}
+.btn.secondary{background:#fff;color:var(--brand);border:1.5px solid var(--brand);margin-top:.55rem}
+.btn.gold{background:var(--gold);color:#1a1a1a;margin-top:.55rem}
+.hint{font-size:.85rem;color:var(--muted);margin:.35rem 0 0}
+.result{border-left:4px solid var(--gold);padding:.75rem .9rem;background:#fff8e7;border-radius:0 10px 10px 0;margin:.6rem 0}
+.result.hit{border-left-color:var(--brand);background:#fff1f0}
+.result.ok{border-left-color:var(--ok);background:#f0fdf4}
+.result h3{margin:0 0 .35rem;font-size:1.05rem}
+.badge{display:inline-block;padding:.15rem .55rem;border-radius:999px;font-size:.78rem;font-weight:700;margin-right:.25rem}
+.badge.hit{background:#7a1f1f;color:#fff}
+.badge.ok{background:#1b5e20;color:#fff}
+.badge.info{background:#334155;color:#fff}
+.family-list{display:flex;flex-direction:column;gap:.5rem}
+.family-item{display:grid;grid-template-columns:1fr 1.2fr auto;gap:.4rem;align-items:end}
+@media(max-width:520px){.family-item{grid-template-columns:1fr 1fr}.family-item button.fr{grid-column:1/-1}}
+.family-item button{padding:.55rem .7rem;border-radius:10px;border:1px solid #d6cbb8;background:#faf7f2;cursor:pointer}
+footer{max-width:720px;margin:0 auto;padding:0 1rem 2rem;color:var(--muted);font-size:.8rem}
+footer a{color:var(--brand)}
+.sources{margin-top:.6rem}
+.sources li{margin-bottom:.25rem}
+.note{font-size:.85rem;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>2027 犯太歲查詢</h1>
+  <p>丁未羊年・免費・規則公開・全家一起查</p>
+</header>
+<main>
+  <section class="card">
+    <label>換年算法</label>
+    <div class="seg" role="group" aria-label="換年算法">
+      <button type="button" id="modeFolk" class="active">民俗算法（正月初一）</button>
+      <button type="button" id="modeLichun">八字算法（立春）</button>
+    </div>
+    <p class="hint" id="modeHint">安太歲、宮廟登記多用民俗算法。兩種結果不同時會一起列出。</p>
+
+    <div class="row">
+      <div>
+        <label for="year">出生年（國曆）</label>
+        <input id="year" type="number" inputmode="numeric" min="1924" max="2030" placeholder="例如 1991" value="">
+      </div>
+      <div>
+        <label for="date">出生日期（選填）</label>
+        <input id="date" type="date" min="1924-01-01" max="2030-12-31">
+      </div>
+    </div>
+    <div class="row" id="timeRow" style="display:none">
+      <div>
+        <label for="time">出生時間（立春邊界日選填）</label>
+        <input id="time" type="time">
+      </div>
+      <div></div>
+    </div>
+    <p class="hint">國曆 1、2 月出生建議填日期，才能正確判斷換年。時間只在立春當天（約 2/3–2/5）才需要。</p>
+    <button class="btn" id="btnQuery" type="button" style="margin-top:.9rem">查詢</button>
+  </section>
+
+  <section class="card" id="resultCard" hidden>
+    <h2 style="margin:0 0 .5rem;font-size:1.1rem">查詢結果</h2>
+    <div id="resultBox"></div>
+    <button class="btn secondary" id="btnIcs" type="button">下載 2027 安太歲行事曆（.ics）</button>
+    <a class="btn gold" href="https://portaly.cc/tanwuji" target="_blank" rel="noopener">看完整白話行動卡（宜忌＋每月提醒）</a>
+  </section>
+
+  <section class="card">
+    <h2 style="margin:0 0 .35rem;font-size:1.1rem">全家一起查</h2>
+    <p class="hint">一次輸入多個出生年，適合家人一起看。</p>
+    <div class="family-list" id="familyList"></div>
+    <button class="btn secondary" id="btnAddFamily" type="button">＋ 再加一人</button>
+    <button class="btn" id="btnFamilyQuery" type="button" style="margin-top:.55rem">一起查</button>
+    <div id="familyResult" style="margin-top:.75rem"></div>
+  </section>
+
+  <section class="card">
+    <h2 style="margin:0 0 .35rem;font-size:1.1rem">2027 怎麼看？</h2>
+    <p class="note">2027 太歲在「未」（羊）。屬<strong>羊</strong>（值）、<strong>牛</strong>（沖兼刑）、<strong>狗</strong>（刑兼破）、<strong>鼠</strong>（害）民間叫犯太歲。算法公開：地支 = (年−4) mod 12。</p>
+    <p class="note">立春換入丁未：2027/2/4 09:46（台灣時間）；民俗正月初一：2027/2/6。安太歲常見日：2027/2/14；謝太歲常見日：2028/1/20。以你去的宮廟公告為準。</p>
+  </section>
+</main>
+<footer>
+  <p>炭武吉工作室｜內容僅供參考與心安提醒，不保證任何效果。不是命理保證，也不能取代醫療、法律或財務專業意見。</p>
+  <p class="sources">資料來源（查詢規則）：</p>
+  <ul class="sources">
+    <li><a href="https://minglimr.com/liunian" target="_blank" rel="noopener">命理先生｜2027 流年</a></li>
+    <li><a href="https://lee.locker/zh-TW/liunian-2027/" target="_blank" rel="noopener">Mingli Paipan｜2027 丁未總覽</a></li>
+    <li><a href="https://shindan.kosazukari.com/zh-tw/wannianli/2027" target="_blank" rel="noopener">萬年曆 2027</a></li>
+    <li><a href="https://shunyanggong.tw/guides/an-tai-sui-2027/" target="_blank" rel="noopener">六埕順揚宮｜安太歲指南</a></li>
+  </ul>
+  <p><a href="../">← 回炭武吉工具</a></p>
+</footer>
+<script>
+(function(){
+const ZODIAC=['鼠','牛','虎','兔','龍','蛇','馬','羊','猴','雞','狗','豬'];
+const BRANCH=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const TS=7; // 2027 未
+const CNY={"1924":"1924-02-05","1925":"1925-01-24","1926":"1926-02-13","1927":"1927-02-02","1928":"1928-01-23","1929":"1929-02-10","1930":"1930-01-30","1931":"1931-02-17","1932":"1932-02-06","1933":"1933-01-26","1934":"1934-02-14","1935":"1935-02-04","1936":"1936-01-24","1937":"1937-02-11","1938":"1938-01-31","1939":"1939-02-19","1940":"1940-02-08","1941":"1941-01-27","1942":"1942-02-15","1943":"1943-02-05","1944":"1944-01-25","1945":"1945-02-13","1946":"1946-02-02","1947":"1947-01-22","1948":"1948-02-10","1949":"1949-01-29","1950":"1950-02-17","1951":"1951-02-06","1952":"1952-01-27","1953":"1953-02-14","1954":"1954-02-03","1955":"1955-01-24","1956":"1956-02-12","1957":"1957-01-31","1958":"1958-02-18","1959":"1959-02-08","1960":"1960-01-28","1961":"1961-02-15","1962":"1962-02-05","1963":"1963-01-25","1964":"1964-02-13","1965":"1965-02-02","1966":"1966-01-21","1967":"1967-02-09","1968":"1968-01-30","1969":"1969-02-17","1970":"1970-02-06","1971":"1971-01-27","1972":"1972-02-15","1973":"1973-02-03","1974":"1974-01-23","1975":"1975-02-11","1976":"1976-01-31","1977":"1977-02-18","1978":"1978-02-07","1979":"1979-01-28","1980":"1980-02-16","1981":"1981-02-05","1982":"1982-01-25","1983":"1983-02-13","1984":"1984-02-02","1985":"1985-02-20","1986":"1986-02-09","1987":"1987-01-29","1988":"1988-02-17","1989":"1989-02-06","1990":"1990-01-27","1991":"1991-02-15","1992":"1992-02-04","1993":"1993-01-23","1994":"1994-02-10","1995":"1995-01-31","1996":"1996-02-19","1997":"1997-02-07","1998":"1998-01-28","1999":"1999-02-16","2000":"2000-02-05","2001":"2001-01-24","2002":"2002-02-12","2003":"2003-02-01","2004":"2004-01-22","2005":"2005-02-09","2006":"2006-01-29","2007":"2007-02-18","2008":"2008-02-07","2009":"2009-01-26","2010":"2010-02-14","2011":"2011-02-03","2012":"2012-01-23","2013":"2013-02-10","2014":"2014-01-31","2015":"2015-02-19","2016":"2016-02-08","2017":"2017-01-28","2018":"2018-02-16","2019":"2019-02-05","2020":"2020-01-25","2021":"2021-02-12","2022":"2022-02-01","2023":"2023-01-22","2024":"2024-02-10","2025":"2025-01-29","2026":"2026-02-17","2027":"2027-02-06","2028":"2028-01-26","2029":"2029-02-13","2030":"2030-02-03"};
+const LICHUN={"1924":"1924-02-05T04:00","1925":"1925-02-04T09:46","1926":"1926-02-04T15:39","1927":"1927-02-04T21:31","1928":"1928-02-05T03:17","1929":"1929-02-04T09:09","1930":"1930-02-04T14:52","1931":"1931-02-04T20:41","1932":"1932-02-05T02:29","1933":"1933-02-04T08:10","1934":"1934-02-04T14:04","1935":"1935-02-04T19:48","1936":"1936-02-05T01:30","1937":"1937-02-04T07:26","1938":"1938-02-04T13:15","1939":"1939-02-04T19:01","1940":"1940-02-05T00:50","1941":"1941-02-04T06:40","1942":"1942-02-04T12:28","1943":"1943-02-04T18:18","1944":"1944-02-05T00:03","1945":"1945-02-04T05:58","1946":"1946-02-04T11:42","1947":"1947-02-04T17:33","1948":"1948-02-04T23:26","1949":"1949-02-04T05:14","1950":"1950-02-04T11:03","1951":"1951-02-04T16:54","1952":"1952-02-04T22:33","1953":"1953-02-04T04:24","1954":"1954-02-04T10:09","1955":"1955-02-04T16:00","1956":"1956-02-04T21:49","1957":"1957-02-04T03:34","1958":"1958-02-04T09:27","1959":"1959-02-04T15:13","1960":"1960-02-04T21:01","1961":"1961-02-04T02:53","1962":"1962-02-04T08:39","1963":"1963-02-04T14:28","1964":"1964-02-04T20:17","1965":"1965-02-04T02:07","1966":"1966-02-04T07:56","1967":"1967-02-04T13:44","1968":"1968-02-04T19:26","1969":"1969-02-04T01:17","1970":"1970-02-04T07:05","1971":"1971-02-04T12:55","1972":"1972-02-04T18:39","1973":"1973-02-04T00:31","1974":"1974-02-04T06:14","1975":"1975-02-04T12:00","1976":"1976-02-04T17:47","1977":"1977-02-03T23:34","1978":"1978-02-04T05:27","1979":"1979-02-04T11:13","1980":"1980-02-04T17:00","1981":"1981-02-04T22:46","1982":"1982-02-04T04:35","1983":"1983-02-04T10:17","1984":"1984-02-04T16:07","1985":"1985-02-04T22:01","1986":"1986-02-04T03:48","1987":"1987-02-04T09:38","1988":"1988-02-04T15:25","1989":"1989-02-04T21:14","1990":"1990-02-04T03:02","1991":"1991-02-04T08:52","1992":"1992-02-04T14:40","1993":"1993-02-04T20:28","1994":"1994-02-04T02:15","1995":"1995-02-04T08:04","1996":"1996-02-04T13:53","1997":"1997-02-04T19:39","1998":"1998-02-04T01:28","1999":"1999-02-04T07:19","2000":"2000-02-04T13:05","2001":"2001-02-04T18:54","2002":"2002-02-04T00:41","2003":"2003-02-04T06:31","2004":"2004-02-04T12:17","2005":"2005-02-04T18:07","2006":"2006-02-04T00:01","2007":"2007-02-04T05:48","2008":"2008-02-04T11:35","2009":"2009-02-04T17:25","2010":"2010-02-04T23:12","2011":"2011-02-04T04:59","2012":"2012-02-04T10:50","2013":"2013-02-04T16:38","2014":"2014-02-04T22:27","2015":"2015-02-04T04:15","2016":"2016-02-04T10:03","2017":"2017-02-04T15:51","2018":"2018-02-04T21:39","2019":"2019-02-04T03:28","2020":"2020-02-04T09:17","2021":"2021-02-04T15:05","2022":"2022-02-04T20:51","2023":"2023-02-04T02:42","2024":"2024-02-04T08:27","2025":"2025-02-04T14:10","2026":"2026-02-04T20:02","2027":"2027-02-04T09:46","2028":"2028-02-04T15:31","2029":"2029-02-03T21:20","2030":"2030-02-04T03:09"};
+const EXPLAIN={
+  '值':'值太歲（本命年）：生肖和太歲同一個地支。不是運氣變差，而是這一年「主角是你」，大小事比較容易回到你身上。',
+  '沖':'沖太歲：地支相對。意思是變動多一點——工作、住處、合作對象都比較容易有調整，提早留餘裕就好。',
+  '刑':'刑太歲：和規則、合約、是非有關。約定落在文字上、事情多確認一次，大部分麻煩都能提早看見。',
+  '破':'破太歲：事情容易出現小裂縫、計畫被打斷。分段完成、細節多看一眼。',
+  '害':'害太歲：比較像暗暗的消耗——誤會、傳話走樣、人情壓力。少攬不屬於自己的事、話講清楚就會輕鬆很多。'
+};
+const EXTRA={
+  6:'合太歲（六合）：屬馬與太歲相合，民間多視為吉利搭配，不是犯太歲。',
+  3:'三合：屬兔與亥卯未三合，不是犯太歲。',
+  11:'三合：屬豬與亥卯未三合，不是犯太歲。'
+};
+
+function branchIndex(year){return ((year-4)%12+12)%12;}
+function parseYMD(s){const[y,m,d]=s.split('-').map(Number);return {y,m,d};}
+function cmpDate(a,b){ // a,b = {y,m,d} or Date-like
+  if(a.y!==b.y) return a.y-b.y; if(a.m!==b.m) return a.m-b.m; return a.d-b.d;
+}
+
+function effectiveYearFolk(birthYear, birthDateStr){
+  if(!birthDateStr) return {year:birthYear, note:null};
+  const bd=parseYMD(birthDateStr);
+  const cnyStr=CNY[String(bd.y)];
+  if(!cnyStr) return {year:birthYear, note:'查表範圍外，暫以出生年計算'};
+  const cny=parseYMD(cnyStr);
+  // if birth date < that year's CNY → previous year
+  if(cmpDate(bd,cny)<0) return {year:bd.y-1, note:'民俗：正月初一前仍算前一年生肖'};
+  return {year:bd.y, note:null};
+}
+
+function effectiveYearLichun(birthYear, birthDateStr, birthTimeStr){
+  if(!birthDateStr) return {year:birthYear, note:null, needTime:false};
+  const bd=parseYMD(birthDateStr);
+  // before Feb: always previous; after Feb 5 typically current (lichun is 2/3-2/5)
+  if(bd.m===1 || (bd.m===2 && bd.d<=2)) return {year:bd.y-1, note:'立春前（約2/3–2/5前）算前一年', needTime:false};
+  if(bd.m>2 || (bd.m===2 && bd.d>=6)) return {year:bd.y, note:null, needTime:false};
+  // Feb 3-5: need lichun moment
+  const lcStr=LICHUN[String(bd.y)];
+  if(!lcStr) return {year:birthYear, note:'查表範圍外', needTime:false};
+  const [ldate,ltime]=lcStr.split('T');
+  const lc=parseYMD(ldate);
+  const [lh,lm]=(ltime||'12:00').split(':').map(Number);
+  if(cmpDate(bd,lc)<0) return {year:bd.y-1, note:'立春前算前一年', needTime:false};
+  if(cmpDate(bd,lc)>0) return {year:bd.y, note:'立春後算當年', needTime:false};
+  // same day
+  if(!birthTimeStr){
+    return {year:null, note:'立春當天需要出生時間才能確定', needTime:true, beforeYear:bd.y-1, afterYear:bd.y, lcLabel:ldate+' '+(ltime||'')};
+  }
+  const [bh,bm]=birthTimeStr.split(':').map(Number);
+  const before = (bh*60+bm) < (lh*60+lm);
+  return {year: before? bd.y-1 : bd.y, note: before? '立春時刻前算前一年':'立春時刻後算當年', needTime:false};
+}
+
+function offenses(idx){
+  const out=[];
+  if(idx===TS) out.push('值');
+  if(((idx-TS+12)%12)===6) out.push('沖');
+  // 刑
+  const sanxing=[[2,5,8],[1,10,7]]; // 寅巳申 / 丑戌未
+  for(const g of sanxing){
+    if(g.includes(idx) && g.includes(TS) && idx!==TS) out.push('刑');
+  }
+  if((idx===0&&TS===3)||(idx===3&&TS===0)) out.push('刑'); // 子卯
+  const zixing=[4,6,9,11]; // 辰午酉亥 self
+  if(idx===TS && zixing.includes(idx)) out.push('刑');
+  // 破 pairs
+  const po=[[0,9],[6,3],[5,8],[2,11],[4,1],[10,7]];
+  for(const [a,b] of po){ if((idx===a&&TS===b)||(idx===b&&TS===a)) out.push('破'); }
+  // 害 pairs
+  const hai=[[0,7],[1,6],[2,5],[3,4],[8,11],[9,10]];
+  for(const [a,b] of hai){ if((idx===a&&TS===b)||(idx===b&&TS===a)) out.push('害'); }
+  // unique preserve order
+  return [...new Set(out)];
+}
+
+function analyzeYear(effYear){
+  const idx=branchIndex(effYear);
+  const off=offenses(idx);
+  return {year:effYear, idx, zodiac:ZODIAC[idx], branch:BRANCH[idx], offenses:off, extra:EXTRA[idx]||null};
+}
+
+function queryOne(birthYear, birthDateStr, birthTimeStr, preferredMode){
+  const folk=effectiveYearFolk(birthYear, birthDateStr);
+  const li=effectiveYearLichun(birthYear, birthDateStr, birthTimeStr);
+  const folkA = folk.year!=null ? analyzeYear(folk.year) : null;
+  let liA=null, liAlt=null;
+  if(li.needTime){
+    liAlt={before:analyzeYear(li.beforeYear), after:analyzeYear(li.afterYear), lcLabel:li.lcLabel};
+  } else if(li.year!=null){
+    liA=analyzeYear(li.year);
+  }
+  return {folk, li, folkA, liA, liAlt, preferredMode};
+}
+
+function labelOff(off){
+  if(!off.length) return '未犯太歲';
+  // pretty labels matching md
+  const set=new Set(off);
+  if(set.has('值') && off.length===1) return '值太歲';
+  if(set.has('沖') && set.has('刑')) return '沖太歲（兼刑）';
+  if(set.has('刑') && set.has('破')) return '刑太歲兼破太歲';
+  if(set.has('害')) return '害太歲';
+  return off.map(x=>x+'太歲').join('、');
+}
+
+function renderAnalysis(a, title, note){
+  if(!a) return '';
+  const hit=a.offenses.length>0;
+  const cls=hit?'hit':'ok';
+  let html=`<div class="result ${cls}"><h3>${title}：屬${a.zodiac}（${a.branch}）`;
+  html+=` <span class="badge ${hit?'hit':'ok'}">${labelOff(a.offenses)}</span></h3>`;
+  if(note) html+=`<p class="note">${note}</p>`;
+  if(hit){
+    html+='<ul>'+a.offenses.map(o=>`<li><b>${o}太歲</b>：${EXPLAIN[o]}</li>`).join('')+'</ul>';
+  } else {
+    html+=`<p>以固定規則判斷，2027 未年此生肖不在犯太歲四肖（羊／牛／狗／鼠）內。${a.extra? a.extra:''}</p>`;
+  }
+  html+=`<p class="note">對應年支年份：${a.year}（地支 index ${(a.year-4)%12+((a.year-4)%12<0?12:0)} → ${a.branch}）</p>`;
+  html+='</div>';
+  return html;
+}
+
+function renderQuery(q){
+  const mode=q.preferredMode;
+  let html='';
+  if(mode==='folk'){
+    html+=renderAnalysis(q.folkA,'民俗算法（正月初一）', q.folk.note);
+    // show lichun if different or need time
+    if(q.liAlt){
+      html+=`<div class="result"><h3>八字算法（立春）需出生時間</h3><p class="note">立春時刻 ${q.liAlt.lcLabel}（台灣時間）。未填時間時兩種可能：</p>`;
+      html+=renderAnalysis(q.liAlt.before,'若立春前',null);
+      html+=renderAnalysis(q.liAlt.after,'若立春後',null);
+      html+='</div>';
+    } else if(q.liA && (!q.folkA || q.liA.year!==q.folkA.year || q.liA.zodiac!==q.folkA.zodiac)){
+      html+=renderAnalysis(q.liA,'八字算法（立春）結果不同', (q.li.note||'')+'　去廟裡登記時請照該廟的算法。');
+    }
+  } else {
+    if(q.liAlt){
+      html+=`<div class="result"><h3>立春當天需要出生時間</h3><p class="note">立春時刻 ${q.liAlt.lcLabel}（台灣時間）</p>`;
+      html+=renderAnalysis(q.liAlt.before,'若立春前',null);
+      html+=renderAnalysis(q.liAlt.after,'若立春後',null);
+      html+='</div>';
+    } else {
+      html+=renderAnalysis(q.liA,'八字算法（立春）', q.li.note);
+    }
+    if(q.folkA && q.liA && (q.folkA.year!==q.liA.year || q.folkA.zodiac!==q.liA.zodiac)){
+      html+=renderAnalysis(q.folkA,'民俗算法（正月初一）結果不同', (q.folk.note||'')+'　去廟裡登記時請照該廟的算法。');
+    } else if(q.folkA && q.liAlt){
+      html+=renderAnalysis(q.folkA,'民俗算法（正月初一）', q.folk.note);
+    }
+  }
+  return html;
+}
+
+// UI
+let mode='folk';
+const modeFolk=document.getElementById('modeFolk');
+const modeLichun=document.getElementById('modeLichun');
+const timeRow=document.getElementById('timeRow');
+modeFolk.onclick=()=>{mode='folk';modeFolk.classList.add('active');modeLichun.classList.remove('active');timeRow.style.display='none';};
+modeLichun.onclick=()=>{mode='lichun';modeLichun.classList.add('active');modeFolk.classList.remove('active');timeRow.style.display='grid';};
+
+function readMainInputs(){
+  let y=parseInt(document.getElementById('year').value,10);
+  const date=document.getElementById('date').value||'';
+  const time=document.getElementById('time').value||'';
+  if(!y && date) y=parseInt(date.slice(0,4),10);
+  return {y,date,time};
+}
+
+document.getElementById('btnQuery').onclick=()=>{
+  const {y,date,time}=readMainInputs();
+  if(!y || y<1924 || y>2030){alert('請輸入 1924–2030 的出生年');return;}
+  const q=queryOne(y,date,time,mode);
+  const box=document.getElementById('resultBox');
+  box.innerHTML=renderQuery(q);
+  document.getElementById('resultCard').hidden=false;
+  document.getElementById('resultCard').scrollIntoView({behavior:'smooth',block:'start'});
+};
+
+function icsEscape(s){return String(s).replace(/[\\;,\n]/g,m=>({'\\':'\\\\',';':'\\;',',':'\\,', '\n':'\\n'}[m]));}
+function buildICS(){
+  const events=[
+    {d:'20270214', summary:'安太歲／天公生（常見日）', desc:'傳統多在正月初一到十五安太歲，尤其初九天公生前後。請以你去的宮廟公告為準。'},
+    {d:'20280120', summary:'謝太歲／送神（常見日）', desc:'常見在農曆十二月廿四送神日前後謝太歲。部分宮廟日期不同，請以該廟公告為準。'},
+  ];
+  // lunar month first days 2027 from md
+  const months=[
+    ['20270206','正月初一'],['20270308','二月初一'],['20270407','三月初一'],['20270506','四月初一'],
+    ['20270605','五月初一'],['20270704','六月初一'],['20270802','七月初一'],['20270901','八月初一'],
+    ['20270930','九月初一'],['20271029','十月初一'],['20271128','十一月初一'],['20271228','十二月初一']
+  ];
+  for(const [d,name] of months){
+    events.push({d, summary:`農曆${name}・犯太歲月提醒`, desc:'打開你的白話行動卡，看當月一句提醒。內容僅供參考與心安提醒，不保證任何效果。'});
+  }
+  let out='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//TanWuji//Taisui2027//ZH-TW\r\nCALSCALE:GREGORIAN\r\n';
+  const stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+Z/,'Z');
+  events.forEach((e,i)=>{
+    out+=`BEGIN:VEVENT\r\nUID:taisui2027-${i}@tanwuji\r\nDTSTAMP:${stamp}\r\nDTSTART;VALUE=DATE:${e.d}\r\nSUMMARY:${icsEscape(e.summary)}\r\nDESCRIPTION:${icsEscape(e.desc)}\r\nEND:VEVENT\r\n`;
+  });
+  out+='END:VCALENDAR\r\n';
+  return out;
+}
+document.getElementById('btnIcs').onclick=()=>{
+  const blob=new Blob([buildICS()],{type:'text/calendar;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='2027-taisui-reminders.ics';
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+// family
+const familyList=document.getElementById('familyList');
+function addFamilyRow(prefill){
+  const div=document.createElement('div');
+  div.className='family-item';
+  div.innerHTML=`<div><label>稱呼（選填）</label><input type="text" class="fn" placeholder="例如：爸"></div>
+    <div><label>出生年</label><input type="number" class="fy" inputmode="numeric" min="1924" max="2030" placeholder="1991" value="${prefill||''}"></div>
+    <div><button type="button" class="fr">移除</button></div>`;
+  div.querySelector('.fr').onclick=()=>{div.remove();};
+  familyList.appendChild(div);
+}
+addFamilyRow(''); addFamilyRow('');
+document.getElementById('btnAddFamily').onclick=()=>addFamilyRow('');
+document.getElementById('btnFamilyQuery').onclick=()=>{
+  const rows=[...familyList.querySelectorAll('.family-item')];
+  let html='';
+  rows.forEach(r=>{
+    const name=r.querySelector('.fn').value.trim()||'未命名';
+    const y=parseInt(r.querySelector('.fy').value,10);
+    if(!y){html+=`<div class="result"><h3>${name}</h3><p class="note">尚未填出生年</p></div>`;return;}
+    const q=queryOne(y,'','',mode);
+    const a=mode==='folk'?q.folkA:q.liA;
+    html+=`<div style="margin-bottom:.4rem"><b>${name}</b></div>`+renderAnalysis(a, mode==='folk'?'民俗算法':'八字算法', null);
+  });
+  document.getElementById('familyResult').innerHTML=html||'<p class="note">請至少填一個出生年</p>';
+};
+
+// export for tests
+window.Taisui2027={branchIndex,offenses,analyzeYear,queryOne,labelOff,ZODIAC,TS,EXPLAIN};
+})();
+</script>
+<script data-goatcounter="https://wujitycoon.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
