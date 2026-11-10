@@ -1,7 +1,7 @@
 'use strict';
 /* 舞吉股市大亨 v1.2 — single-player simulated trading. Virtual coins only. State: localStorage wuji_market_v1 */
-const TIERS=[{id:'富家',e:'💎',m:10000000,d:'含著金湯匙出生，資金雄厚'},{id:'千金',e:'👑',m:1000000,d:'家境小康，起步不錯'},{id:'存款',e:'🐷',m:100000,d:'靠自己存下的第一桶金'}];
-const MK={tw:{name:'台股帳戶',cur:'TWD',short:'台股',unit:'虛擬幣（新台幣計價）'},us:{name:'美股帳戶',cur:'USD',short:'美股',unit:'虛擬幣（美元計價）'}};
+const TIERS=[{id:'富家',e:'💎',m:10000000,d:'高額起始資金，操作空間大'},{id:'千金',e:'👑',m:1000000,d:'中額起始資金，均衡配置'},{id:'存款',e:'🐷',m:100000,d:'基礎起始資金，適合入門'}];
+const MK={tw:{name:'台股帳戶',cur:'TWD',short:'台股',unit:'可用資金（新台幣）'},us:{name:'美股帳戶',cur:'USD',short:'美股',unit:'可用資金（美元）'}};
 const BOTS=[
  {id:'div',e:'🧓',n:'阿息',r:'高股息存股：開局平均買進高股息 ETF，之後抱著不動',tw:['0056','00878','00919'],us:['SCHD','VYM']},
  {id:'dip',e:'🐻',n:'小加',r:'跌了就加碼：開局買 3 成大盤 ETF，之後單日跌超過 1.5% 就再投入剩餘現金 2 成',tw:['0050'],us:['SPY']},
@@ -119,7 +119,7 @@ function renderNav(){const T=[['list','📋','行情'],['quote','📈','個股']
 function go(t){if(t==='battle'&&UI.tab!=='battle')UI.lbm=S.acct;UI.tab=t;render();scrollTo(0,0)}
 function swAcct(m){S.acct=m;save();UI.px='';UI.qty=1;UI.lot='lot';render()}
 function render(){if(!S){startSheet();return}setBody();renderTop();renderNav();({list:vList,quote:vQuote,port:vPort,ord:vOrd,battle:vBattle})[UI.tab]();if(REVQ.length)setTimeout(showReview,300)}
-const DISC='<div class="disc">模擬學習用，非投資建議，價格為盤後／延遲資料。全部為虛擬幣，無真錢、無儲值、無獎品。</div>';
+const DISC='<div class="disc">模擬帳戶・非投資建議。價格為盤後／延遲資料；無真錢、無儲值、無獎品。</div>';
 
 function vList(){const m=S.acct;
  $('#view').innerHTML=`<div class="srch"><input id="sq" placeholder="搜尋代號或名稱（${m==='tw'?'例：2330、台積':'例：AAPL、Apple'}）" value="${esc(UI.q)}" oninput="UI.q=this.value;vListRows()"></div><div class="lhead"><span>名稱／代號</span><span class="r">成交價</span><span class="r">漲跌幅</span></div><div id="rows"></div>
@@ -136,7 +136,7 @@ async function vQuote(){const m=S.acct,s=S.cur[m],x=D[m].map[s];if(!x){$('#view'
  <div class="t"><span class="px ${cls(c)}">${pxf(lp.p,m)}</span><span class="b ${cls(c)}">${c>0?'▲':c<0?'▼':''}${pxf(Math.abs(c),m)}　${pf(cp)}</span>${lp.q?`<span class="mu">盤中 ${hm(lp.q.ts)}${lp.q.mid?'（買賣中價）':''}・延遲</span>`:''}</div>
  <div class="grid4"><div><span>開盤</span>${pxf(x.o,m)}</div><div><span>最高</span><b class="${cls(x.h-x.pc)}">${pxf(x.h,m)}</b></div><div><span>最低</span><b class="${cls(x.l-x.pc)}">${pxf(x.l,m)}</b></div><div><span>${m==='tw'?'成交量(張)':'成交量(股)'}</span>${nf(m==='tw'?x.v/1000:x.v)}</div>
  <div><span>昨收</span>${pxf(x.pc,m)}</div><div><span>資料日</span>${x.d}</div><div><span>幣別</span>${MK[m].cur}</div><div><span>持有</span>${nf((S.a[m].pos[s]||{}).q||0)} 股</div></div></div>
- <div class="lgd"><span>日K</span><b style="color:#f0b90b">MA5</b><b style="color:#5b8def">MA20</b><b style="color:#c678dd">MA60</b><span class="sp"></span></div><div id="chart"></div>
+ <div class="lgd"><span>日K</span><b style="color:#D97706">MA5</b><b style="color:#3B82F6">MA20</b><b style="color:#A855F7">MA60</b><span class="sp"></span></div><div id="chart"></div>
  <div class="trade"><div class="book" id="book"></div><div class="op" id="op"></div></div>
  <div class="note">五檔為依收盤價產生的模擬掛單，非真實委買委賣。市價單：盤中以最新可得價格成交，收盤後排隊到下一次價格更新以開盤價成交；限價單：下一次價格更新觸及限價才成交，否則當日失效。${m==='tw'?'手續費 0.1425%（整張最低 20 元、零股最低 1 元），證交稅賣出 0.3%（ETF 0.1%、現股當沖 0.15%），手續費折扣可在 ⚙️ 設定，皆為模擬。':'美股佣金預設 0（可在 ⚙️ 設定），賣出另計 SEC 與 FINRA TAF 規費（模擬）。'}</div>${DISC}`;
  if(!UI.px)UI.px=String(x.c);renderBook(x);renderOp();
@@ -174,20 +174,20 @@ async function place(){const m=S.acct,s=S.cur[m],x=D[m].map[s],a=S.a[m],lot=m===
   save();renderOp()}
 function ma(b,n){const o=[];let s=0;b.forEach((x,i)=>{s+=x[4];if(i>=n)s-=b[i-n][4];if(i>=n-1)o.push({time:x[0],value:+(s/n).toFixed(3)})});return o}
 function drawChart(b,m){const el=$('#chart');if(!el||!window.LightweightCharts)return;el.innerHTML='';if(!b.length){el.innerHTML='<div class="empty">K 線資料累積中</div>';return}
- const up=m==='tw'?'#f6465d':'#0ecb81',dn=m==='tw'?'#0ecb81':'#f6465d';
- chart=LightweightCharts.createChart(el,{width:el.clientWidth,height:230,layout:{background:{color:'#0b0f17'},textColor:'#8b98ad',fontSize:10},grid:{vertLines:{color:'#151c2b'},horzLines:{color:'#151c2b'}},rightPriceScale:{borderColor:'#263045'},timeScale:{borderColor:'#263045'},crosshair:{mode:0},localization:{locale:'zh-TW'}});
+ const up=m==='tw'?'#E11D48':'#059669',dn=m==='tw'?'#059669':'#E11D48';
+ chart=LightweightCharts.createChart(el,{width:el.clientWidth,height:230,layout:{background:{color:'#ffffff'},textColor:'#4A5270',fontSize:11},grid:{vertLines:{color:'#E8EBF7'},horzLines:{color:'#E8EBF7'}},rightPriceScale:{borderColor:'#DDE3F5'},timeScale:{borderColor:'#DDE3F5'},crosshair:{mode:0},localization:{locale:'zh-TW'}});
  const cs=chart.addCandlestickSeries({upColor:up,downColor:dn,wickUpColor:up,wickDownColor:dn,borderVisible:false});cs.priceScale().applyOptions({scaleMargins:{top:.06,bottom:.26}});
  cs.setData(b.map(x=>({time:x[0],open:x[1],high:x[2],low:x[3],close:x[4]})));
  const vs=chart.addHistogramSeries({priceScaleId:'v',priceFormat:{type:'volume'},lastValueVisible:false,priceLineVisible:false});chart.priceScale('v').applyOptions({scaleMargins:{top:.8,bottom:0}});
  vs.setData(b.map(x=>({time:x[0],value:x[5],color:(x[4]>=x[1]?up:dn)+'88'})));
- [[5,'#f0b90b'],[20,'#5b8def'],[60,'#c678dd']].forEach(([n,c])=>chart.addLineSeries({color:c,lineWidth:1,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false}).setData(ma(b,n)));
+ [[5,'#D97706'],[20,'#3B82F6'],[60,'#A855F7']].forEach(([n,c])=>chart.addLineSeries({color:c,lineWidth:1,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false}).setData(ma(b,n)));
  const n=b.length;chart.timeScale().setVisibleLogicalRange({from:Math.max(0,n-70),to:n+1})}
 
 function vPort(){const m=S.acct,a=S.a[m],v=value(m),pl=v.mv-v.cost,ret=v.tot/S.init-1,ps=Object.entries(a.pos);
  $('#view').innerHTML=`<div class="card"><h3>${MK[m].name}・${MK[m].unit}</h3><div class="mu" style="font-size:11px">總資產</div><div class="big">${nf(v.tot,m==='us'?2:0)}</div><div class="${cls(ret)} b">總報酬 ${pf(ret)}（${nf(v.tot-S.init,0)}）</div>
- <div class="kv"><div><span>可用現金</span>${nf(a.cash-reserved(m).c,m==='us'?2:0)}</div><div><span>股票市值</span>${nf(v.mv,m==='us'?2:0)}</div><div><span>未實現損益</span><b class="${cls(pl)}">${nf(pl,0)}</b></div><div><span>已實現損益</span><b class="${cls(a.realized)}">${nf(a.realized,0)}</b></div><div><span>投胎本金</span>${nf(S.init)}（${S.tier}）</div><div><span>累計手續費＋稅／規費</span>${nf(a.fees,m==='us'?2:0)}</div><div><span>累計股利（淨）</span>${nf(a.divs||0,m==='us'?2:0)}</div></div></div>
+ <div class="kv"><div><span>可用現金</span>${nf(a.cash-reserved(m).c,m==='us'?2:0)}</div><div><span>股票市值</span>${nf(v.mv,m==='us'?2:0)}</div><div><span>未實現損益</span><b class="${cls(pl)}">${nf(pl,0)}</b></div><div><span>已實現損益</span><b class="${cls(a.realized)}">${nf(a.realized,0)}</b></div><div><span>起始本金</span>${nf(S.init)}（${S.tier}）</div><div><span>累計手續費＋稅／規費</span>${nf(a.fees,m==='us'?2:0)}</div><div><span>累計股利（淨）</span>${nf(a.divs||0,m==='us'?2:0)}</div></div></div>
  <div class="pos mu" style="font-size:10px;padding:6px 12px"><span>名稱／股數</span><span class="r">成本均價／現價</span><span class="r">損益／報酬率</span></div>
- ${ps.length?ps.map(([s,p])=>{const lp=last(m,s),mv=p.q*lp,g=mv-p.t,r=g/p.t;return`<div class="pos" onclick="openQ('${s}')"><div><div class="nm">${esc(qname(m,s))}</div><div class="mu">${s}・${nf(p.q)} 股${m==='tw'&&p.q>=1000?`（${nf(p.q/1000,p.q%1000?3:0)} 張）`:''}</div></div><div class="r">${pxf(p.t/p.q,m)}<br><b>${pxf(lp,m)}</b></div><div class="r"><b class="${cls(g)}">${nf(g,m==='us'?2:0)}</b><br><span class="${cls(g)}">${pf(r)}</span></div></div>`}).join(''):'<div class="empty">還沒有庫存，去「行情」挑一檔練習看看吧</div>'}
+ ${ps.length?ps.map(([s,p])=>{const lp=last(m,s),mv=p.q*lp,g=mv-p.t,r=g/p.t;return`<div class="pos" onclick="openQ('${s}')"><div><div class="nm">${esc(qname(m,s))}</div><div class="mu">${s}・${nf(p.q)} 股${m==='tw'&&p.q>=1000?`（${nf(p.q/1000,p.q%1000?3:0)} 張）`:''}</div></div><div class="r">${pxf(p.t/p.q,m)}<br><b>${pxf(lp,m)}</b></div><div class="r"><b class="${cls(g)}">${nf(g,m==='us'?2:0)}</b><br><span class="${cls(g)}">${pf(r)}</span></div></div>`}).join(''):'<div class="empty">還沒有庫存，去「行情」選一檔開始交易吧</div>'}
  <div class="note">成本均價含買進手續費。現價盤中為證交所延遲報價、其他時間為盤後價（資料日 ${D[m].asof||'—'}）。</div>${DISC}`}
 const ST={P:'委託中',F:'已成交',C:'已取消',E:'已失效',X:'失敗'};
 const odate=o=>o.fd||new Date(o.ts).toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'});
@@ -215,9 +215,9 @@ function cancelO(id){const o=S.orders.find(x=>x.id===id);if(o&&o.st==='P'&&confi
 async function vBattle(){const m=UI.lbm;setTimeout(renderVS,0);
  $('#view').innerHTML=`<div class="tabs2"><button class="${m==='tw'?'on':''}" onclick="UI.lbm='tw';vBattle()">台股排行</button><button class="${m==='us'?'on':''}" onclick="UI.lbm='us';vBattle()">美股排行</button></div><div class="card" id="vsai"><div class="empty">AI 實況計算中…</div></div><div class="card" id="lb"><div class="empty">計算中…</div></div>
  <div class="card"><h3>👥 真人對戰（即將推出）</h3><div class="mu" style="font-size:12px">跟朋友即時比報酬率、每週排行賽，需要雲端後台，之後開放。</div><button class="sec" disabled style="opacity:.5">即將推出</button></div>
- <div class="note">AI 對手和你同一天、同樣本金出發，每天用真實收盤價依固定規則自動操作（策略只是遊戲設定，不代表推薦）。排行依報酬率。</div>${DISC}`;
- if(S.mode!=='ai'){$('#lb').innerHTML=`<h3>🏆 對戰模式未開啟</h3><div class="mu" style="font-size:12px;margin-bottom:8px">你現在是單機模式。開啟後，4 位 AI 對手會從你投胎那天（${S.start[m]||'—'}）一起出發。</div><button class="cta" onclick="S.mode='ai';save();vBattle()">開啟 AI 對戰</button>`;return}
- const rows=[{e:'🙋',n:'你',r:`${S.tier}出身・自己操作`,v:value(m).tot,me:1}];for(const b of BOTS){const r=await simBot(b,m);rows.push({e:b.e,n:b.n,r:b.r,v:r.v})}
+ <div class="note">AI 對手和你同一天、同樣本金出發，每天用真實收盤價依固定規則自動操作（策略僅為系統設定，不代表推薦）。排行依報酬率。</div>${DISC}`;
+ if(S.mode!=='ai'){$('#lb').innerHTML=`<h3>🏆 對戰模式未開啟</h3><div class="mu" style="font-size:12px;margin-bottom:8px">你現在是單機模式。開啟後，4 位 AI 對手會從你開戶日（${S.start[m]||'—'}）一起出發。</div><button class="cta" onclick="S.mode='ai';save();vBattle()">開啟 AI 對戰</button>`;return}
+ const rows=[{e:'🙋',n:'你',r:`${S.tier}・自行操作`,v:value(m).tot,me:1}];for(const b of BOTS){const r=await simBot(b,m);rows.push({e:b.e,n:b.n,r:b.r,v:r.v})}
  if(UI.tab!=='battle'||UI.lbm!==m)return;rows.forEach(x=>x.ret=x.v/S.init-1);rows.sort((a,b)=>b.ret-a.ret);
  $('#lb').innerHTML=`<h3>🏆 ${MK[m].short}報酬率排行・起跑日 ${S.start[m]||'—'}</h3>${rows.map((x,i)=>`<div class="lb ${x.me?'me':''}"><div class="rk">${['🥇','🥈','🥉'][i]||i+1}</div><div><b>${x.e} ${x.n}</b><div class="rl">${x.r}</div></div><div class="r"><b class="${cls(x.ret)}">${pf(x.ret)}</b><div class="rl">${nf(x.v,0)}</div></div></div>`).join('')}`}
 
@@ -252,18 +252,18 @@ async function renderVS(){const el=$('#vsai');if(!el)return;VS=[];for(const m of
 const SITE='jialin3827-hue.github.io/wuji-tools/market/';
 function loadImg(u){return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=u})}
 async function shareCard(){const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
- const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0b0f17');g.addColorStop(1,'#141c2e');x.fillStyle=g;x.fillRect(0,0,W,H);
+ x.fillStyle='#F3F5FF';x.fillRect(0,0,W,H);const hg=x.createLinearGradient(0,0,W,0);hg.addColorStop(0,'#6D5EF6');hg.addColorStop(1,'#3B9BFF');x.fillStyle=hg;x.fillRect(0,0,W,280);
  const F='"PingFang TC","Noto Sans TC",system-ui,sans-serif';const logo=await loadImg('assets/icon-192.png');
- if(logo)x.drawImage(logo,72,72,128,128);x.fillStyle='#f0b90b';x.font='800 64px '+F;x.fillText('舞吉股市大亨',228,130);x.fillStyle='#8b98ad';x.font='36px '+F;x.fillText('我 vs AI 操盤實況',228,182);
- let y=300;for(const r of VS){if(!r)continue;x.fillStyle='#1b2438';x.beginPath();x.roundRect?x.roundRect(60,y,W-120,220,28):x.rect(60,y,W-120,220);x.fill();
-  x.fillStyle='#e6edf3';x.font='700 48px '+F;x.fillText(MKL[r.m],100,y+72);x.fillStyle='#8b98ad';x.font='30px '+F;x.fillText(r.start+' → '+r.end,100,y+120);
-  const col=v=>v>0?'#ff4d6a':v<0?'#22c55e':'#c9d1d9';x.textAlign='right';x.font='700 44px '+F;
-  if(r.me==null){x.fillStyle='#8b98ad';x.fillText('你：尚無交易',W-100,y+72)}else{x.fillStyle=col(r.me);x.fillText('你 '+pf(r.me),W-100,y+72)}
+ if(logo)x.drawImage(logo,72,72,128,128);x.fillStyle='#ffffff';x.font='800 64px '+F;x.fillText('舞吉股市大亨',228,130);x.fillStyle='rgba(255,255,255,.9)';x.font='36px '+F;x.fillText('我 vs AI 操盤實況',228,182);
+ let y=320;for(const r of VS){if(!r)continue;x.fillStyle='#ffffff';x.shadowColor='rgba(70,80,180,.14)';x.shadowBlur=24;x.shadowOffsetY=8;x.beginPath();x.roundRect?x.roundRect(60,y,W-120,220,28):x.rect(60,y,W-120,220);x.fill();x.shadowColor='transparent';x.shadowBlur=0;x.shadowOffsetY=0;
+  x.fillStyle='#1A1F3C';x.font='700 48px '+F;x.fillText(MKL[r.m],100,y+72);x.fillStyle='#4A5270';x.font='30px '+F;x.fillText(r.start+' → '+r.end,100,y+120);
+  const col=v=>v>0?'#E11D48':v<0?'#059669':'#4A5270';x.textAlign='right';x.font='700 44px '+F;
+  if(r.me==null){x.fillStyle='#4A5270';x.fillText('你：尚無交易',W-100,y+72)}else{x.fillStyle=col(r.me);x.fillText('你 '+pf(r.me),W-100,y+72)}
   x.fillStyle=col(r.ai);x.fillText('AI '+pf(r.ai),W-100,y+130);
-  if(r.me!=null){const d=r.me-r.ai;x.fillStyle=d>=0?'#f0b90b':'#8b98ad';x.font='700 36px '+F;x.fillText((d>=0?'領先 ':'落後 ')+nf(Math.abs(d)*100,1)+'%',W-100,y+186)}x.textAlign='left';y+=250}
- x.fillStyle='#8b98ad';x.font='30px '+F;x.fillText('虛擬資金模擬遊戲・僅供學習，非投資建議',72,H-130);x.fillStyle='#f0b90b';x.font='700 34px '+F;x.fillText(SITE,72,H-76);
+  if(r.me!=null){const d=r.me-r.ai;x.fillStyle=d>=0?'#5B5CFF':'#4A5270';x.font='700 36px '+F;x.fillText((d>=0?'領先 ':'落後 ')+nf(Math.abs(d)*100,1)+'%',W-100,y+186)}x.textAlign='left';y+=250}
+ x.fillStyle='#4A5270';x.font='30px '+F;x.fillText('模擬帳戶・僅供學習，非投資建議',72,H-130);x.fillStyle='#5B5CFF';x.font='700 34px '+F;x.fillText(SITE,72,H-76);
  const blob=await new Promise(r=>c.toBlob(r,'image/png'));const f=new File([blob],'wuji-battle.png',{type:'image/png'});
- try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'舞吉股市大亨戰績',text:'我 vs AI 操盤實況 https://'+SITE});return}}catch(e){if(e&&e.name==='AbortError')return}
+ try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'舞吉模擬帳戶戰績',text:'我 vs AI 操盤實況 https://'+SITE});return}}catch(e){if(e&&e.name==='AbortError')return}
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='wuji-battle.png';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);toast('已下載戰績圖')}
 
 /* ---------- 交易覆盤卡：賣出後依簡單規則給行為提醒（只描述行為，不給買賣建議） ---------- */
@@ -285,16 +285,16 @@ function closeReview(){const c=$('#rvoff');if(c&&c.checked)localStorage.setItem(
 
 /* ---------- start / menu ---------- */
 function startSheet(re){const M=$('#modal');M.classList.add('on');
- M.innerHTML=`<div class="sheet"><div style="text-align:center;font-size:40px">🪙📈</div><h1>投胎模式</h1><div class="lead">選一個出身，台股帳戶和美股帳戶各拿到同樣的虛擬幣開局。<br>白天玩台股、晚上玩美股！</div>
+ M.innerHTML=`<div class="sheet"><div style="text-align:center;font-size:40px">📈</div><h1>開立帳戶</h1><div class="lead">選擇起始資金方案，台股與美股帳戶各獲得相同可用資金。<br>白天交易台股、晚上交易美股。</div>
  ${TIERS.map(t=>`<button class="tier ${UI.tier===t.id?'on':''}" onclick="UI.tier='${t.id}';startSheet(${!!re})"><span class="e">${t.e}</span><span style="flex:1"><span class="n">${t.id}</span><br><span class="d">${t.d}</span></span><span class="m">${nf(t.m)}</span></button>`).join('')}
- <div class="lbl" style="margin-top:12px;font-size:12px">遊戲模式</div><div class="modes"><button class="${UI.mode==='solo'?'on':''}" onclick="UI.mode='solo';startSheet(${!!re})">🎮 單機模式</button><button class="${UI.mode==='ai'?'on':''}" onclick="UI.mode='ai';startSheet(${!!re})">🤖 對戰模式<br><small class="mu">vs AI</small></button><button disabled>👥 真人對戰<br><small>即將推出</small></button></div>
- <button class="cta" onclick="born()">投胎！</button>${re?'<button class="sec" onclick="closeM()">取消</button>':''}
- <div class="disc" style="margin-top:12px">模擬學習用，非投資建議，價格為盤後／延遲資料。全部為虛擬幣，不能儲值、不能換現金、沒有獎品。</div></div>`}
-function born(){if(S&&!confirm(`確定重新投胎成「${UI.tier}」？\n目前兩個帳戶的庫存和紀錄都會清空。`))return;const acct=S?S.acct:'tw';S=fresh(UI.tier,UI.mode);S.acct=acct;save();track('start');closeM();UI.tab='list';render();toast(`投胎成功！你是${UI.tier}出身`)}
+ <div class="lbl" style="margin-top:12px;font-size:12px">交易模式</div><div class="modes"><button class="${UI.mode==='solo'?'on':''}" onclick="UI.mode='solo';startSheet(${!!re})">單機模式</button><button class="${UI.mode==='ai'?'on':''}" onclick="UI.mode='ai';startSheet(${!!re})">對戰模式<br><small class="mu">vs AI</small></button><button disabled>真人對戰<br><small>即將推出</small></button></div>
+ <button class="cta" onclick="born()">開立帳戶</button>${re?'<button class="sec" onclick="closeM()">取消</button>':''}
+ <div class="disc" style="margin-top:12px">模擬帳戶・非投資建議。價格為盤後／延遲資料；不能儲值、不能換現金、沒有獎品。</div></div>`}
+function born(){if(S&&!confirm(`確定重新開戶為「${UI.tier}」？\n目前兩個帳戶的庫存和紀錄都會清空。`))return;const acct=S?S.acct:'tw';S=fresh(UI.tier,UI.mode);S.acct=acct;save();track('start');closeM();UI.tab='list';render();toast(`開戶成功！起始方案：${UI.tier}`)}
 function closeM(){$('#modal').classList.remove('on');$('#modal').innerHTML=''}
 function setCfg(k,v){S.cfg=Object.assign({},S.cfg,{[k]:v});save();menu()}
 function menu(){const M=$('#modal'),c=cfg();M.classList.add('on');const D2=[[1,'無折扣'],[0.6,'6 折'],[0.5,'5 折'],[0.38,'3.8 折'],[0.28,'2.8 折'],[0.2,'2 折']];const custom=!D2.some(x=>x[0]===c.disc);
- M.innerHTML=`<div class="sheet"><h1>⚙️ 設定</h1><div class="lead">${S.tier}出身・${S.mode==='ai'?'對戰模式（vs AI）':'單機模式'}・本金各 ${nf(S.init)}</div>
+ M.innerHTML=`<div class="sheet"><h1>⚙️ 設定</h1><div class="lead">${S.tier}・${S.mode==='ai'?'對戰模式（vs AI）':'單機模式'}・本金各 ${nf(S.init)}</div>
  <div class="card" style="margin:8px 0"><h3>🌐 語言</h3><div class="chips">${(window.LANGS||[]).map(([c,n])=>`<button class="${window.LANG===c?'on':''}" onclick="setLang('${c}')">${n}</button>`).join('')}</div></div>
  <div class="card" style="margin:8px 0"><h3>💸 交易成本設定（模擬）</h3>
  <div class="lbl">台股手續費折扣（0.1425% × 折扣後無條件捨去，再套最低手續費）</div><div class="chips">${D2.map(([v,t])=>`<button class="${c.disc===v?'on':''}" onclick="setCfg('disc',${v})">${t}</button>`).join('')}<button class="${custom?'on':''}" onclick="const v=prompt('輸入折扣（例：0.3 代表 3 折）','${c.disc}');if(v&&+v>0&&+v<=1)setCfg('disc',+v)">自訂${custom?' '+(+(c.disc*10).toFixed(2))+' 折':''}</button></div>
@@ -302,7 +302,7 @@ function menu(){const M=$('#modal'),c=cfg();M.classList.add('on');const D2=[[1,'
  <div class="lbl">美股每筆佣金（USD，多數美國券商為 0）</div><div class="chips">${[0,0.99,2.99].map(v=>`<button class="${+c.usComm===v?'on':''}" onclick="setCfg('usComm',${v})">$${v}</button>`).join('')}</div>
  <div class="note" style="padding:6px 0 0">整張最低手續費 20 元；證交稅賣出時收：股票 0.3%、ETF 0.1%、現股當沖 0.15%（至 2027/12/31）、債券 ETF 停徵（至 2026/12/31）。美股賣出規費：SEC 每百萬美元 20.60（2026/4/4 起）、FINRA TAF 每股 0.000195 上限 9.79（2026/10/1–12/31 暫停收取）。股利：台股二代健保 2.11%、美股預扣 30%。所得稅不模擬。</div></div>
  <button class="sec" onclick="S.mode=S.mode==='ai'?'solo':'ai';save();closeM();render()">切換成${S.mode==='ai'?'單機模式':'對戰模式（vs AI）'}</button>
- <button class="sec" onclick="UI.tier=S.tier;UI.mode=S.mode;startSheet(true)">🔄 重新投胎</button>
+ <button class="sec" onclick="UI.tier=S.tier;UI.mode=S.mode;startSheet(true)">🔄 重新開戶</button>
  <button class="sec" onclick="location.href='../budget/'">🌙 回月光存股模擬人生</button><button class="sec" onclick="closeM();render()">關閉</button>
  <div class="note">資料只存在你的手機（瀏覽器 localStorage）。台股行情：臺灣證券交易所、證券櫃檯買賣中心開放資料；美股：${esc((D.us||{}).src||'—')}。圖表：TradingView Lightweight Charts™（Apache-2.0）。</div></div>`}
 
