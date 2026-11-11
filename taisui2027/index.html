@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="2027 丁未羊年免費犯太歲查詢：輸入出生年即可查屬羊／牛／狗／鼠是否犯太歲，支援民俗與立春算法、全家一起查、下載安太歲行事曆。">
-<meta name="keywords" content="2027犯太歲,犯太歲查詢,屬羊,屬牛,屬狗,屬鼠,屬龍犯太歲,屬雞犯太歲,偏沖,安太歲">
+<meta name="description" content="2027 丁未羊年免費犯太歲查詢：輸入出生年即可查屬羊／牛／狗／鼠是否犯太歲，也可查日主天干。支援民俗與立春算法、全家一起查、下載安太歲行事曆。">
+<meta name="keywords" content="2027犯太歲,犯太歲查詢,屬羊,屬牛,屬狗,屬鼠,屬龍犯太歲,屬雞犯太歲,偏沖,安太歲,日主速查,天干,日柱">
 <title>2027 犯太歲查詢｜炭武吉工作室</title>
 <style>
 :root{--bg:#faf7f2;--card:#fff;--ink:#1a1a1a;--muted:#5c5c5c;--brand:#7a1f1f;--gold:#d4a017;--ok:#1b5e20;--warn:#9a3412;--line:#e8e0d4}
@@ -44,6 +44,9 @@ footer a{color:var(--brand)}
 .sources li{margin-bottom:.25rem}
 .note{font-size:.85rem;color:var(--muted)}
 hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
+.chk{font-weight:500;margin:.7rem 0 0;display:flex;align-items:flex-start;gap:.5rem;cursor:pointer}
+.chk input{width:auto;margin-top:.2rem;flex:none;accent-color:var(--brand)}
+.cta-note{font-size:.95rem;font-weight:700;margin:.9rem 0 .35rem}
 </style>
 </head>
 <body>
@@ -86,6 +89,19 @@ hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
     <div id="resultBox"></div>
     <button class="btn secondary" id="btnIcs" type="button">下載 2027 安太歲行事曆（.ics）</button>
     <a class="btn gold" href="https://payhip.com/b/WAJsu" target="_blank" rel="noopener">買完整白話行動卡 PDF（四肖合集・USD 1.99）</a>
+  </section>
+
+  <section class="card" id="tianganCard">
+    <h2 style="margin:0 0 .35rem;font-size:1.1rem">日主速查</h2>
+    <p class="hint">輸入國曆生日，查出你的日主天干。晚上 11 點後出生的人，有的老師會提早換日，結果會一併列出。</p>
+    <label for="tgDate">國曆生日</label>
+    <input id="tgDate" type="date" min="1900-01-01" max="2030-12-31">
+    <label class="chk" for="tgLate"><input id="tgLate" type="checkbox">晚上 11 點後出生</label>
+    <button class="btn" id="btnTiangan" type="button" style="margin-top:.9rem">查日主</button>
+    <div id="tgResult" style="margin-top:.75rem"></div>
+    <p class="cta-note">2027 天干財運行動卡 即將上架</p>
+    <a class="btn gold" href="https://payhip.com/b/WAJsu" target="_blank" rel="noopener">先看 2027 犯太歲行動卡</a>
+    <p class="hint">僅供參考、不保證功效</p>
   </section>
 
   <section class="card">
@@ -360,8 +376,75 @@ document.getElementById('btnFamilyQuery').onclick=()=>{
   document.getElementById('familyResult').innerHTML=html||'<p class="note">請至少填一個出生年</p>';
 };
 
+// 日主速查：1900-01-01＝甲戌（甲子起算第 10 號），JDN 2415021
+const GAN=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const ZHI=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const GAN_TYPE={甲:'甲木型',乙:'乙木型',丙:'丙火型',丁:'丁火型',戊:'戊土型',己:'己土型',庚:'庚金型',辛:'辛金型',壬:'壬水型',癸:'癸水型'};
+// 命理師師之後會提供正式版，先放溫和正向的一句話主題
+const GAN_BLURB={
+  甲:'把才華說出來、做出來，換成錢',
+  乙:'柔軟也能往上長，順著情勢走出自己的路',
+  丙:'把熱情大大照出來，暖到自己也暖到身邊的人',
+  丁:'把心裡那盞燈點穩，細火也能把路照亮',
+  戊:'把根基打得厚實，穩穩接住來得的機會',
+  己:'慢慢耕耘、好好照顧，收成會一點一點進來',
+  庚:'把事情削得清楚，決心能打開新的局面',
+  辛:'把細節打磨亮，精準也能換來信任',
+  壬:'讓活水流動起來，機會會順著水勢過來',
+  癸:'悄悄滋養該滋養的事，細水也能慢慢成河'
+};
+function julianDay(y,m,d){
+  const a=Math.floor((14-m)/12);
+  const y2=y+4800-a;
+  const m2=m+12*a-3;
+  return d+Math.floor((153*m2+2)/5)+365*y2+Math.floor(y2/4)-Math.floor(y2/100)+Math.floor(y2/400)-32045;
+}
+function dayPillarIndex(y,m,d){
+  return ((julianDay(y,m,d)-2415021+10)%60+60)%60;
+}
+function pillarFromIndex(idx){
+  return {gan:GAN[idx%10], zhi:ZHI[idx%12], idx, type:GAN_TYPE[GAN[idx%10]], blurb:GAN_BLURB[GAN[idx%10]]};
+}
+function dayPillar(y,m,d){return pillarFromIndex(dayPillarIndex(y,m,d));}
+
+function trackTiangan(){
+  const fire=()=>{try{const g=window.goatcounter;if(g&&typeof g.count==='function'){g.count({path:'event/tiangan-lookup',event:true});return true;}}catch(e){}return false;};
+  if(fire())return;
+  if(!window._gcq)window._gcq=[];
+  window._gcq.push(fire);
+  if(!window._gcqT){
+    window._gcqT=setInterval(()=>{
+      for(let i=(window._gcq||[]).length-1;i>=0;i--){if(window._gcq[i]&&window._gcq[i]())window._gcq.splice(i,1);}
+      if(!(window._gcq&&window._gcq.length)){clearInterval(window._gcqT);window._gcqT=0;}
+    },400);
+  }
+}
+
+function renderTiangan(track){
+  const raw=document.getElementById('tgDate').value;
+  const box=document.getElementById('tgResult');
+  if(!raw){alert('請選擇國曆生日');return false;}
+  const [y,m,d]=raw.split('-').map(Number);
+  if(!y||!m||!d){alert('請選擇有效的國曆生日');return false;}
+  const late=document.getElementById('tgLate').checked;
+  const p=dayPillar(y,m,d);
+  let html=`<div class="result"><h3>你的日主是${p.gan}（${p.type}）</h3><p>${p.blurb}</p>`;
+  if(late){
+    const n=pillarFromIndex((p.idx+1)%60);
+    html+=`<p class="note">若採早子時換日，則為${n.gan}（${n.type}）</p>`;
+  }
+  html+=`<p class="hint">以子夜 0 點換日計算，僅供參考。</p></div>`;
+  box.innerHTML=html;
+  if(track) trackTiangan();
+  return p;
+}
+document.getElementById('btnTiangan').onclick=()=>renderTiangan(true);
+document.getElementById('tgLate').onchange=()=>{
+  if(document.getElementById('tgDate').value && document.getElementById('tgResult').innerHTML) renderTiangan(false);
+};
+
 // export for tests
-window.Taisui2027={branchIndex,offenses,analyzeYear,queryOne,labelOff,ZODIAC,TS,EXPLAIN};
+window.Taisui2027={branchIndex,offenses,analyzeYear,queryOne,labelOff,ZODIAC,TS,EXPLAIN,julianDay,dayPillarIndex,dayPillar,pillarFromIndex,GAN,ZHI,GAN_TYPE,GAN_BLURB};
 })();
 </script>
 <script data-goatcounter="https://wujitycoon.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
