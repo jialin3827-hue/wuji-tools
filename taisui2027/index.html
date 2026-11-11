@@ -95,7 +95,7 @@ hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
     <h2 style="margin:0 0 .35rem;font-size:1.1rem">日主速查</h2>
     <p class="hint">輸入國曆生日，查出你的日主天干。晚上 11 點後出生的人，有的老師會提早換日，結果會一併列出。</p>
     <label for="tgDate">國曆生日</label>
-    <input id="tgDate" type="date" min="1900-01-01" max="2030-12-31">
+    <input id="tgDate" type="date" min="1900-01-01" max="2100-12-31">
     <label class="chk" for="tgLate"><input id="tgLate" type="checkbox">晚上 11 點後出生</label>
     <button class="btn" id="btnTiangan" type="button" style="margin-top:.9rem">查日主</button>
     <div id="tgResult" style="margin-top:.75rem"></div>
@@ -376,36 +376,216 @@ document.getElementById('btnFamilyQuery').onclick=()=>{
   document.getElementById('familyResult').innerHTML=html||'<p class="note">請至少填一個出生年</p>';
 };
 
-// 日主速查：1900-01-01＝甲戌（甲子起算第 10 號），JDN 2415021
-const GAN=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
-const ZHI=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
-const GAN_TYPE={甲:'甲木型',乙:'乙木型',丙:'丙火型',丁:'丁火型',戊:'戊土型',己:'己土型',庚:'庚金型',辛:'辛金型',壬:'壬水型',癸:'癸水型'};
-// 命理師師之後會提供正式版，先放溫和正向的一句話主題
-const GAN_BLURB={
-  甲:'把才華說出來、做出來，換成錢',
-  乙:'柔軟也能往上長，順著情勢走出自己的路',
-  丙:'把熱情大大照出來，暖到自己也暖到身邊的人',
-  丁:'把心裡那盞燈點穩，細火也能把路照亮',
-  戊:'把根基打得厚實，穩穩接住來得的機會',
-  己:'慢慢耕耘、好好照顧，收成會一點一點進來',
-  庚:'把事情削得清楚，決心能打開新的局面',
-  辛:'把細節打磨亮，精準也能換來信任',
-  壬:'讓活水流動起來，機會會順著水勢過來',
-  癸:'悄悄滋養該滋養的事，細水也能慢慢成河'
+// 日主速查：與 charms/rizhu-lookup/rizhu.js 同一套 JDN 公式
+// 基準：1949-10-01＝甲子（index 0），等價於 1900-01-01＝甲戌（JDN 2415021）
+const GAN='甲乙丙丁戊己庚辛壬癸';
+const ZHI='子丑寅卯辰巳午未申酉戌亥';
+const CARDS={
+  甲:{slug:'jia', type:'甲木型', theme:'才華說出來、做出來，作品換成錢'},
+  乙:{slug:'yi', type:'乙木型', theme:'好手藝養口碑，口碑帶來副業財'},
+  丙:{slug:'bing', type:'丙火型', theme:'同伴一起拚，合作賺錢帳要分清'},
+  丁:{slug:'ding', type:'丁火型', theme:'找到同路人，穩定產出累積財'},
+  戊:{slug:'wu', type:'戊土型', theme:'先學再賺，證照和貴人是本錢'},
+  己:{slug:'ji', type:'己土型', theme:'沉潛練功，磨亮獨門技能守錢包'},
+  庚:{slug:'geng', type:'庚金型', theme:'把責任扛穩，信用就是加薪本錢'},
+  辛:{slug:'xin', type:'辛金型', theme:'壓力變動力，用專業接下挑戰'},
+  壬:{slug:'ren', type:'壬水型', theme:'正財上門，錢跟著本業和責任來'},
+  癸:{slug:'gui', type:'癸水型', theme:'機會多也有壓力，抓大放小靠眼光'}
+};
+const JIEQI_MONTHS=[
+  {zhi:'寅', label:'寅月（2/4 立春–3/5）', start:'2027-02-04', end:'2027-03-05'},
+  {zhi:'卯', label:'卯月（3/6 驚蟄–4/4）', start:'2027-03-06', end:'2027-04-04'},
+  {zhi:'辰', label:'辰月（4/5 清明–5/5）', start:'2027-04-05', end:'2027-05-05'},
+  {zhi:'巳', label:'巳月（5/6 立夏–6/5）', start:'2027-05-06', end:'2027-06-05'},
+  {zhi:'午', label:'午月（6/6 芒種–7/6）', start:'2027-06-06', end:'2027-07-06'},
+  {zhi:'未', label:'未月（7/7 小暑–8/7）', start:'2027-07-07', end:'2027-08-07'},
+  {zhi:'申', label:'申月（8/8 立秋–9/7）', start:'2027-08-08', end:'2027-09-07'},
+  {zhi:'酉', label:'酉月（9/8 白露–10/7）', start:'2027-09-08', end:'2027-10-07'},
+  {zhi:'戌', label:'戌月（10/8 寒露–11/6）', start:'2027-10-08', end:'2027-11-06'},
+  {zhi:'亥', label:'亥月（11/7 立冬–12/6）', start:'2027-11-07', end:'2027-12-06'},
+  {zhi:'子', label:'子月（12/7 大雪–2028/1/5）', start:'2027-12-07', end:'2028-01-05'},
+  {zhi:'丑', label:'丑月（2028/1/6 小寒–2/3）', start:'2028-01-06', end:'2028-02-03'}
+];
+const MONTH_TIPS={
+  "甲": {
+    "寅": "年初訂一個「今年要賣出去的技能」，只訂一個。",
+    "卯": "多跟前輩、老師請教，先學好再開價。",
+    "辰": "整理帳本和收費方式，看看錢從哪裡進來。",
+    "巳": "點子多的月份，先寫下來，挑一個做成作品。",
+    "午": "最想表達的月份，重要訊息睡一晚再送出。",
+    "未": "作品換錢的好時機，主動報價、主動收款。",
+    "申": "工作要求變多，先排好優先順序再答應。",
+    "酉": "守規矩、守承諾，合約條款仔細看一遍。",
+    "戌": "有額外收入，先撥進倉庫帳戶，再談犒賞。",
+    "亥": "放慢腳步，進修或考一張證照，為明年打底。",
+    "子": "回顧今年的作品，挑出最好賣的一項。",
+    "丑": "結算這一年，留一筆存款，帶著作品集進下一年。"
+  },
+  "乙": {
+    "寅": "年初挑一位想學的老師或前輩，先學再做，夥伴的邀約慢慢評估。",
+    "卯": "適合一個人靜下來練功，把作品打磨到自己滿意。",
+    "辰": "有收入進來也有人想分一杯羹，合作的帳先寫清楚。",
+    "巳": "跟同好交流、互相曝光，說話保持溫和就好。",
+    "午": "作品和表達最順的月份，趁手感好多做幾件。",
+    "未": "口碑開始換成錢，副業可以主動報價、主動收款。",
+    "申": "本業要求變多，先把正職做好，副業放慢。",
+    "酉": "機會來得快也帶點壓力，接之前先算好時間。",
+    "戌": "本業有表現的機會，穩穩做，加薪升遷可以開口談。",
+    "亥": "壓力偏大的月份，用上課、看書、請教人來減壓。",
+    "子": "適合進修和整理經驗，為明年的副業打底。",
+    "丑": "結算這一年副業賺了多少，存一筆，再決定明年要不要擴大。"
+  },
+  "丙": {
+    "寅": "工作壓力和要求變多，先找人幫忙分工，再用學習補強自己。",
+    "卯": "主管或客戶的要求要守好，有長輩可以請教就多請教。",
+    "辰": "適合整理想法、規劃作品，有新點子先寫下來。",
+    "巳": "貴人和夥伴都在身邊，合作的事可以開始談。",
+    "午": "同伴最多的月份，聚會和請客要先設預算。",
+    "未": "競爭和輸出同時變強，說話溫和一點，作品先做出來。",
+    "申": "作品開始有回報，可以主動報價、收款。",
+    "酉": "把點子換成實際收入，報價要清楚。",
+    "戌": "有機會賺到額外的錢，先存一部分，不要全請客。",
+    "亥": "收入和壓力一起來，帳目和工作都排好優先順序。",
+    "子": "規矩和責任變多，按部就班，重要決定先睡一晚。",
+    "丑": "結算一年的合作，好的夥伴留下，帳不清的這次一起理清楚。"
+  },
+  "丁": {
+    "寅": "規矩和責任多，長輩或主管是你的靠山，先照制度做。",
+    "卯": "壓力偏大的月份，用學習和請教來化解，不要硬撐。",
+    "辰": "學東西很順，適合考證照、上課，有想法先寫下來。",
+    "巳": "直覺和研究心旺，也容易有人找你分錢，借貸先緩一緩。",
+    "午": "同伴最多的月份，聚會開心，預算先訂好。",
+    "未": "自主心最強，適合把手上的工作穩穩做出成果。",
+    "申": "作品換錢的好時機，可以主動報價、主動收款。",
+    "酉": "有額外收入的機會，先存一部分，再安排花用。",
+    "戌": "本業收入穩，說話保持溫和，避免頂撞。",
+    "亥": "有臨時的錢也有規矩要守，合約和條款仔細看。",
+    "子": "工作要求多，先排優先順序，再一件一件完成。",
+    "丑": "壓力月也是收尾月，用穩定的產出結算一年，存一筆再進下一年。"
+  },
+  "戊": {
+    "寅": "機會和壓力一起來，先看清楚條件，不急著衝。",
+    "卯": "收入和職位都有動靜，按制度做，主動回報進度。",
+    "辰": "工作壓力偏大，同伴可以分擔，一起扛。",
+    "巳": "主管要求多，也有長輩可以請教，邊做邊學。",
+    "午": "學習最順的月份，適合考試、上課、拿資格。",
+    "未": "貴人和人情同時多，學習繼續，花費設上限。",
+    "申": "同類能量旺，適合自己做主，把技能做成作品。",
+    "酉": "想法多、話也多，重要訊息睡一晚再送出。",
+    "戌": "有表現和輸出的機會，用作品說話。",
+    "亥": "有點額外收入的機會，先存一部分。",
+    "子": "收入比較有感的月份，主動整理帳本、增加存款比例。",
+    "丑": "結算一年拿到的資格和存款，人情開銷收一收，帶著證照進下一年。"
+  },
+  "己": {
+    "寅": "收入和職位都有機會，按規矩做，穩穩拿下。",
+    "卯": "有額外機會也有壓力，先評估自己的時間再接。",
+    "辰": "主管要求多，有同伴可以分擔，不用一個人扛。",
+    "巳": "壓力偏大，找老師、長輩或課程幫你撐住。",
+    "午": "學習最順的月份，挑一門技術深入學。",
+    "未": "研究心最強，練功的同時記得拿出來給人看。",
+    "申": "同伴和輸出都多，說話溫和一點，作品先做出來。",
+    "酉": "自主心旺，適合把練好的技術做成服務。",
+    "戌": "有輸出的機會，也有人想分一杯羹，合作先寫清楚。",
+    "亥": "技術開始換成錢，主動報價、主動收款。",
+    "子": "收入比較有感，先撥一部分存起來。",
+    "丑": "結算這一年練成的功夫，留一筆存款，帶著獨門技能進下一年。"
+  },
+  "庚": {
+    "寅": "點子和表現都順，有額外收入的機會，先記下來。",
+    "卯": "表達欲強，說話溫和一點，用作品爭取機會。",
+    "辰": "有額外收入，也是學習的好時機，邊賺邊學。",
+    "巳": "收入穩，壓力也來，先排優先順序。",
+    "午": "主管和客戶要求最多的月份，守規矩、按流程做。",
+    "未": "官印相生最明顯的月份，適合爭取升遷、加薪或重要任務。",
+    "申": "學習和貴人都在，適合考證照、上課。",
+    "酉": "有貴人也有人情花費，聚餐和請客設預算。",
+    "戌": "自主心強，適合把專業做成可以展示的成果。",
+    "亥": "同伴多，合作機會也多，帳目先講好。",
+    "子": "點子和輸出旺，報價、收款都主動一點。",
+    "丑": "結算一年的成果和存款，帶著新的資格進下一年。"
+  },
+  "辛": {
+    "寅": "點子多、機會也多，先挑一個最有把握的做。",
+    "卯": "表達順、有額外機會，報價說清楚再開始。",
+    "辰": "收入穩，也適合學習，把專業補強。",
+    "巳": "有機會財也有規矩，條件和合約仔細看。",
+    "午": "壓力和要求最多的月份，拆小步驟、按流程做。",
+    "未": "挑戰最大也最有舞台，用專業接下來，累了就說。",
+    "申": "有貴人和老師幫忙，適合學新技能。",
+    "酉": "專業和自主心旺，把經驗整理成作品。",
+    "戌": "同伴多也有人情花費，聚餐和借貸設上限。",
+    "亥": "自主心強，想法多，重要訊息睡一晚再送出。",
+    "子": "點子換成收入的好時機，主動報價、收款。",
+    "丑": "結算一年接下的挑戰，把它們寫進履歷，存一筆再進下一年。"
+  },
+  "壬": {
+    "寅": "同伴和點子都多，適合跟人一起規劃今年的收入。",
+    "卯": "有夥伴也有花費，表達欲強，聚餐預算先訂好。",
+    "辰": "作品和表達順，也有壓力，先做好再談條件。",
+    "巳": "表達和機會都多，副業可以試，本業先顧好。",
+    "午": "收入最有感的月份，主動收款、整理帳本。",
+    "未": "正財和正官最明顯的月份，適合談加薪、談長期合約，條件看清楚。",
+    "申": "壓力偏大，有專業和貴人幫忙，按步驟處理。",
+    "酉": "職位和學習都有機會，適合爭取任務、上課。",
+    "戌": "有學習機會也有壓力，用專業接下來。",
+    "亥": "貴人和同伴都在，重要事情多請教人。",
+    "子": "同伴多、花費也多，借貸和請客設上限。",
+    "丑": "結算一年的收入和責任，存一筆，帶著穩定的本業進下一年。"
+  },
+  "癸": {
+    "寅": "同伴和點子都多，先跟信任的人討論今年要抓的機會。",
+    "卯": "手感和表達很順，用作品爭取機會。",
+    "辰": "表達和規矩同時來，說話溫和，條件看清楚。",
+    "巳": "技術換錢的好時機，主動報價、收款。",
+    "午": "收入和機會最多的月份，挑最好的接，其餘先放。",
+    "未": "機會和壓力最集中的月份，量力接案，用流程撐住。",
+    "申": "有貴人和學習機會，適合補強技術。",
+    "酉": "壓力偏大，請教前輩、上課，用專業接下來。",
+    "戌": "職位和學習都有動靜，按規矩做，穩穩拿。",
+    "亥": "適合靜下來整理，同伴邀約先評估再答應。",
+    "子": "同伴多、花費也多，借貸和請客設上限。",
+    "丑": "結算一年抓到的機會，留下做得好的那一兩個，存一筆再進下一年。"
+  }
 };
 function julianDay(y,m,d){
   const a=Math.floor((14-m)/12);
-  const y2=y+4800-a;
-  const m2=m+12*a-3;
-  return d+Math.floor((153*m2+2)/5)+365*y2+Math.floor(y2/4)-Math.floor(y2/100)+Math.floor(y2/400)-32045;
+  const yy=y+4800-a;
+  const mm=m+12*a-3;
+  return d+Math.floor((153*mm+2)/5)+365*yy+Math.floor(yy/4)-Math.floor(yy/100)+Math.floor(yy/400)-32045;
+}
+function isValidDate(y,m,d){
+  if(!Number.isInteger(y)||!Number.isInteger(m)||!Number.isInteger(d)) return false;
+  if(y<1900||y>2100||m<1||m>12||d<1) return false;
+  const dim=[31,(y%4===0&&y%100!==0)||y%400===0?29:28,31,30,31,30,31,31,30,31,30,31];
+  return d<=dim[m-1];
 }
 function dayPillarIndex(y,m,d){
-  return ((julianDay(y,m,d)-2415021+10)%60+60)%60;
+  return ((julianDay(y,m,d)+49)%60+60)%60;
 }
 function pillarFromIndex(idx){
-  return {gan:GAN[idx%10], zhi:ZHI[idx%12], idx, type:GAN_TYPE[GAN[idx%10]], blurb:GAN_BLURB[GAN[idx%10]]};
+  const gan=GAN[idx%10], zhi=ZHI[idx%12], card=CARDS[gan];
+  return {gan, zhi, idx, type:card.type, theme:card.theme, slug:card.slug, card};
 }
 function dayPillar(y,m,d){return pillarFromIndex(dayPillarIndex(y,m,d));}
+
+function taipeiToday(){
+  return new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Taipei'});
+}
+function currentTipMeta(){
+  const today=taipeiToday();
+  if(today<'2027-02-04'){
+    return {preview:true, month:JIEQI_MONTHS[0], title:'2027 立春（2/4）起的第一個月提醒'};
+  }
+  const month=JIEQI_MONTHS.find(x=>today>=x.start && today<=x.end);
+  if(!month) return null;
+  return {preview:false, month, title:'本月提醒'};
+}
+function tipLine(gan, zhi){
+  const t=(MONTH_TIPS[gan]||{})[zhi];
+  return t||'';
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 function trackTiangan(){
   const fire=()=>{try{const g=window.goatcounter;if(g&&typeof g.count==='function'){g.count({path:'event/tiangan-lookup',event:true});return true;}}catch(e){}return false;};
@@ -420,21 +600,73 @@ function trackTiangan(){
   }
 }
 
+function shareUrl(){
+  const d=document.getElementById('tgDate').value;
+  const late=document.getElementById('tgLate').checked;
+  const u=new URL(location.pathname, location.origin);
+  u.searchParams.set('d', d);
+  if(late) u.searchParams.set('late','1');
+  return u.toString();
+}
+function syncAddr(){
+  try{ history.replaceState(null,'',shareUrl()); }catch(e){}
+}
+function copyShare(){
+  const url=shareUrl();
+  const done=()=>{
+    const btn=document.getElementById('btnShare');
+    if(btn){ btn.textContent='已複製'; setTimeout(()=>{ if(btn) btn.textContent='複製分享連結'; },1600); }
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done).catch(()=>{
+      const ta=document.createElement('textarea'); ta.value=url; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); }catch(e){}
+      ta.remove(); done();
+    });
+  } else {
+    const ta=document.createElement('textarea'); ta.value=url; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }catch(e){}
+    ta.remove(); done();
+  }
+}
+
+function renderMonthTip(gan, lateGan){
+  const meta=currentTipMeta();
+  if(!meta) return '';
+  const line=tipLine(gan, meta.month.zhi);
+  if(!line) return '';
+  let html=`<div class="result ok"><h3>${esc(meta.title)}</h3>`;
+  html+=`<p><b>${esc(meta.month.label)}</b>：${esc(line)}</p>`;
+  if(lateGan && lateGan!==gan){
+    const alt=tipLine(lateGan, meta.month.zhi);
+    const typ=CARDS[lateGan].type;
+    if(alt) html+=`<p class="note">若採早子時換日（${esc(typ)}）：${esc(alt)}</p>`;
+  }
+  html+=`<p class="hint">免費試讀，完整 12 個月見即將上架的天干財運行動卡。</p></div>`;
+  return html;
+}
+
 function renderTiangan(track){
   const raw=document.getElementById('tgDate').value;
   const box=document.getElementById('tgResult');
   if(!raw){alert('請選擇國曆生日');return false;}
   const [y,m,d]=raw.split('-').map(Number);
-  if(!y||!m||!d){alert('請選擇有效的國曆生日');return false;}
+  if(!isValidDate(y,m,d)){alert('請輸入 1900–2100 的有效國曆生日');return false;}
   const late=document.getElementById('tgLate').checked;
   const p=dayPillar(y,m,d);
-  let html=`<div class="result"><h3>你的日主是${p.gan}（${p.type}）</h3><p>${p.blurb}</p>`;
+  let html=`<div class="result"><h3>你的日主是${p.gan}（${p.type}）</h3><p>${esc(p.theme)}</p>`;
+  let lateGan=null;
   if(late){
     const n=pillarFromIndex((p.idx+1)%60);
-    html+=`<p class="note">若採早子時換日，則為${n.gan}（${n.type}）</p>`;
+    lateGan=n.gan;
+    html+=`<p class="note">若採早子時換日，則為${n.gan}（${n.type}）。${esc(n.theme)}</p>`;
   }
-  html+=`<p class="hint">以子夜 0 點換日計算，僅供參考。</p></div>`;
+  html+=`<p class="hint">以午夜 0 點換日計算，僅供參考。</p></div>`;
+  html+=renderMonthTip(p.gan, lateGan);
+  html+=`<button class="btn secondary" id="btnShare" type="button">複製分享連結</button>`;
   box.innerHTML=html;
+  document.getElementById('btnShare').onclick=copyShare;
+  syncAddr();
   if(track) trackTiangan();
   return p;
 }
@@ -443,8 +675,21 @@ document.getElementById('tgLate').onchange=()=>{
   if(document.getElementById('tgDate').value && document.getElementById('tgResult').innerHTML) renderTiangan(false);
 };
 
+(function applyQuery(){
+  const q=new URLSearchParams(location.search);
+  const raw=(q.get('d')||'').trim();
+  const m=raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m) return;
+  const y=+m[1], mo=+m[2], da=+m[3];
+  if(!isValidDate(y,mo,da)) return;
+  document.getElementById('tgDate').value=`${m[1]}-${m[2]}-${m[3]}`;
+  const late=q.get('late');
+  if(late==='1'||late==='true') document.getElementById('tgLate').checked=true;
+  renderTiangan(true);
+})();
+
 // export for tests
-window.Taisui2027={branchIndex,offenses,analyzeYear,queryOne,labelOff,ZODIAC,TS,EXPLAIN,julianDay,dayPillarIndex,dayPillar,pillarFromIndex,GAN,ZHI,GAN_TYPE,GAN_BLURB};
+window.Taisui2027={branchIndex,offenses,analyzeYear,queryOne,labelOff,ZODIAC,TS,EXPLAIN,julianDay,dayPillarIndex,dayPillar,pillarFromIndex,isValidDate,CARDS,MONTH_TIPS,JIEQI_MONTHS,currentTipMeta,taipeiToday,GAN,ZHI};
 })();
 </script>
 <script data-goatcounter="https://wujitycoon.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
