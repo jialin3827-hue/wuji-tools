@@ -5,71 +5,114 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="台中百元好食地圖：整理一餐約 100 元以內的便當、麵、小吃與早午餐，地圖與清單同步、可依區域與價格篩選。價格以公開食記為準，可能變動。">
 <title>台中百元好食地圖｜炭武吉工作室</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
 :root{
-  --bg:#f7f1e6;--card:#fffdf8;--ink:#1c140e;--muted:#6b5b4b;--brand:#c43c1a;--brand-dark:#8e2410;
-  --line:#ead9c4;--ok:#1b5e20;--chip:#fff;--map:#e8dfd0;--shadow:0 1px 3px rgba(80,40,10,.08);
+  --bg:#fff;--card:#fff;--ink:#111;--muted:#3a3a3a;--brand:#FF5A1F;--brand-ink:#111;
+  --link:#C43200;--line:#111;--warn:#9A2B00;--chip:#fff;--map:#f3f3f3;
+  --font:"Noto Sans TC","Noto Sans CJK TC","PingFang TC","Microsoft JhengHei",sans-serif;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
-a{color:var(--brand)}
-header{background:linear-gradient(160deg,#c43c1a,#9a2b12);color:#fff;padding:1rem 1rem 1.1rem}
-header h1{margin:0 0 .25rem;font-size:1.28rem;letter-spacing:.02em}
-header p{margin:0;opacity:.93;font-size:.9rem}
-.wrap{max-width:1280px;margin:0 auto}
-.filters{background:var(--card);border-bottom:1px solid var(--line);padding:.7rem 1rem;position:sticky;top:0;z-index:20}
-.filters .row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:.25rem 0}
-label.k{font-size:.78rem;font-weight:700;color:var(--muted);margin-right:.15rem}
-input[type=search]{flex:1;min-width:10rem;padding:.55rem .75rem;border:1px solid #dcc9b0;border-radius:10px;font-size:1rem;background:#fff}
-.chips{display:flex;gap:.35rem;flex-wrap:wrap}
-.chips button,.btn{appearance:none;border:1px solid #dcc9b0;background:var(--chip);border-radius:999px;padding:.35rem .7rem;font-size:.85rem;cursor:pointer;color:var(--ink)}
-.chips button.active,.seg button.active{background:var(--brand);border-color:var(--brand);color:#fff}
-.seg{display:flex;gap:.3rem;flex-wrap:wrap}
-.btn.brand{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+html,body{margin:0}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.5;font-weight:400}
+a{color:var(--link);text-underline-offset:.15em}
+a:hover{color:var(--ink)}
+a:focus-visible,button:focus-visible,input:focus-visible{
+  outline:3px solid var(--brand);outline-offset:2px;
+}
+.wrap{max-width:1280px;margin:0 auto}.filters .wrap{padding:0 1rem}
+header{background:#111;color:#fff;overflow:hidden}
+.ticker{background:#111;color:var(--brand);border-block:2px solid var(--brand);overflow:hidden;height:1.65rem;line-height:1.65rem;font-weight:900;font-size:.7rem;letter-spacing:.18em;white-space:nowrap}
+.ticker-track{display:inline-flex;width:max-content;animation:ticker 36s linear infinite}
+.ticker-track span{padding-right:1.5rem}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){
+  .ticker-track{animation:none}
+}
+.hero{padding:.7rem 1rem .85rem}
+.hero .kicker{margin:0 0 .15rem;font-size:.8rem;font-weight:700;color:var(--brand);letter-spacing:.28em}
+header h1{margin:0;font-weight:900;font-size:clamp(2.6rem, 11vw, 5.2rem);line-height:.92;letter-spacing:-.04em;color:#fff}
+header h1 .sub{display:block;font-size:.38em;letter-spacing:.08em;font-weight:900;color:var(--brand);margin-top:.15rem}
+.lead{margin:.55rem 0 0;font-size:.92rem;font-weight:700;color:#fff;max-width:40rem;line-height:1.45}
+.hero-rule{height:6px;background:repeating-linear-gradient(90deg,var(--brand) 0 18px,#111 18px 22px)}
+.filters{background:#fff;border-bottom:3px solid #111;padding:.7rem 0;position:sticky;top:0;z-index:20}
+.filters .row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:.28rem 0}
+label.k,span.k{font-size:.75rem;font-weight:900;color:var(--ink);letter-spacing:.08em;margin-right:.15rem}
+input[type=search]{flex:1;min-width:10rem;padding:.55rem .75rem;border:2px solid #111;border-radius:2px;font-size:1rem;background:#fff;color:#111;font-family:inherit}
+input[type=search]:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 2px var(--brand)}
+.chips,.seg{display:flex;gap:.35rem;flex-wrap:wrap}
+.chips button,.seg button,.btn{
+  appearance:none;border:2px solid #111;background:#fff;border-radius:2px;
+  padding:.32rem .7rem;font-size:.85rem;font-weight:700;cursor:pointer;color:#111;font-family:inherit
+}
+.chips button:hover,.seg button:hover,.btn:hover{background:#111;color:var(--brand)}
+.chips button.active,.seg button.active{
+  background:var(--brand);border-color:#111;color:#111;font-weight:900
+}
+.btn.brand{background:var(--brand);color:#111;font-weight:900}
 .btn:disabled{opacity:.55;cursor:not-allowed}
 .layout{display:flex;flex-direction:column;min-height:calc(100vh - 9rem)}
-#map{height:42vh;min-height:240px;background:var(--map);z-index:1}
-#listPane{background:var(--bg);padding:.75rem 1rem 1.25rem}
-#meta{font-size:.82rem;color:var(--muted);margin:0 0 .55rem}
+#map{height:42vh;min-height:240px;background:var(--map);z-index:1;border-bottom:3px solid #111}
+#listPane{background:#fff;padding:.75rem 1rem 1.25rem}
+#meta{font-size:.82rem;color:var(--muted);margin:0 0 .55rem;font-weight:700}
 #list{display:flex;flex-direction:column;gap:.55rem}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.75rem .85rem;box-shadow:var(--shadow);cursor:pointer;text-align:left;width:100%}
-.card:hover,.card.active{border-color:var(--brand);box-shadow:0 0 0 2px rgba(196,60,26,.18)}
-.card h3{margin:0 0 .15rem;font-size:1.02rem}
-.badges{display:flex;gap:.3rem;flex-wrap:wrap;margin:.15rem 0 .3rem}
-.badge{display:inline-block;font-size:.72rem;font-weight:700;border-radius:999px;padding:.1rem .45rem;background:#f3e4d2;color:#5a3b22}
-.badge.cat{background:#fde8e2;color:var(--brand-dark)}
-.price{font-weight:800;color:var(--brand);font-size:1.05rem}
-.addr,.note,.src{font-size:.8rem;color:var(--muted);margin:.15rem 0 0;overflow-wrap:anywhere}.nowrap{white-space:nowrap}
+.card{background:#fff;border:2px solid #111;border-radius:2px;padding:.75rem .85rem;cursor:pointer;text-align:left;width:100%}
+.card:hover{border-color:var(--brand)}
+.card.active{border-color:#111;box-shadow:inset 6px 0 0 var(--brand);background:#fff}
+.card h3{margin:0 0 .15rem;font-size:1.2rem;font-weight:900;letter-spacing:-.02em;line-height:1.2}
+.badges{display:flex;gap:.3rem;flex-wrap:wrap;margin:.15rem 0 .35rem}
+.badge{display:inline-block;font-size:.72rem;font-weight:900;border-radius:2px;padding:.12rem .45rem;background:#111;color:#fff;letter-spacing:.04em}
+.badge.cat{background:var(--brand);color:#111}
+.price{display:inline-block;font-weight:900;background:var(--brand);color:#111;font-size:1.05rem;padding:.05rem .45rem;border-radius:2px;line-height:1.3}
+.item-line{font-weight:700}
+.addr,.note,.src{font-size:.8rem;color:var(--muted);margin:.15rem 0 0;overflow-wrap:anywhere}
+.nowrap{white-space:nowrap}
 .actions{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.45rem}
-.actions a,.actions span{font-size:.82rem}
-.warn{color:#9a3412;font-size:.78rem;margin:.25rem 0 0}
-#empty{display:none;background:#fff8e7;border:1px dashed #d4a017;border-radius:12px;padding:1rem;text-align:center;color:var(--muted)}
+.actions a{font-size:.82rem;font-weight:900}
+.warn{color:var(--warn);font-size:.78rem;margin:.25rem 0 0;font-weight:700}
+#empty{display:none;background:#fff;border:2px dashed #111;border-radius:2px;padding:1rem;text-align:center;color:var(--ink);font-weight:700}
 #empty.show{display:block}
-#nearHint{font-size:.8rem;color:var(--muted);display:none;margin:.25rem 0 0}
+#nearHint{font-size:.8rem;color:var(--muted);display:none;margin:.25rem 0 0;font-weight:700}
 #nearHint.show{display:block}
 #districtPick{display:none;margin-top:.35rem}
 #districtPick.show{display:block}
 footer{padding:1.25rem 1rem 2rem;color:var(--muted);font-size:.82rem;max-width:1280px;margin:0 auto}
-footer h2{color:var(--ink);font-size:1rem;margin:0 0 .35rem}
-.contact{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.9rem 1rem;margin-bottom:1rem}
+footer h2{color:var(--ink);font-size:1.15rem;margin:0 0 .35rem;font-weight:900}
+.contact{background:#111;color:#fff;border:2px solid #111;border-radius:2px;padding:.95rem 1rem;margin-bottom:1rem}
+.contact h2{color:var(--brand)}
+.contact p{margin:.2rem 0 0;color:#fff}
+.contact a{color:var(--brand);font-weight:900}
+.contact a:hover{color:#fff}
 .leaflet-container{font-family:inherit}
-.popup h3{margin:0 0 .2rem;font-size:1rem}
+.leaflet-popup-content-wrapper{border-radius:2px;border:2px solid #111;box-shadow:none;color:#111}
+.leaflet-popup-tip{border:2px solid #111}
+.popup h3{margin:0 0 .2rem;font-size:1.05rem;font-weight:900}
 .popup p{margin:.15rem 0;font-size:.85rem}
+.popup a{font-weight:900}
+.food-pin{background:transparent !important;border:0 !important}
+.food-pin-inner{display:block;width:20px;height:20px;margin:4px auto 0;background:var(--brand);border:3px solid #111;border-radius:50% 50% 50% 0;transform:rotate(-45deg)}
+.food-pin.is-active .food-pin-inner{transform:rotate(-45deg) scale(1.2);box-shadow:0 0 0 3px #fff,0 0 0 5px #111}
 @media(min-width:900px){
-  .layout{flex-direction:row;height:calc(100vh - 11.5rem);min-height:520px}
-  #map{height:100%;flex:1.25;min-height:0}
+  .hero{padding:.75rem 1rem .85rem}
+  .filters{padding:.55rem 0}
+  .layout{flex-direction:row;min-height:0}
+  #map{height:100%;flex:1.25;min-height:0;border-bottom:0;border-right:3px solid #111}
   #listPane{flex:1;overflow:auto;max-width:440px}
 }
 </style>
 </head>
 <body>
 <header>
-  <div class="wrap">
-    <h1>台中百元好食地圖</h1>
-    <p>一餐約 NT$100 以內的便當、麵、小吃與早午餐・資料來自公開食記・@wuji_fbi</p>
+  <div class="ticker" aria-hidden="true"><div class="ticker-track"><span>台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記</span><span>台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記　·　台中百元好食　·　一餐一百　·　平價地圖　·　公開食記</span></div></div>
+  <div class="wrap hero">
+    <p class="kicker">台中 · 平價午餐</p>
+    <h1>百元好食<span class="sub">地圖</span></h1>
+    <p class="lead">一餐約 NT$100 以內的便當、麵、小吃與早午餐・資料來自公開食記・@wuji_fbi</p>
   </div>
+  <div class="hero-rule" aria-hidden="true"></div>
 </header>
 
 <div class="filters" id="filters">
@@ -118,9 +161,8 @@ footer h2{color:var(--ink);font-size:1rem;margin:0 0 .35rem}
     <p>若你是店家、或想推薦一餐 100 元以內的平價美食，請到 Threads 聯絡 <a href="https://www.threads.net/@wuji_fbi" target="_blank" rel="noopener">@wuji_fbi</a>，我們會查核地址與價格後再上架。</p>
   </div>
   <p>地圖圖磚與部分座標來自 <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 貢獻者（ODbL）。地圖函式庫使用 Leaflet。導航連結開往 Google 地圖，不使用付費地圖 API。</p>
-  <p>價格、營業與菜單以店家現場為準，可能隨時變動。本頁僅整理公開食記與報導，查核日期見各筆資料。</p>
+  <p>價格、營業與菜單以店家現場為準，可能隨時變動。本頁僅整理公開食記與報導，查核日期見各筆資料。標題字型為可商用開源字型 Noto Sans TC Black。</p>
 </footer>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 (function(){
@@ -235,6 +277,10 @@ footer h2{color:var(--ink);font-size:1rem;margin:0 0 .35rem}
   function focusPlace(id, fromList){
     state.activeId=id;
     document.querySelectorAll(".card").forEach(c=>c.classList.toggle("active", c.dataset.id===id));
+    Object.keys(markers).forEach(k=>{
+      const el=markers[k].getElement();
+      if(el) el.classList.toggle("is-active", k===id);
+    });
     const p=state.places.find(x=>x.id===id);
     if(!p) return;
     const card=document.querySelector(`.card[data-id="${id}"]`);
@@ -282,7 +328,7 @@ footer h2{color:var(--ink);font-size:1rem;margin:0 0 .35rem}
       navigator.geolocation.getCurrentPosition(pos=>{
         state.here=[pos.coords.latitude, pos.coords.longitude];
         if(userMarker) map.removeLayer(userMarker);
-        userMarker=L.circleMarker(state.here,{radius:8,color:"#1d4ed8",fillColor:"#60a5fa",fillOpacity:.9,weight:2}).addTo(map).bindPopup("你的位置");
+        userMarker=L.circleMarker(state.here,{radius:8,color:"#111",fillColor:"#fff",fillOpacity:1,weight:3}).addTo(map).bindPopup("你的位置");
         map.setView(state.here, 14);
         hint.textContent="已依距離排序。定位僅在你的裝置上使用，不會上傳。";
         applyFilters();
@@ -293,21 +339,41 @@ footer h2{color:var(--ink);font-size:1rem;margin:0 0 .35rem}
     });
   }
 
+
+  function sizeLayout(){
+    const layout=document.querySelector(".layout");
+    const header=document.querySelector("header");
+    const filters=document.querySelector(".filters");
+    if(!layout||!header||!filters) return;
+    if(window.matchMedia("(min-width:900px)").matches){
+      const h=header.offsetHeight+filters.offsetHeight;
+      layout.style.height=Math.max(320, window.innerHeight-h)+"px";
+    }else{
+      layout.style.height="";
+    }
+    if(map) map.invalidateSize();
+  }
+
   function initMap(places){
     map=L.map("map",{scrollWheelZoom:true}).setView(TC_CENTER, 12);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
       maxZoom:19,
       attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
+    const pin=L.divIcon({
+      className:"food-pin",
+      html:'<span class="food-pin-inner" aria-hidden="true"></span>',
+      iconSize:[28,36], iconAnchor:[14,34], popupAnchor:[0,-30]
+    });
     places.forEach(p=>{
       if(p.lat==null || p.lng==null) return;
-      const m=L.marker([p.lat,p.lng],{title:p.name});
+      const m=L.marker([p.lat,p.lng],{title:p.name, icon:pin});
       m.bindPopup(popupHtml(p));
       m.on("click", ()=>focusPlace(p.id, false));
       m.addTo(map);
       markers[p.id]=m;
     });
-    setTimeout(()=>map.invalidateSize(), 200);
+    setTimeout(()=>{sizeLayout(); map.invalidateSize();}, 200);
   }
 
   listEl=$("list"); metaEl=$("meta"); emptyEl=$("empty");
@@ -321,6 +387,9 @@ footer h2{color:var(--ink);font-size:1rem;margin:0 0 .35rem}
     setupNear();
     initMap(state.places);
     renderList();
+    sizeLayout();
+    window.addEventListener("resize", sizeLayout);
+    if(document.fonts&&document.fonts.ready) document.fonts.ready.then(sizeLayout);
     window.Food100={state, visible, focusPlace, renderList, applyFilters, mapsUrl};
   }).catch(err=>{
     $("meta").textContent="資料載入失敗，請稍後再試。";
