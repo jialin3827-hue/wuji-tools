@@ -17,7 +17,57 @@
       "sourceTitle": "Nini and Blue〈慈尚便當〉",
       "sourceDate": "2026-09-23",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "09:00",
+            "13:00"
+          ]
+        ],
+        "mon": [
+          [
+            "09:00",
+            "13:00"
+          ]
+        ],
+        "tue": [
+          [
+            "09:00",
+            "13:00"
+          ]
+        ],
+        "wed": [
+          [
+            "09:00",
+            "13:00"
+          ]
+        ],
+        "thu": [
+          [
+            "09:00",
+            "13:00"
+          ]
+        ],
+        "fri": [
+          [
+            "09:00",
+            "13:00"
+          ]
+        ],
+        "sat": [
+          [
+            "09:00",
+            "13:00"
+          ]
+        ]
+      },
+      "hoursNote": "晚餐時段不定期開放，未列入；公休日未載明",
+      "hoursSource": "https://niniandblue.com/blog/post/tsobox",
+      "hoursSourceTitle": "Nini and Blue〈慈尚便當〉",
+      "hoursSourceDate": "2026-09-23",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "youqing-canteen",
@@ -34,7 +84,47 @@
       "sourceTitle": "Cheer食在愛享像〈友青食堂〉",
       "sourceDate": "2026-11-05",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [],
+        "mon": [
+          [
+            "11:00",
+            "13:00"
+          ]
+        ],
+        "tue": [
+          [
+            "11:00",
+            "13:00"
+          ]
+        ],
+        "wed": [
+          [
+            "11:00",
+            "13:00"
+          ]
+        ],
+        "thu": [
+          [
+            "11:00",
+            "13:00"
+          ]
+        ],
+        "fri": [
+          [
+            "11:00",
+            "13:00"
+          ]
+        ],
+        "sat": []
+      },
+      "hoursNote": "",
+      "hoursSource": "https://cheer198.pixnet.net/blog/posts/958986518541228966",
+      "hoursSourceTitle": "Cheer食在愛享像〈友青食堂〉",
+      "hoursSourceDate": "2026-11-05",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "jengjong-qinghai",
@@ -51,7 +141,57 @@
       "sourceTitle": "LiuMouth〈正忠排骨飯青海店〉",
       "sourceDate": "2026-10-01",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "mon": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "tue": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "wed": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "thu": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "fri": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "sat": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ]
+      },
+      "hoursNote": "官網另註除夕至農曆初四公休",
+      "hoursSource": "http://www.jengjong.tw/branch.php?ms=4",
+      "hoursSourceTitle": "正忠排骨飯官網分店頁",
+      "hoursSourceDate": "2026-11-11",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "leshi",
@@ -68,7 +208,67 @@
       "sourceTitle": "鯊魚大口咬〈樂蒔〉",
       "sourceDate": "2026-03-17",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [],
+        "mon": [
+          [
+            "11:00",
+            "13:30"
+          ],
+          [
+            "17:00",
+            "19:45"
+          ]
+        ],
+        "tue": [
+          [
+            "11:00",
+            "13:30"
+          ],
+          [
+            "17:00",
+            "19:45"
+          ]
+        ],
+        "wed": [
+          [
+            "11:00",
+            "13:30"
+          ],
+          [
+            "17:00",
+            "19:45"
+          ]
+        ],
+        "thu": [
+          [
+            "11:00",
+            "13:30"
+          ],
+          [
+            "17:00",
+            "19:45"
+          ]
+        ],
+        "fri": [
+          [
+            "11:00",
+            "13:30"
+          ],
+          [
+            "17:00",
+            "19:45"
+          ]
+        ],
+        "sat": []
+      },
+      "hoursNote": "",
+      "hoursSource": "https://bigsharkgogogo.tw/leshifood/",
+      "hoursSourceTitle": "鯊魚大口咬〈樂蒔〉",
+      "hoursSourceDate": "2026-03-17",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "yutangchun",
@@ -85,7 +285,14 @@
       "sourceTitle": "阿新筆記〈玉堂春魯肉飯〉",
       "sourceDate": "2024-08-08",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": false,
+      "hours": null,
+      "hoursNote": "營業時間待確認：各來源對公休日記載不一致（有週三、週四兩種），不臆測。",
+      "hoursSource": "https://shin.tw/yuitangchun/",
+      "hoursSourceTitle": "阿新筆記〈玉堂春魯肉飯〉與其他食記比對",
+      "hoursSourceDate": "2024-08-08",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "caijia-noodles",
@@ -102,7 +309,52 @@
       "sourceTitle": "PopDaily〈2026 台中永興街銅板美食〉",
       "sourceDate": "2026",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "06:30",
+            "14:30"
+          ]
+        ],
+        "mon": [],
+        "tue": [
+          [
+            "06:30",
+            "14:30"
+          ]
+        ],
+        "wed": [
+          [
+            "06:30",
+            "14:30"
+          ]
+        ],
+        "thu": [
+          [
+            "06:30",
+            "14:30"
+          ]
+        ],
+        "fri": [
+          [
+            "06:30",
+            "14:30"
+          ]
+        ],
+        "sat": [
+          [
+            "06:30",
+            "14:30"
+          ]
+        ]
+      },
+      "hoursNote": "",
+      "hoursSource": "https://www.popdaily.com.tw/food/946164",
+      "hoursSourceTitle": "PopDaily〈2026 台中永興街銅板美食〉",
+      "hoursSourceDate": "2026",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "yongsheng-chicken",
@@ -119,7 +371,57 @@
       "sourceTitle": "PopDaily〈2026 台中永興街銅板美食〉",
       "sourceDate": "2026",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "11:30",
+            "23:30"
+          ]
+        ],
+        "mon": [
+          [
+            "11:30",
+            "23:30"
+          ]
+        ],
+        "tue": [
+          [
+            "11:30",
+            "23:30"
+          ]
+        ],
+        "wed": [
+          [
+            "11:30",
+            "23:30"
+          ]
+        ],
+        "thu": [
+          [
+            "11:30",
+            "23:30"
+          ]
+        ],
+        "fri": [
+          [
+            "11:30",
+            "23:30"
+          ]
+        ],
+        "sat": [
+          [
+            "11:30",
+            "23:30"
+          ]
+        ]
+      },
+      "hoursNote": "",
+      "hoursSource": "https://www.popdaily.com.tw/food/946164",
+      "hoursSourceTitle": "PopDaily〈2026 台中永興街銅板美食〉",
+      "hoursSourceDate": "2026",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "zhou-soup-dumpling",
@@ -136,7 +438,52 @@
       "sourceTitle": "PopDaily〈一中街銅板價美食〉",
       "sourceDate": "2024-09-30",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "15:30",
+            "23:00"
+          ]
+        ],
+        "mon": [],
+        "tue": [
+          [
+            "15:30",
+            "23:00"
+          ]
+        ],
+        "wed": [
+          [
+            "15:30",
+            "23:00"
+          ]
+        ],
+        "thu": [
+          [
+            "15:30",
+            "23:00"
+          ]
+        ],
+        "fri": [
+          [
+            "15:30",
+            "23:00"
+          ]
+        ],
+        "sat": [
+          [
+            "15:30",
+            "23:00"
+          ]
+        ]
+      },
+      "hoursNote": "",
+      "hoursSource": "https://taiwan17go.com/soupbag2020/",
+      "hoursSourceTitle": "熱血台中〈周湯包〉",
+      "hoursSourceDate": "2025-02-10",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "fat-chicken-cutlet",
@@ -153,7 +500,14 @@
       "sourceTitle": "PopDaily〈一中街銅板價美食〉",
       "sourceDate": "2024-09-30",
       "checked": "2026-11-11",
-      "geocodeNote": "待確認：Nominatim 查無「一中街20號」門牌（僅有 136之20 等相近編號，不予套用）"
+      "geocodeNote": "待確認：Nominatim 查無「一中街20號」門牌（僅有 136之20 等相近編號，不予套用）",
+      "hoursKnown": false,
+      "hours": null,
+      "hoursNote": "營業時間待確認：公開食記未列出完整營業時間與公休日。",
+      "hoursSource": "https://wp.popdaily.com.tw/article/443939",
+      "hoursSourceTitle": "PopDaily〈一中街銅板價美食〉",
+      "hoursSourceDate": "2024-09-30",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "mini-stinky-tofu",
@@ -170,7 +524,52 @@
       "sourceTitle": "PopDaily〈一中街銅板價美食〉",
       "sourceDate": "2024-09-30",
       "checked": "2026-11-11",
-      "geocodeNote": "待確認：Nominatim 查無「一中街20號」門牌（僅有 136之20 等相近編號，不予套用）"
+      "geocodeNote": "待確認：Nominatim 查無「一中街20號」門牌（僅有 136之20 等相近編號，不予套用）",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "12:00",
+            "22:00"
+          ]
+        ],
+        "mon": [
+          [
+            "16:00",
+            "22:00"
+          ]
+        ],
+        "tue": [],
+        "wed": [
+          [
+            "16:00",
+            "22:00"
+          ]
+        ],
+        "thu": [
+          [
+            "16:00",
+            "22:00"
+          ]
+        ],
+        "fri": [
+          [
+            "16:00",
+            "22:00"
+          ]
+        ],
+        "sat": [
+          [
+            "12:00",
+            "22:30"
+          ]
+        ]
+      },
+      "hoursNote": "",
+      "hoursSource": "https://evavin.com/shop/mini-stinky-tofu-yizhong",
+      "hoursSourceTitle": "Eva〈迷你一口臭豆腐〉",
+      "hoursSourceDate": "2026-11-04",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "wuji-crispy-baowan",
@@ -187,7 +586,52 @@
       "sourceTitle": "窩客島〈吳記脆皮肉圓〉",
       "sourceDate": "2024-11-06",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [],
+        "mon": [
+          [
+            "11:30",
+            "19:30"
+          ]
+        ],
+        "tue": [
+          [
+            "11:30",
+            "19:30"
+          ]
+        ],
+        "wed": [
+          [
+            "11:30",
+            "19:30"
+          ]
+        ],
+        "thu": [
+          [
+            "11:30",
+            "19:30"
+          ]
+        ],
+        "fri": [
+          [
+            "11:30",
+            "19:30"
+          ]
+        ],
+        "sat": [
+          [
+            "11:30",
+            "19:30"
+          ]
+        ]
+      },
+      "hoursNote": "",
+      "hoursSource": "https://www.walkerland.com.tw/article/view/400718",
+      "hoursSourceTitle": "窩客島〈吳記脆皮肉圓〉",
+      "hoursSourceDate": "2024-11-06",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "tempura-yicai",
@@ -204,7 +648,52 @@
       "sourceTitle": "PopDaily〈一中街銅板價美食〉",
       "sourceDate": "2024-09-30",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [],
+        "mon": [
+          [
+            "12:00",
+            "19:00"
+          ]
+        ],
+        "tue": [
+          [
+            "12:00",
+            "19:00"
+          ]
+        ],
+        "wed": [
+          [
+            "12:00",
+            "19:00"
+          ]
+        ],
+        "thu": [
+          [
+            "12:00",
+            "19:00"
+          ]
+        ],
+        "fri": [
+          [
+            "12:00",
+            "19:00"
+          ]
+        ],
+        "sat": [
+          [
+            "12:00",
+            "19:00"
+          ]
+        ]
+      },
+      "hoursNote": "食記註明售完為止，可能提早打烊",
+      "hoursSource": "https://sillycoupleblog.tw/taichung-north-food-theroadsidetempura-2605/",
+      "hoursSourceTitle": "傻蛋夫妻〈路邊炸蝦天婦羅〉",
+      "hoursSourceDate": "2026-05-01",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "zheng-dongshan-baowan",
@@ -221,7 +710,52 @@
       "sourceTitle": "聯合新聞網／涼子是也〈正東山肉圓〉",
       "sourceDate": "2026-11-09",
       "checked": "2026-11-11",
-      "geocodeNote": "待確認精確門牌：Nominatim 無北平路四段68號，改標東光市場（食記載店在市場內、昌平路與北平路口）"
+      "geocodeNote": "待確認精確門牌：Nominatim 無北平路四段68號，改標東光市場（食記載店在市場內、昌平路與北平路口）",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "10:15",
+            "18:30"
+          ]
+        ],
+        "mon": [
+          [
+            "10:15",
+            "18:30"
+          ]
+        ],
+        "tue": [
+          [
+            "10:15",
+            "18:30"
+          ]
+        ],
+        "wed": [],
+        "thu": [
+          [
+            "10:15",
+            "18:30"
+          ]
+        ],
+        "fri": [
+          [
+            "10:15",
+            "18:30"
+          ]
+        ],
+        "sat": [
+          [
+            "10:15",
+            "18:30"
+          ]
+        ]
+      },
+      "hoursNote": "",
+      "hoursSource": "https://travel.udn.com/travel/story/7207/9849021",
+      "hoursSourceTitle": "聯合新聞網／涼子是也〈正東山肉圓〉",
+      "hoursSourceDate": "2026-11-09",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "jengjong-changping",
@@ -239,7 +773,57 @@
       "sourceDate": "2026-10-01",
       "source2": "http://www.jengjong.tw/branch.php?ms=4",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "mon": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "tue": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "wed": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "thu": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "fri": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "sat": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ]
+      },
+      "hoursNote": "官網另註除夕至農曆初四公休",
+      "hoursSource": "http://www.jengjong.tw/branch.php?ms=4",
+      "hoursSourceTitle": "正忠排骨飯官網分店頁",
+      "hoursSourceDate": "2026-11-11",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "zhedouyou-fried",
@@ -257,7 +841,52 @@
       "sourceDate": "2024-03-14",
       "source2": "https://fun.taichung.gov.tw/shop/view/20689",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [],
+        "mon": [
+          [
+            "15:30",
+            "22:30"
+          ]
+        ],
+        "tue": [
+          [
+            "15:30",
+            "22:30"
+          ]
+        ],
+        "wed": [
+          [
+            "15:30",
+            "22:30"
+          ]
+        ],
+        "thu": [
+          [
+            "15:30",
+            "22:30"
+          ]
+        ],
+        "fri": [
+          [
+            "15:30",
+            "22:30"
+          ]
+        ],
+        "sat": [
+          [
+            "15:30",
+            "22:30"
+          ]
+        ]
+      },
+      "hoursNote": "2026 購物節頁曾寫 16:00 開始；食尚另有週二休記載。此處採 2026-03 食記 15:30–22:30、週日公休",
+      "hoursSource": "https://taiwan17go.com/here/",
+      "hoursSourceTitle": "熱血台中〈這都有炸物興安總店〉",
+      "hoursSourceDate": "2026-03-30",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "aru-noodle",
@@ -274,7 +903,47 @@
       "sourceTitle": "熱血台中〈阿汝麵攤〉",
       "sourceDate": "2025-09-01",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [],
+        "mon": [
+          [
+            "11:00",
+            "20:00"
+          ]
+        ],
+        "tue": [
+          [
+            "11:00",
+            "20:00"
+          ]
+        ],
+        "wed": [
+          [
+            "11:00",
+            "20:00"
+          ]
+        ],
+        "thu": [
+          [
+            "11:00",
+            "20:00"
+          ]
+        ],
+        "fri": [
+          [
+            "11:00",
+            "20:00"
+          ]
+        ],
+        "sat": []
+      },
+      "hoursNote": "",
+      "hoursSource": "https://taiwan17go.com/bluecheese1684/",
+      "hoursSourceTitle": "熱血台中〈阿汝麵攤〉",
+      "hoursSourceDate": "2025-09-01",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "jianhong-bento",
@@ -292,7 +961,52 @@
       "sourceDate": "2026-01-29",
       "source2": "https://buuz.tw/jianhongrice/",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [],
+        "mon": [
+          [
+            "11:00",
+            "20:00"
+          ]
+        ],
+        "tue": [
+          [
+            "11:00",
+            "20:00"
+          ]
+        ],
+        "wed": [
+          [
+            "11:00",
+            "20:00"
+          ]
+        ],
+        "thu": [
+          [
+            "11:00",
+            "20:00"
+          ]
+        ],
+        "fri": [
+          [
+            "11:00",
+            "20:00"
+          ]
+        ],
+        "sat": [
+          [
+            "11:00",
+            "20:00"
+          ]
+        ]
+      },
+      "hoursNote": "",
+      "hoursSource": "https://joes.tw/jian-hong-bento/",
+      "hoursSourceTitle": "微笑Joe幸運〈健宏飯担〉",
+      "hoursSourceDate": "2026-01-29",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "jengjong-dongxing",
@@ -310,7 +1024,57 @@
       "sourceDate": "2026-10-01",
       "source2": "http://www.jengjong.tw/branch.php?ms=4",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "mon": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "tue": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "wed": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "thu": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "fri": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "sat": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ]
+      },
+      "hoursNote": "官網另註除夕至農曆初四公休",
+      "hoursSource": "http://www.jengjong.tw/branch.php?ms=4",
+      "hoursSourceTitle": "正忠排骨飯官網分店頁",
+      "hoursSourceDate": "2026-11-11",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "sanshi-egg-pancake",
@@ -327,7 +1091,57 @@
       "sourceTitle": "PopDaily〈一中街銅板價美食〉",
       "sourceDate": "2024-09-30",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "05:30",
+            "13:00"
+          ]
+        ],
+        "mon": [
+          [
+            "05:30",
+            "13:00"
+          ]
+        ],
+        "tue": [
+          [
+            "05:30",
+            "13:00"
+          ]
+        ],
+        "wed": [
+          [
+            "05:30",
+            "13:00"
+          ]
+        ],
+        "thu": [
+          [
+            "05:30",
+            "13:00"
+          ]
+        ],
+        "fri": [
+          [
+            "05:30",
+            "13:00"
+          ]
+        ],
+        "sat": [
+          [
+            "05:30",
+            "13:00"
+          ]
+        ]
+      },
+      "hoursNote": "",
+      "hoursSource": "https://fun.taichung.gov.tw/shop/view/34924",
+      "hoursSourceTitle": "2026 臺中購物節合作店家〈三喜蛋餅〉",
+      "hoursSourceDate": "2026-11-11",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "chenmingtong",
@@ -344,7 +1158,76 @@
       "sourceTitle": "Cheer食在愛享像〈陳明統爌肉飯〉",
       "sourceDate": "2026-11-04",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [],
+        "mon": [
+          [
+            "10:30",
+            "15:00"
+          ],
+          [
+            "16:30",
+            "19:30"
+          ]
+        ],
+        "tue": [
+          [
+            "10:30",
+            "15:00"
+          ],
+          [
+            "16:30",
+            "19:30"
+          ]
+        ],
+        "wed": [
+          [
+            "10:30",
+            "15:00"
+          ],
+          [
+            "16:30",
+            "19:30"
+          ]
+        ],
+        "thu": [
+          [
+            "10:30",
+            "15:00"
+          ],
+          [
+            "16:30",
+            "19:30"
+          ]
+        ],
+        "fri": [
+          [
+            "10:30",
+            "15:00"
+          ],
+          [
+            "16:30",
+            "19:30"
+          ]
+        ],
+        "sat": [
+          [
+            "10:30",
+            "15:00"
+          ],
+          [
+            "16:30",
+            "19:30"
+          ]
+        ]
+      },
+      "hoursNote": "",
+      "hoursSource": "https://cheer198.pixnet.net/blog/posts/958362088936954845",
+      "hoursSourceTitle": "Cheer食在愛享像〈陳明統爌肉飯〉",
+      "hoursSourceDate": "2026-11-04",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "hezuo-damian",
@@ -361,7 +1244,52 @@
       "sourceTitle": "糖糖享食生活〈合作街大麵羹〉",
       "sourceDate": "2023-09-15",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [],
+        "mon": [
+          [
+            "11:30",
+            "18:00"
+          ]
+        ],
+        "tue": [
+          [
+            "11:30",
+            "18:00"
+          ]
+        ],
+        "wed": [
+          [
+            "11:30",
+            "18:00"
+          ]
+        ],
+        "thu": [
+          [
+            "11:30",
+            "18:00"
+          ]
+        ],
+        "fri": [
+          [
+            "11:30",
+            "18:00"
+          ]
+        ],
+        "sat": [
+          [
+            "11:30",
+            "18:00"
+          ]
+        ]
+      },
+      "hoursNote": "來源較早，請以現場為準",
+      "hoursSource": "https://candylife.tw/no103hezuost/",
+      "hoursSourceTitle": "糖糖享食生活〈合作街大麵羹〉",
+      "hoursSourceDate": "2023-09-15",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "taichung-rouyuan",
@@ -378,7 +1306,57 @@
       "sourceTitle": "ifunny 艾方妮〈台中肉員〉",
       "sourceDate": "2026-07-17",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "10:30",
+            "19:30"
+          ]
+        ],
+        "mon": [
+          [
+            "10:30",
+            "19:30"
+          ]
+        ],
+        "tue": [
+          [
+            "10:30",
+            "19:30"
+          ]
+        ],
+        "wed": [
+          [
+            "10:30",
+            "19:30"
+          ]
+        ],
+        "thu": [
+          [
+            "10:30",
+            "19:30"
+          ]
+        ],
+        "fri": [
+          [
+            "10:30",
+            "19:30"
+          ]
+        ],
+        "sat": [
+          [
+            "10:30",
+            "19:30"
+          ]
+        ]
+      },
+      "hoursNote": "",
+      "hoursSource": "https://ifunny.blog/taichung-meat-balls/",
+      "hoursSourceTitle": "ifunny 艾方妮〈台中肉員〉",
+      "hoursSourceDate": "2026-07-17",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "nanxing-baowan",
@@ -395,7 +1373,57 @@
       "sourceTitle": "鯊魚大口咬〈南興肉圓老店〉",
       "sourceDate": "2026-06-21",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "11:00",
+            "24:00"
+          ]
+        ],
+        "mon": [
+          [
+            "11:00",
+            "24:00"
+          ]
+        ],
+        "tue": [
+          [
+            "11:00",
+            "24:00"
+          ]
+        ],
+        "wed": [
+          [
+            "11:00",
+            "24:00"
+          ]
+        ],
+        "thu": [
+          [
+            "11:00",
+            "24:00"
+          ]
+        ],
+        "fri": [
+          [
+            "11:00",
+            "24:00"
+          ]
+        ],
+        "sat": [
+          [
+            "11:00",
+            "24:00"
+          ]
+        ]
+      },
+      "hoursNote": "食記寫 11:00–00:00",
+      "hoursSource": "https://bigsharkgogogo.tw/nothing-meatbaldd/",
+      "hoursSourceTitle": "鯊魚大口咬〈南興肉圓老店〉",
+      "hoursSourceDate": "2026-06-21",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "little-pepper-banhmi",
@@ -412,7 +1440,57 @@
       "sourceTitle": "剎有其食〈小辣椒越南麵包〉",
       "sourceDate": "2024-02-06",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "08:00",
+            "14:00"
+          ]
+        ],
+        "mon": [
+          [
+            "08:00",
+            "14:00"
+          ]
+        ],
+        "tue": [
+          [
+            "08:00",
+            "14:00"
+          ]
+        ],
+        "wed": [
+          [
+            "08:00",
+            "14:00"
+          ]
+        ],
+        "thu": [
+          [
+            "08:00",
+            "14:00"
+          ]
+        ],
+        "fri": [
+          [
+            "08:00",
+            "14:00"
+          ]
+        ],
+        "sat": [
+          [
+            "08:00",
+            "14:00"
+          ]
+        ]
+      },
+      "hoursNote": "公休日未載明",
+      "hoursSource": "https://safood.tw/littlepepper",
+      "hoursSourceTitle": "剎有其食〈小辣椒越南麵包〉",
+      "hoursSourceDate": "2024-02-06",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "jengjong-gongxue",
@@ -430,7 +1508,57 @@
       "sourceDate": "2026-10-01",
       "source2": "http://www.jengjong.tw/branch.php?ms=4",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "mon": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "tue": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "wed": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "thu": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "fri": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ],
+        "sat": [
+          [
+            "10:30",
+            "20:00"
+          ]
+        ]
+      },
+      "hoursNote": "官網另註除夕至農曆初四公休",
+      "hoursSource": "http://www.jengjong.tw/branch.php?ms=4",
+      "hoursSourceTitle": "正忠排骨飯官網分店頁",
+      "hoursSourceDate": "2026-11-11",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "arashi-minced-pork",
@@ -447,7 +1575,57 @@
       "sourceTitle": "鯊魚大口咬〈嵐肉燥專賣店〉",
       "sourceDate": "2026-06-22",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (free-en)"
+      "geocodeNote": "Nominatim (free-en)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "09:20",
+            "15:00"
+          ]
+        ],
+        "mon": [
+          [
+            "09:20",
+            "15:00"
+          ]
+        ],
+        "tue": [
+          [
+            "09:20",
+            "15:00"
+          ]
+        ],
+        "wed": [
+          [
+            "09:20",
+            "15:00"
+          ]
+        ],
+        "thu": [
+          [
+            "09:20",
+            "15:00"
+          ]
+        ],
+        "fri": [
+          [
+            "09:20",
+            "15:00"
+          ]
+        ],
+        "sat": [
+          [
+            "09:20",
+            "15:00"
+          ]
+        ]
+      },
+      "hoursNote": "",
+      "hoursSource": "https://bigsharkgogogo.tw/arashiee/",
+      "hoursSourceTitle": "鯊魚大口咬〈嵐肉燥專賣店〉",
+      "hoursSourceDate": "2026-06-22",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "dingshan-baowan",
@@ -464,7 +1642,57 @@
       "sourceTitle": "食尚玩家〈台中肉圓推薦 8 間〉",
       "sourceDate": "2024-11-22",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (free-en: 370號, 臺灣大道一段)"
+      "geocodeNote": "Nominatim (free-en: 370號, 臺灣大道一段)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "11:00",
+            "18:30"
+          ]
+        ],
+        "mon": [
+          [
+            "11:00",
+            "18:30"
+          ]
+        ],
+        "tue": [
+          [
+            "11:00",
+            "18:30"
+          ]
+        ],
+        "wed": [
+          [
+            "11:00",
+            "18:30"
+          ]
+        ],
+        "thu": [
+          [
+            "11:00",
+            "18:30"
+          ]
+        ],
+        "fri": [
+          [
+            "11:00",
+            "18:30"
+          ]
+        ],
+        "sat": [
+          [
+            "11:00",
+            "18:30"
+          ]
+        ]
+      },
+      "hoursNote": "來源註明不定期公休，請以現場為準",
+      "hoursSource": "https://supertaste.tvbs.com.tw/pack/352322",
+      "hoursSourceTitle": "食尚玩家〈台中肉圓推薦 8 間〉",
+      "hoursSourceDate": "2024-11-22",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "maochuan-baowan",
@@ -481,7 +1709,52 @@
       "sourceTitle": "食尚玩家〈台中肉圓推薦 8 間〉",
       "sourceDate": "2024-11-22",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (free-en: 401號, 臺灣大道一段)"
+      "geocodeNote": "Nominatim (free-en: 401號, 臺灣大道一段)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "11:00",
+            "19:00"
+          ]
+        ],
+        "mon": [],
+        "tue": [
+          [
+            "11:00",
+            "19:00"
+          ]
+        ],
+        "wed": [
+          [
+            "11:00",
+            "19:00"
+          ]
+        ],
+        "thu": [
+          [
+            "11:00",
+            "19:00"
+          ]
+        ],
+        "fri": [
+          [
+            "11:00",
+            "19:00"
+          ]
+        ],
+        "sat": [
+          [
+            "11:00",
+            "19:00"
+          ]
+        ]
+      },
+      "hoursNote": "",
+      "hoursSource": "https://supertaste.tvbs.com.tw/pack/352322",
+      "hoursSourceTitle": "食尚玩家〈台中肉圓推薦 8 間〉",
+      "hoursSourceDate": "2024-11-22",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "youjian-dumpling",
@@ -498,7 +1771,57 @@
       "sourceTitle": "熱血台中〈有間大湯包〉",
       "sourceDate": "2025-03-19",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (struct)"
+      "geocodeNote": "Nominatim (struct)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [
+          [
+            "05:50",
+            "12:00"
+          ]
+        ],
+        "mon": [
+          [
+            "05:50",
+            "12:00"
+          ]
+        ],
+        "tue": [
+          [
+            "05:50",
+            "12:00"
+          ]
+        ],
+        "wed": [
+          [
+            "05:50",
+            "12:00"
+          ]
+        ],
+        "thu": [
+          [
+            "05:50",
+            "12:00"
+          ]
+        ],
+        "fri": [
+          [
+            "05:50",
+            "12:00"
+          ]
+        ],
+        "sat": [
+          [
+            "05:50",
+            "12:00"
+          ]
+        ]
+      },
+      "hoursNote": "公休日未載明",
+      "hoursSource": "https://taiwan17go.com/youjian/",
+      "hoursSourceTitle": "熱血台中〈有間大湯包〉",
+      "hoursSourceDate": "2025-03-19",
+      "hoursChecked": "2026-11-11"
     },
     {
       "id": "liangsanshu-baowan",
@@ -515,7 +1838,47 @@
       "sourceTitle": "巧莉的世界流浪筆記〈涼傘樹肉圓〉",
       "sourceDate": "2023-09-05",
       "checked": "2026-11-11",
-      "geocodeNote": "Nominatim (free-en)"
+      "geocodeNote": "Nominatim (free-en)",
+      "hoursKnown": true,
+      "hours": {
+        "sun": [],
+        "mon": [],
+        "tue": [
+          [
+            "15:00",
+            "18:00"
+          ]
+        ],
+        "wed": [
+          [
+            "15:00",
+            "18:00"
+          ]
+        ],
+        "thu": [
+          [
+            "15:00",
+            "18:00"
+          ]
+        ],
+        "fri": [
+          [
+            "15:00",
+            "18:00"
+          ]
+        ],
+        "sat": [
+          [
+            "15:00",
+            "18:00"
+          ]
+        ]
+      },
+      "hoursNote": "食記註明賣完提早；來源較早，請以現場為準",
+      "hoursSource": "https://ciaoz.tw/liangsanshu-meatball/",
+      "hoursSourceTitle": "巧莉的世界流浪筆記〈涼傘樹肉圓〉",
+      "hoursSourceDate": "2023-09-05",
+      "hoursChecked": "2026-11-11"
     }
   ]
 }

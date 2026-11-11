@@ -102,6 +102,55 @@ footer h2{color:var(--ink);font-size:1.15rem;margin:0 0 .35rem;font-weight:900}
   #map{height:100%;flex:1.25;min-height:0;border-bottom:0;border-right:3px solid #111}
   #listPane{flex:1;overflow:auto;max-width:440px}
 }
+
+#tools{background:#fff;border-bottom:3px solid #111;padding:.4rem 0}
+#tools .wrap{padding:0 1rem}
+.tools-row{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:.15rem 0}
+@media (min-width:900px){
+  #tools{padding:.28rem 0}
+  #tools .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:1rem;row-gap:.2rem;align-items:center}
+  #tools .tools-row:nth-child(1){margin:0}
+  #tools .tools-row:nth-child(2){grid-column:1;margin:0}
+  #tools .meal-ticks{grid-column:1}
+  #tools .tools-row:nth-child(4){grid-column:2;grid-row:1/3;margin:0;justify-content:flex-end}
+  #passportPanel{grid-column:1/-1}
+}
+#timeClock{font-weight:900;font-size:1.05rem;letter-spacing:.02em}
+#openCount{font-weight:900;background:var(--brand);color:#111;padding:.15rem .5rem;border-radius:2px}
+#timeSlider{flex:1;min-width:12rem;accent-color:var(--brand);height:1.4rem}
+#timePlayBtn[aria-pressed="true"]{background:#111;color:var(--brand)}
+.meal-ticks{display:flex;justify-content:space-between;font-size:.7rem;font-weight:700;color:var(--muted);max-width:100%;padding:0 .15rem}
+#passportPanel{margin-top:.45rem;border:2px solid #111;padding:.7rem .8rem;background:#fff}
+#passportPanel[hidden]{display:none !important}
+.pass-head{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;flex-wrap:wrap}
+.pass-head h2{margin:0;font-size:1.1rem;font-weight:900}
+.pass-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:.35rem;margin:.55rem 0}
+.pass-dist{border:2px solid #111;padding:.35rem .45rem;font-size:.82rem;font-weight:700}
+.pass-dist b{font-weight:900}
+.pass-bar{height:8px;background:#eee;border:1px solid #111;margin-top:.25rem}
+.pass-bar>i{display:block;height:100%;background:var(--brand)}
+.stamp{appearance:none;border:2px solid #111;background:#fff;color:#111;font-weight:900;font-size:.82rem;padding:.25rem .55rem;cursor:pointer;font-family:inherit;border-radius:2px}
+.stamp.done{background:var(--brand);color:#111}
+.hours-line{font-size:.8rem;font-weight:700;margin:.2rem 0 0}
+.hours-line.unknown,.badge.unknown{color:#3a3a3a}
+.badge.unknown{background:#eee}
+.badge.open{background:var(--brand);color:#111}
+.badge.closed{background:#111;color:#fff}
+.card.closed-now{opacity:.78}
+.card.hours-unknown{border-color:#888}
+.food-pin-inner{background:#9a9a9a}
+.food-pin-inner.is-open{background:var(--brand);animation:pin-breathe 2.4s ease-in-out infinite}
+.food-pin-inner.is-closed{background:#111;opacity:.4;animation:none}
+.food-pin-inner.is-unknown{background:#9a9a9a;animation:none}
+@keyframes pin-breathe{
+  0%,100%{box-shadow:0 0 0 2px rgba(255,90,31,.9),0 0 10px 2px rgba(255,90,31,.55)}
+  50%{box-shadow:0 0 0 8px rgba(255,90,31,.2),0 0 16px 6px rgba(255,90,31,.4)}
+}
+.food-pin.is-active .food-pin-inner.is-open{box-shadow:0 0 0 3px #fff,0 0 0 5px #111}
+@media (prefers-reduced-motion:reduce){
+  .food-pin-inner.is-open{animation:none;box-shadow:0 0 0 3px var(--brand)}
+}
+body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
 </style>
 </head>
 <body>
@@ -146,6 +195,38 @@ footer h2{color:var(--ink);font-size:1.15rem;margin:0 0 .35rem;font-weight:900}
   </div>
 </div>
 
+<div id="tools">
+  <div class="wrap">
+    <div class="tools-row">
+      <span class="k">此刻營業中</span>
+      <span id="timeClock">--:--</span>
+      <span id="openCount">此刻 0 家營業中</span>
+      <button type="button" class="btn" id="timeNowBtn">現在</button>
+      <button type="button" class="btn brand" id="timePlayBtn" aria-pressed="false">播放</button>
+    </div>
+    <div class="tools-row">
+      <label class="k" for="timeSlider">時間軸</label>
+      <input type="range" id="timeSlider" min="0" max="47" step="1" value="0" aria-label="一天時間軸，每格 30 分鐘">
+    </div>
+    <div class="meal-ticks" aria-hidden="true"><span>00:00</span><span>早餐</span><span>午餐</span><span>晚餐</span><span>24:00</span></div>
+    <div class="tools-row">
+      <button type="button" class="btn brand" id="passportBtn" aria-expanded="false">吃遍台中護照</button>
+      <button type="button" class="btn" id="visitedOnlyBtn" aria-pressed="false">只亮吃過的</button>
+    </div>
+    <div id="passportPanel" hidden>
+      <div class="pass-head">
+        <h2>吃遍台中護照</h2>
+        <p id="passSummary">已吃 0 / 30 家</p>
+      </div>
+      <div class="pass-grid" id="passGrid"></div>
+      <div class="tools-row">
+        <button type="button" class="btn brand" id="sharePassportBtn">產生分享圖</button>
+        <span class="note">蓋章只存在你的裝置，不會上傳。分享圖不含姓名或位置。</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="layout wrap">
   <div id="map" role="application" aria-label="店家地圖"></div>
   <div id="listPane">
@@ -170,10 +251,98 @@ footer h2{color:var(--ink);font-size:1.15rem;margin:0 0 .35rem;font-weight:900}
   const CAT_ORDER = ["便當","麵","小吃","早午餐","定食","炸物"];
   const TC_CENTER = [24.147, 120.673];
 
-  const state = { places: [], district: "全部", cat: "全部", maxPrice: 100, q: "", here: null, activeId: null };
+  const state = { places: [], district: "全部", cat: "全部", maxPrice: 100, q: "", here: null, activeId: null, clockMode:"now", simMin:0, visited:new Set(), visitedOnly:false, playTimer:null, wasPlaying:false };
   let map, markers = {}, userMarker, listEl, metaEl, emptyEl;
 
   const $ = (id) => document.getElementById(id);
+
+  const PASS_KEY="wuji-food100-passport-v1";
+  const DAY_KEYS=["sun","mon","tue","wed","thu","fri","sat"];
+  const DAY_LABEL=["週日","週一","週二","週三","週四","週五","週六"];
+  const SHARE_URL="https://jialin3827-hue.github.io/wuji-tools/food100/";
+
+  function prefersReduce(){
+    return !!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+  function tzParts(d){
+    const src=d instanceof Date?d:new Date(d);
+    const s=new Intl.DateTimeFormat("en-GB",{
+      timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit",
+      weekday:"short",hour:"2-digit",minute:"2-digit",hourCycle:"h23"
+    }).formatToParts(src);
+    const g=t=>s.find(x=>x.type===t).value;
+    const wd={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};
+    return {year:+g("year"),month:+g("month"),day:+g("day"),hour:+g("hour"),minute:+g("minute"),dow:wd[g("weekday")]};
+  }
+  function currentParts(){
+    if(state.clockMode==="sim"){
+      const base=tzParts(new Date());
+      const hour=Math.floor(state.simMin/60), minute=state.simMin%60;
+      return {year:base.year,month:base.month,day:base.day,hour:hour,minute:minute,dow:base.dow,sim:true};
+    }
+    return Object.assign(tzParts(new Date()),{sim:false});
+  }
+  function parseHM(s){
+    const [h,m]=String(s).split(":").map(Number);
+    return h*60+m;
+  }
+  function normalizeInterval(start,end){
+    let a=parseHM(start), b=parseHM(end);
+    if(b===0) b=1440;
+    if(b<=a) b+=1440;
+    return [a,b];
+  }
+  function isOpenAt(place, parts){
+    if(!place||!place.hoursKnown||!place.hours) return null;
+    const t=parts.hour*60+parts.minute;
+    const today=DAY_KEYS[parts.dow];
+    const yest=DAY_KEYS[(parts.dow+6)%7];
+    for(const pair of (place.hours[today]||[])){
+      const [a,b]=normalizeInterval(pair[0],pair[1]);
+      if(a<=t && t<b) return true;
+    }
+    for(const pair of (place.hours[yest]||[])){
+      const [a,b]=normalizeInterval(pair[0],pair[1]);
+      if(b>1440){
+        const t2=t+1440;
+        if(a<=t2 && t2<b) return true;
+      }
+    }
+    return false;
+  }
+  function todayHoursText(place, parts){
+    if(!place.hoursKnown||!place.hours) return "營業時間待確認";
+    const iv=place.hours[DAY_KEYS[parts.dow]]||[];
+    if(!iv.length) return "今日公休";
+    return "今日 "+iv.map(function(x){
+      const e=x[1]==="24:00"?"00:00":x[1];
+      return x[0]+"–"+e;
+    }).join("、");
+  }
+  function fmtClock(parts){
+    const hh=String(parts.hour).padStart(2,"0");
+    const mm=String(parts.minute).padStart(2,"0");
+    return DAY_LABEL[parts.dow]+" "+hh+":"+mm+(parts.sim?"（預覽）":"（現在）");
+  }
+  function openPlaces(parts){
+    return state.places.filter(function(p){ return isOpenAt(p,parts)===true; });
+  }
+  function loadVisited(){
+    try{
+      const raw=JSON.parse(localStorage.getItem(PASS_KEY)||"[]");
+      state.visited=new Set((Array.isArray(raw)?raw:[]).filter(function(id){ return state.places.some(function(p){ return p.id===id; }); }));
+    }catch(e){ state.visited=new Set(); }
+  }
+  function saveVisited(){
+    try{ localStorage.setItem(PASS_KEY, JSON.stringify(Array.from(state.visited))); }catch(e){}
+  }
+  function toggleVisited(id){
+    if(state.visited.has(id)) state.visited.delete(id); else state.visited.add(id);
+    saveVisited();
+    renderPassport();
+    renderList();
+  }
+
 
   function money(p){
     if(p.price == null) return "價格待確認";
@@ -245,16 +414,28 @@ footer h2{color:var(--ink);font-size:1.15rem;margin:0 0 .35rem;font-weight:900}
       const near = (state.here && p.lat!=null) ? `・約 ${distKm(state.here,[p.lat,p.lng]).toFixed(1)} 公里` : "";
       const coordNote = p.lat==null ? `<p class="note">座標待確認，導航改用地址搜尋</p>` :
         ((p.geocodeNote||"").includes("待確認") ? `<p class="note">${p.geocodeNote}</p>` : "");
+      const parts=currentParts();
+      const open=isOpenAt(p,parts);
+      const eaten=state.visited.has(p.id);
+      if(open===false) el.classList.add("closed-now");
+      if(open===null) el.classList.add("hours-unknown");
+      const openBadge=open===true?'<span class="badge open">營業中</span>':open===false?'<span class="badge closed">休息</span>':'<span class="badge unknown">營業時間待確認</span>';
+      const hoursTxt=todayHoursText(p,parts);
+      const hoursBody=open===null?(p.hoursNote||"查不到完整營業時間，不以推測。"):(hoursTxt+(p.hoursNote? "・"+p.hoursNote:""));
+      const hoursSrc=p.hoursKnown?`來源：<a href="${p.hoursSource||p.source}" target="_blank" rel="noopener">${p.hoursSourceTitle||"食記"}</a>　查核 ${p.hoursChecked||p.checked}`:"查不到完整營業時間，不以推測顯示為營業或休息。";
       el.innerHTML = `<h3>${p.name}</h3>
-        <div class="badges"><span class="badge">${p.district}</span><span class="badge cat">${p.category}</span></div>
+        <div class="badges"><span class="badge">${p.district}</span><span class="badge cat">${p.category}</span>${openBadge}</div>
+        <p class="hours-line${open===null?" unknown":""}">${hoursBody}</p>
+        <p class="src">${hoursSrc}</p>
         <div><span class="price">${money(p)}</span>　${p.item}${p.priceNote? "・"+p.priceNote:""}</div>
         <p class="addr">${p.address}${near}</p>
         ${coordNote}
         <p class="warn">價格可能變動，請以店家現場為準。</p>
         <p class="src">來源：<a href="${p.source}" target="_blank" rel="noopener">${p.sourceTitle||"食記"}</a><br><span class="nowrap">食記日期 ${p.sourceDate}</span>　<span class="nowrap">查核 ${p.checked}</span></p>
-        <div class="actions"><a class="navlink" href="${mapsUrl(p)}" target="_blank" rel="noopener" data-nav="${p.id}">Google 地圖導航</a></div>`;
+        <div class="actions"><a class="navlink" href="${mapsUrl(p)}" target="_blank" rel="noopener" data-nav="${p.id}">Google 地圖導航</a>
+        <button type="button" class="stamp${eaten?" done":""}" data-stamp="${p.id}">${eaten?"已蓋章，吃過了":"我吃過了"}</button></div>`;
       el.addEventListener("click", (ev)=>{
-        if(ev.target.closest("a")) return;
+        if(ev.target.closest("a,button")) return;
         focusPlace(p.id, true);
       });
       el.addEventListener("keydown", (ev)=>{
@@ -265,14 +446,31 @@ footer h2{color:var(--ink);font-size:1.15rem;margin:0 0 .35rem;font-weight:900}
     syncMarkers(rows);
   }
 
+  function pinClass(place, parts){
+    const o=isOpenAt(place,parts);
+    return o===true?"is-open":o===false?"is-closed":"is-unknown";
+  }
   function syncMarkers(rows){
-    const show = new Set(rows.filter(p=>p.lat!=null).map(p=>p.id));
-    Object.keys(markers).forEach(id=>{
+    const parts=currentParts();
+    const show = new Set(rows.filter(function(p){
+      if(p.lat==null) return false;
+      if(state.visitedOnly && !state.visited.has(p.id)) return false;
+      return true;
+    }).map(function(p){ return p.id; }));
+    Object.keys(markers).forEach(function(id){
       const m=markers[id];
+      const place=state.places.find(function(p){ return p.id===id; });
       if(show.has(id)){ if(!map.hasLayer(m)) m.addTo(map); }
       else if(map.hasLayer(m)) map.removeLayer(m);
+      const el=m.getElement && m.getElement();
+      const inner=el&&el.querySelector(".food-pin-inner");
+      if(inner&&place){
+        inner.classList.remove("is-open","is-closed","is-unknown");
+        inner.classList.add(pinClass(place,parts));
+      }
     });
   }
+
 
   function focusPlace(id, fromList){
     state.activeId=id;
@@ -291,7 +489,162 @@ footer h2{color:var(--ink);font-size:1.15rem;margin:0 0 .35rem;font-weight:900}
     }
   }
 
-  function applyFilters(){ renderList(); }
+  function applyFilters(){ renderList(); refreshClock(); }
+  function refreshClock(){
+    const parts=currentParts();
+    const n=openPlaces(parts).length;
+    const clock=$("timeClock");
+    const count=$("openCount");
+    const slider=$("timeSlider");
+    if(clock) clock.textContent=fmtClock(parts);
+    if(count) count.textContent="此刻 "+n+" 家營業中";
+    if(slider && document.activeElement!==slider){
+      slider.value=String(Math.floor((parts.hour*60+parts.minute)/30));
+    }
+    if($("timeNowBtn")) $("timeNowBtn").disabled=state.clockMode==="now";
+  }
+  function renderAll(){
+    refreshClock();
+    renderList();
+    renderPassport();
+    sizeLayout();
+  }
+  function setNow(){
+    stopPlay();
+    state.clockMode="now";
+    renderAll();
+  }
+  function setSimSlot(slot){
+    state.clockMode="sim";
+    state.simMin=Math.max(0,Math.min(47, +slot))*30;
+    renderAll();
+  }
+  function stopPlay(){
+    if(state.playTimer){ clearInterval(state.playTimer); state.playTimer=null; }
+    const b=$("timePlayBtn");
+    if(b){ b.setAttribute("aria-pressed","false"); b.textContent="播放"; }
+  }
+  function startPlay(){
+    stopPlay();
+    if(state.clockMode!=="sim"){
+      const p=currentParts();
+      state.clockMode="sim";
+      state.simMin=Math.floor((p.hour*60+p.minute)/30)*30;
+    }
+    const b=$("timePlayBtn");
+    if(b){ b.setAttribute("aria-pressed","true"); b.textContent="暫停"; }
+    state.playTimer=setInterval(function(){
+      if(document.hidden) return;
+      state.simMin=(state.simMin+30)%1440;
+      renderAll();
+    },1000);
+  }
+  function togglePlay(){
+    if(state.playTimer) stopPlay(); else startPlay();
+  }
+  function renderPassport(){
+    const total=state.places.length;
+    const n=state.visited.size;
+    const sum=$("passSummary");
+    if(sum) sum.textContent="已吃 "+n+" / "+total+" 家";
+    const grid=$("passGrid");
+    if(!grid) return;
+    grid.innerHTML="";
+    DISTRICT_ORDER.filter(function(d){ return state.places.some(function(p){ return p.district===d; }); }).forEach(function(d){
+      const all=state.places.filter(function(p){ return p.district===d; });
+      const got=all.filter(function(p){ return state.visited.has(p.id); }).length;
+      const el=document.createElement("div");
+      el.className="pass-dist";
+      const pct=all.length?Math.round(got/all.length*100):0;
+      el.innerHTML="<b>"+d+"</b> "+got+" / "+all.length+"<div class=\"pass-bar\"><i style=\"width:"+pct+"%\"></i></div>";
+      grid.appendChild(el);
+    });
+  }
+  function buildShareImage(){
+    const total=state.places.length, n=state.visited.size;
+    const c=document.createElement("canvas");
+    c.width=1080; c.height=1350;
+    const g=c.getContext("2d");
+    g.fillStyle="#111"; g.fillRect(0,0,1080,1350);
+    g.fillStyle="#FF5A1F";
+    for(let x=0;x<1080;x+=28){ g.fillRect(x,0,18,16); g.fillRect(x,1334,18,16); }
+    g.fillStyle="#fff";
+    g.font="900 86px 'Noto Sans TC', sans-serif";
+    g.fillText("吃遍台中", 64, 200);
+    g.fillStyle="#FF5A1F";
+    g.font="900 86px 'Noto Sans TC', sans-serif";
+    g.fillText("護照", 64, 300);
+    g.fillStyle="#FF5A1F";
+    g.font="900 140px 'Noto Sans TC', sans-serif";
+    const nStr=String(n);
+    g.fillText(nStr, 64, 520);
+    const nw=g.measureText(nStr).width;
+    g.fillStyle="#fff";
+    g.font="700 48px 'Noto Sans TC', sans-serif";
+    g.fillText(" / "+total+" 家已蓋章", 64+nw+20, 520);
+    let y=620;
+    g.font="700 36px 'Noto Sans TC', sans-serif";
+    DISTRICT_ORDER.filter(function(d){ return state.places.some(function(p){ return p.district===d; }); }).forEach(function(d){
+      const all=state.places.filter(function(p){ return p.district===d; });
+      const got=all.filter(function(p){ return state.visited.has(p.id); }).length;
+      g.fillStyle="#fff";
+      g.fillText(d+"  "+got+"/"+all.length, 64, y);
+      g.strokeStyle="#fff"; g.strokeRect(420, y-28, 580, 22);
+      g.fillStyle="#FF5A1F";
+      g.fillRect(420, y-28, all.length?580*got/all.length:0, 22);
+      y+=52;
+    });
+    g.fillStyle="#FF5A1F";
+    g.font="700 32px 'Noto Sans TC', sans-serif";
+    g.fillText(SHARE_URL.replace("https://",""), 64, 1260);
+    g.fillStyle="#fff";
+    g.font="700 24px 'Noto Sans TC', sans-serif";
+    g.fillText("蓋章只在自己的手機裡　不含個人資料", 64, 1300);
+    const url=c.toDataURL("image/png");
+    if(window.Food100) window.Food100.lastShareDataUrl=url;
+    const a=document.createElement("a");
+    a.href=url; a.download="food100-passport.png";
+    a.click();
+    return url;
+  }
+  function setupClockAndPassport(){
+    loadVisited();
+    const slider=$("timeSlider");
+    if(slider) slider.addEventListener("input", function(ev){ setSimSlot(ev.target.value); });
+    $("timeNowBtn").addEventListener("click", setNow);
+    $("timePlayBtn").addEventListener("click", togglePlay);
+    $("passportBtn").addEventListener("click", function(){
+      const pan=$("passportPanel");
+      const open=pan.hasAttribute("hidden");
+      if(open) pan.removeAttribute("hidden"); else pan.setAttribute("hidden","");
+      $("passportBtn").setAttribute("aria-expanded", open?"true":"false");
+      sizeLayout();
+    });
+    $("visitedOnlyBtn").addEventListener("click", function(){
+      state.visitedOnly=!state.visitedOnly;
+      $("visitedOnlyBtn").setAttribute("aria-pressed", state.visitedOnly?"true":"false");
+      renderAll();
+    });
+    $("sharePassportBtn").addEventListener("click", buildShareImage);
+    document.getElementById("list").addEventListener("click", function(ev){
+      const b=ev.target.closest("button[data-stamp]");
+      if(!b) return;
+      ev.preventDefault();
+      toggleVisited(b.getAttribute("data-stamp"));
+    });
+    document.addEventListener("visibilitychange", function(){
+      document.body.classList.toggle("tab-paused", document.hidden);
+      if(document.hidden){
+        if(state.playTimer){ state.wasPlaying=true; stopPlay(); }
+      }else if(state.wasPlaying){
+        state.wasPlaying=false; startPlay();
+      }
+    });
+    refreshClock();
+    renderPassport();
+  }
+
+
 
   function setupFilters(places){
     const districts = DISTRICT_ORDER.filter(d=>places.some(p=>p.district===d));
@@ -344,10 +697,11 @@ footer h2{color:var(--ink);font-size:1.15rem;margin:0 0 .35rem;font-weight:900}
     const layout=document.querySelector(".layout");
     const header=document.querySelector("header");
     const filters=document.querySelector(".filters");
+    const tools=document.getElementById("tools");
     if(!layout||!header||!filters) return;
     if(window.matchMedia("(min-width:900px)").matches){
-      const h=header.offsetHeight+filters.offsetHeight;
-      layout.style.height=Math.max(320, window.innerHeight-h)+"px";
+      const h=header.offsetHeight+filters.offsetHeight+(tools?tools.offsetHeight:0);
+      layout.style.height=Math.max(200, window.innerHeight-h)+"px";
     }else{
       layout.style.height="";
     }
@@ -385,12 +739,14 @@ footer h2{color:var(--ink);font-size:1.15rem;margin:0 0 .35rem;font-weight:900}
     state.places=data.places||[];
     setupFilters(state.places);
     setupNear();
+    setupClockAndPassport();
     initMap(state.places);
     renderList();
+    refreshClock();
     sizeLayout();
     window.addEventListener("resize", sizeLayout);
     if(document.fonts&&document.fonts.ready) document.fonts.ready.then(sizeLayout);
-    window.Food100={state, visible, focusPlace, renderList, applyFilters, mapsUrl};
+    window.Food100={state, visible, focusPlace, renderList, applyFilters, mapsUrl, isOpenAt, currentParts, setNow, setSimSlot, startPlay, stopPlay, tzParts, normalizeInterval, openPlaces, todayHoursText, loadVisited, saveVisited, toggleVisited, buildShareImage, renderAll, SHARE_URL, PASS_KEY, DAY_KEYS};
   }).catch(err=>{
     $("meta").textContent="資料載入失敗，請稍後再試。";
     console.error(err);
