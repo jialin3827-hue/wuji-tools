@@ -151,6 +151,29 @@ footer h2{color:var(--ink);font-size:1.15rem;margin:0 0 .35rem;font-weight:900}
   .food-pin-inner.is-open{animation:none;box-shadow:0 0 0 3px var(--brand)}
 }
 body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
+
+.badge.private{background:#eee;color:#111;border:1px solid #111}
+.badge.community{background:var(--brand);color:#111}
+.vote-row{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;margin-top:.4rem}
+#privatePanel,#candidatePanel{margin-top:.45rem;border:2px solid #111;padding:.7rem .8rem;background:#fff}
+#privatePanel[hidden],#candidatePanel[hidden]{display:none !important}
+#privForm{display:grid;gap:.4rem;margin:.4rem 0}
+#privForm label{display:flex;flex-direction:column;gap:.15rem;font-size:.78rem;font-weight:900}
+#privForm input,#privForm select,#privForm textarea{border:2px solid #111;border-radius:2px;padding:.4rem .5rem;font:inherit;font-weight:700;color:#111;background:#fff}
+#privForm .row2{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+#cloudStatus{font-size:.82rem;font-weight:700;color:var(--muted)}
+body.pick-map #map{cursor:crosshair}
+@media (min-width:900px){
+  #tools{position:relative;z-index:25}
+  #privatePanel,#candidatePanel,#passportPanel{
+    grid-column:1/-1;
+    position:absolute;left:0;right:0;top:100%;z-index:30;
+    max-height:min(60vh,520px);overflow:auto;margin:0;
+    box-shadow:0 10px 24px rgba(0,0,0,.16);
+  }
+  #privForm{grid-template-columns:1fr 1fr}
+  #privForm .tools-row,#privForm #privSaveBtn{grid-column:1/-1}
+}
 </style>
 </head>
 <body>
@@ -212,6 +235,9 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
     <div class="tools-row">
       <button type="button" class="btn brand" id="passportBtn" aria-expanded="false">吃遍台中護照</button>
       <button type="button" class="btn" id="visitedOnlyBtn" aria-pressed="false">只亮吃過的</button>
+      <button type="button" class="btn brand" id="privateBtn" aria-expanded="false">私房店家</button>
+      <button type="button" class="btn" id="candidateBtn" aria-expanded="false">候選池</button>
+      <button type="button" class="btn" id="cloudLoginBtn">Google 登入</button>
     </div>
     <div id="passportPanel" hidden>
       <div class="pass-head">
@@ -224,6 +250,54 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
         <span class="note">蓋章只存在你的裝置，不會上傳。分享圖不含姓名或位置。</span>
       </div>
     </div>
+
+    <p id="cloudStatus" class="note">私房店只存在你的裝置。公開投票需 Google 登入，設定見說明。</p>
+    <div id="privatePanel" hidden>
+      <div class="pass-head">
+        <h2>私房店家</h2>
+      </div>
+      <p class="note">新增的店預設只有你看得到，地圖與清單會標「私房」，資料存在這台裝置，不會上傳。</p>
+      <form id="privForm" onsubmit="return false;">
+        <label>店名（必填）<input id="privName" name="name" maxlength="40" required autocomplete="off"></label>
+        <label>地址（必填）<input id="privAddr" name="address" maxlength="80" required autocomplete="off"></label>
+        <div class="tools-row">
+          <button type="button" class="btn" id="privGeoBtn">用地址定位</button>
+          <button type="button" class="btn" id="privPickBtn" aria-pressed="false">在地圖上點位置</button>
+        </div>
+        <div class="row2">
+          <label>緯度<input id="privLat" name="lat" inputmode="decimal" placeholder="可留空"></label>
+          <label>經度<input id="privLng" name="lng" inputmode="decimal" placeholder="可留空"></label>
+        </div>
+        <div class="row2">
+          <label>區域
+            <select id="privDistrict">
+              <option>西區</option><option>北區</option><option>南屯區</option><option>西屯區</option><option>北屯區</option><option>東區</option><option>南區</option><option selected>中區</option><option>大里區</option>
+            </select>
+          </label>
+          <label>類別
+            <select id="privCat">
+              <option>便當</option><option>麵</option><option selected>小吃</option><option>早午餐</option><option>定食</option><option>炸物</option>
+            </select>
+          </label>
+        </div>
+        <div class="row2">
+          <label>品項<input id="privItem" maxlength="40" autocomplete="off"></label>
+          <label>價格（1–100）<input id="privPrice" type="number" min="1" max="100" inputmode="numeric"></label>
+        </div>
+        <label>營業時間（選填，查不到請留空，不要猜）<input id="privHours" maxlength="120" placeholder="例如 11:00–14:00，週一公休" autocomplete="off"></label>
+        <label>備註（選填）<textarea id="privNote" maxlength="200" rows="2"></textarea></label>
+        <button type="button" class="btn brand" id="privSaveBtn">加入私房</button>
+      </form>
+      <div id="privList"></div>
+    </div>
+    <div id="candidatePanel" hidden>
+      <div class="pass-head">
+        <h2>網友候選池</h2>
+      </div>
+      <p class="note">推薦公開的店會進這裡。一個 Google 帳號對一店只能投一票；滿 100 張推薦票才出現在公開地圖，標「網友票選」。官方 30 家已在地圖上，也可投票；不推薦滿 100 會由伺服器判定下架。</p>
+      <div id="candList"></div>
+    </div>
+
   </div>
 </div>
 
@@ -239,12 +313,14 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
 <footer>
   <div class="contact" id="contact">
     <h2>店家想上地圖？</h2>
-    <p>若你是店家、或想推薦一餐 100 元以內的平價美食，請到 Threads 聯絡 <a href="https://www.threads.net/@wuji_fbi" target="_blank" rel="noopener">@wuji_fbi</a>，我們會查核地址與價格後再上架。</p>
+    <p>可先在地圖新增「私房」店家，資料只存在你的裝置。若要推薦給大家，請登入後按「推薦公開」，獲 100 張推薦票才會出現在公開地圖（標「網友票選」）。你也可以到 Threads 聯絡 <a href="https://www.threads.net/@wuji_fbi" target="_blank" rel="noopener">@wuji_fbi</a> 請我們查核後上架官方名單。</p>
   </div>
   <p>地圖圖磚與部分座標來自 <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 貢獻者（ODbL）。地圖函式庫使用 Leaflet。導航連結開往 Google 地圖，不使用付費地圖 API。</p>
   <p>價格、營業與菜單以店家現場為準，可能隨時變動。本頁僅整理公開食記與報導，查核日期見各筆資料。標題字型為可商用開源字型 Noto Sans TC Black。</p>
 </footer>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="config.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2.49.1/dist/umd/supabase.js" crossorigin=""></script>
 <script>
 (function(){
   const DISTRICT_ORDER = ["西區","北區","南屯區","西屯區","北屯區","東區","南區","中區","大里區"];
@@ -260,6 +336,475 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
   const DAY_KEYS=["sun","mon","tue","wed","thu","fri","sat"];
   const DAY_LABEL=["週日","週一","週二","週三","週四","週五","週六"];
   const SHARE_URL="https://jialin3827-hue.github.io/wuji-tools/food100/";
+
+  const PRIV_KEY="wuji-food100-private-v1";
+  const LIMITS={name:40,address:80,item:40,note:200,hoursNote:120,district:20,category:20};
+  state.privatePlaces=[];
+  state.communityPlaces=[];
+  state.delistedIds=new Set();
+  state.scores={};
+  state.myVotes={};
+  state.cloudReady=false;
+  state.pickMode=false;
+  state.session=null;
+  let pickMarker=null;
+  let cloud=null;
+
+  function escapeHtml(s){
+    return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+      return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];
+    });
+  }
+  function cleanText(s,max){
+    return String(s==null?"":s).replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,max);
+  }
+  function catalog(){
+    const official=state.places.filter(function(p){ return !state.delistedIds.has(p.id); });
+    const priv=state.privatePlaces||[];
+    const comm=(state.communityPlaces||[]).filter(function(p){
+      return !state.places.some(function(o){ return o.id===p.id; });
+    });
+    return official.concat(priv,comm);
+  }
+  function findPlace(id){
+    return catalog().find(function(p){ return p.id===id; }) || state.places.find(function(p){ return p.id===id; });
+  }
+  function loadPrivate(){
+    try{
+      const raw=JSON.parse(localStorage.getItem(PRIV_KEY)||"[]");
+      state.privatePlaces=Array.isArray(raw)?raw.filter(function(p){ return p && p.id && p.name && p.address; }):[];
+    }catch(e){ state.privatePlaces=[]; }
+  }
+  function savePrivate(){
+    try{ localStorage.setItem(PRIV_KEY, JSON.stringify(state.privatePlaces)); }catch(e){}
+  }
+  function addPrivateShop(input){
+    const name=cleanText(input.name,LIMITS.name);
+    const address=cleanText(input.address,LIMITS.address);
+    if(!name || !address) throw new Error("請填店名與地址");
+    let price=input.price;
+    if(price==="" || price==null) price=null;
+    else {
+      price=parseInt(price,10);
+      if(!(price>=1 && price<=100)) throw new Error("價格請填 1 到 100 元");
+    }
+    const lat=input.lat===""||input.lat==null?null:Number(input.lat);
+    const lng=input.lng===""||input.lng==null?null:Number(input.lng);
+    if(lat!=null && (isNaN(lat)||lat<24||lat>25||isNaN(lng)||lng<120||lng>121.5)) throw new Error("座標看起來不在台中附近，請改用地圖點選或再查一次地址");
+    const shop={
+      id: input.id || ("priv-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8)),
+      origin:"private",
+      name:name,
+      address:address,
+      lat:(lat!=null && !isNaN(lat))?lat:null,
+      lng:(lng!=null && !isNaN(lng))?lng:null,
+      district:cleanText(input.district,LIMITS.district)||"中區",
+      category:cleanText(input.category,LIMITS.category)||"小吃",
+      item:cleanText(input.item,LIMITS.item)||"",
+      price:price,
+      hoursKnown:false,
+      hoursNote:cleanText(input.hoursNote,LIMITS.hoursNote),
+      note:cleanText(input.note,LIMITS.note),
+      createdAt:new Date().toISOString()
+    };
+    state.privatePlaces.push(shop);
+    savePrivate();
+    ensureMarker(shop);
+    if(typeof renderAll==="function") renderAll();
+    return shop;
+  }
+  function removePrivateShop(id){
+    state.privatePlaces=state.privatePlaces.filter(function(p){ return p.id!==id; });
+    savePrivate();
+    if(markers[id]){ if(map && map.hasLayer(markers[id])) map.removeLayer(markers[id]); delete markers[id]; }
+    renderAll();
+  }
+
+  function communityToPlace(row){
+    return {
+      id:row.id,
+      origin:"community",
+      name:row.name,
+      address:row.address,
+      lat:row.lat,
+      lng:row.lng,
+      district:row.district||"",
+      category:row.category||"小吃",
+      item:row.item||"",
+      price:row.price,
+      hoursKnown:false,
+      hoursNote:row.hours_note||row.hoursNote||"",
+      note:row.note||"",
+      upvotes:row.upvotes||0,
+      downvotes:row.downvotes||0,
+      sourceTitle:"網友票選",
+      checked: (row.created_at||"").slice(0,10)
+    };
+  }
+
+  function flashCloud(msg){
+    const el=$("cloudStatus");
+    if(el) el.textContent=msg||"";
+  }
+
+  function defaultCloudAdapter(){
+    const cfg=window.FOOD100_CLOUD||{};
+    if(!cfg.url||!cfg.anon||!(window.supabase&&window.supabase.createClient)) return null;
+    const client=window.supabase.createClient(cfg.url, cfg.anon, {
+      auth:{persistSession:true, detectSessionInUrl:true, storageKey:"wuji-food100-auth"}
+    });
+    function unwrap(res){
+      if(res.error) throw res.error;
+      return res.data;
+    }
+    return {
+      client:client,
+      async getSession(){
+        const {data}=await client.auth.getSession();
+        return data.session||null;
+      },
+      async signIn(){
+        return client.auth.signInWithOAuth({
+          provider:"google",
+          options:{redirectTo: location.origin+location.pathname}
+        });
+      },
+      async signOut(){ return client.auth.signOut(); },
+      async fetchOfficialStatus(){
+        return unwrap(await client.from("food100_official_status").select("id,upvotes,downvotes,listed"));
+      },
+      async fetchPublicShops(){
+        return unwrap(await client.from("food100_public_shops").select("*"));
+      },
+      async fetchCandidates(){
+        return unwrap(await client.from("food100_candidates").select("*"));
+      },
+      async vote(id, vote){
+        unwrap(await client.rpc("food100_cast_vote",{p_store:id, p_vote:vote}));
+      },
+      async submit(p){
+        return unwrap(await client.rpc("food100_submit",{
+          p_name:p.name, p_address:p.address, p_lat:p.lat, p_lng:p.lng,
+          p_district:p.district, p_category:p.category, p_item:p.item,
+          p_price:p.price, p_hours_note:p.hoursNote||"", p_note:p.note||""
+        }));
+      },
+      async report(id, reason){
+        unwrap(await client.rpc("food100_report_store",{p_store:id, p_reason:reason||""}));
+      }
+    };
+  }
+
+  function installCloudAdapter(adapter){
+    cloud=adapter||null;
+  }
+
+  async function getSession(){
+    if(!cloud || !cloud.getSession) return null;
+    try{ return await cloud.getSession(); }catch(e){ return null; }
+  }
+
+  async function refreshCloud(){
+    if(!cloud){ state.cloudReady=false; state.delistedIds=new Set(); return {ok:false, reason:"no-cloud"}; }
+    try{
+      const status=await cloud.fetchOfficialStatus();
+      const pub=await cloud.fetchPublicShops();
+      let cands=[];
+      try{ cands=await cloud.fetchCandidates(); }catch(e){ cands=[]; }
+      const list=Array.isArray(status)?status:[];
+      const scores={};
+      list.forEach(function(r){ scores[r.id]={up:r.upvotes||0, down:r.downvotes||0, listed:!!r.listed}; });
+      (pub||[]).forEach(function(r){ scores[r.id]={up:r.upvotes||0, down:r.downvotes||0, listed:true}; });
+      (cands||[]).forEach(function(r){
+        if(!scores[r.id]) scores[r.id]={up:r.upvotes||0, down:r.downvotes||0, listed:false};
+      });
+      state.scores=scores;
+      if(list.length){
+        state.delistedIds=new Set(list.filter(function(r){ return r.listed===false; }).map(function(r){ return r.id; }));
+      }else{
+        state.delistedIds=new Set();
+      }
+      state.communityPlaces=(pub||[]).filter(function(r){ return r.kind==="community"; }).map(communityToPlace);
+      state.candidates=(cands||[]).map(communityToPlace);
+      state.cloudReady=true;
+      state.communityPlaces.forEach(ensureMarker);
+      renderCandidates();
+      renderAll();
+      return {ok:true};
+    }catch(e){
+      state.cloudReady=false;
+      state.delistedIds=new Set();
+      flashCloud("公開投票尚未開通，私房店仍只存在你的裝置。");
+      return {ok:false, reason:String(e.message||e)};
+    }
+  }
+
+  async function refreshSessionUi(){
+    const sess=await getSession();
+    state.session=sess;
+    const btn=$("cloudLoginBtn");
+    if(btn){
+      btn.textContent=sess?"登出":"Google 登入";
+      btn.setAttribute("aria-pressed", sess?"true":"false");
+    }
+    if(sess) flashCloud("已登入，可投票或推薦公開。一個帳號對一店只能投一票。");
+    else if(state.cloudReady) flashCloud("登入 Google 後才能投票或推薦公開。");
+  }
+
+  function voteErrorReason(err){
+    const m=String(err && (err.message||err.details||err)) ;
+    if(/login-required|not authenticated|JWT/i.test(m)) return "login-required";
+    if(/already-voted|duplicate|unique/i.test(m)) return "already-voted";
+    if(/daily-limit/i.test(m)) return "daily-limit";
+    if(/already-reported/i.test(m)) return "already-reported";
+    return "error";
+  }
+
+  async function castVote(id, vote){
+    const sess=await getSession();
+    if(!sess){
+      flashCloud("請先用 Google 登入再投票。");
+      return {ok:false, reason:"login-required"};
+    }
+    if(!cloud || !cloud.vote){
+      flashCloud("公開投票尚未開通。");
+      return {ok:false, reason:"no-cloud"};
+    }
+    try{
+      await cloud.vote(id, vote);
+      if(!state.myVotes) state.myVotes={};
+      state.myVotes[id]=vote;
+      await refreshCloud();
+      flashCloud(vote===1?"已送出推薦票。":"已送出不推薦票。");
+      return {ok:true};
+    }catch(e){
+      const reason=voteErrorReason(e);
+      if(reason==="already-voted") flashCloud("這家你已經投過票了，一個帳號一店只能投一票。");
+      else if(reason==="login-required") flashCloud("請先用 Google 登入再投票。");
+      else flashCloud("投票沒有送出，請稍後再試。");
+      return {ok:false, reason:reason};
+    }
+  }
+
+  async function recommendPublic(id){
+    const sess=await getSession();
+    if(!sess){ flashCloud("請先用 Google 登入再推薦公開。"); return {ok:false, reason:"login-required"}; }
+    if(!cloud || !cloud.submit){ flashCloud("公開推薦尚未開通，請見 CLOUD.md。"); return {ok:false, reason:"no-cloud"}; }
+    const p=state.privatePlaces.find(function(x){ return x.id===id; });
+    if(!p) return {ok:false, reason:"not-found"};
+    try{
+      const newId=await cloud.submit(p);
+      flashCloud("已送進候選池，獲 100 張推薦票後才會出現在公開地圖。");
+      return {ok:true, id:newId};
+    }catch(e){
+      const reason=voteErrorReason(e);
+      if(reason==="daily-limit") flashCloud("今天已達送審上限（5 家），請明天再試。");
+      else if(reason==="login-required") flashCloud("請先用 Google 登入再推薦公開。");
+      else flashCloud("送審沒有成功，請稍後再試。");
+      return {ok:false, reason:reason};
+    }
+  }
+
+  async function reportStore(id){
+    const sess=await getSession();
+    if(!sess){ flashCloud("請先用 Google 登入再檢舉。"); return {ok:false, reason:"login-required"}; }
+    if(!cloud || !cloud.report){ flashCloud("檢舉功能尚未開通。"); return {ok:false, reason:"no-cloud"}; }
+    try{
+      await cloud.report(id, "report");
+      flashCloud("已收到檢舉。檢舉較多的店會先隱藏待審。");
+      await refreshCloud();
+      return {ok:true};
+    }catch(e){
+      const reason=voteErrorReason(e);
+      if(reason==="already-reported") flashCloud("這家你已經檢舉過了。");
+      else flashCloud("檢舉沒有送出，請稍後再試。");
+      return {ok:false, reason:reason};
+    }
+  }
+
+  function scoreOf(id){
+    return state.scores[id]||{up:0,down:0};
+  }
+
+  function originBadge(p){
+    if(p.origin==="private") return '<span class="badge private">私房</span>';
+    if(p.origin==="community") return '<span class="badge community">網友票選</span>';
+    return "";
+  }
+
+  function voteRowHtml(p){
+    if(p.origin==="private"){
+      return '<div class="vote-row">'+
+        '<button type="button" class="btn brand" data-recommend="'+escapeHtml(p.id)+'">推薦公開</button>'+
+        '<button type="button" class="btn" data-del-priv="'+escapeHtml(p.id)+'">刪除私房</button>'+
+        '<span class="note">預設只在你的裝置，不會上傳。</span></div>';
+    }
+    const sc=scoreOf(p.id);
+    const up=sc.up, down=sc.down;
+    return '<div class="vote-row">'+
+      '<button type="button" class="btn" data-vote="1" data-vote-store="'+escapeHtml(p.id)+'">推薦 '+up+'</button>'+
+      '<button type="button" class="btn" data-vote="-1" data-vote-store="'+escapeHtml(p.id)+'">不推薦 '+down+'</button>'+
+      (p.origin==="community"?'<button type="button" class="btn" data-report="'+escapeHtml(p.id)+'">檢舉</button>':'')+
+      '</div>';
+  }
+
+  function renderPrivateList(){
+    const box=$("privList");
+    if(!box) return;
+    if(!state.privatePlaces.length){
+      box.innerHTML='<p class="note">還沒有私房店。新增後只存在這台裝置，標「私房」，別人看不到。</p>';
+      return;
+    }
+    box.innerHTML=state.privatePlaces.map(function(p){
+      return '<div class="card" data-id="'+escapeHtml(p.id)+'"><h3>'+escapeHtml(p.name)+
+        '</h3><p class="note">'+escapeHtml(p.address)+'　'+escapeHtml(p.item||"")+
+        (p.price!=null?("　NT$"+p.price):"")+'</p>'+voteRowHtml(p)+'</div>';
+    }).join("");
+  }
+
+  function renderCandidates(){
+    const box=$("candList");
+    if(!box) return;
+    const rows=state.candidates||[];
+    if(!state.cloudReady){
+      box.innerHTML='<p class="note">候選池要等雲端設定完成（見 CLOUD.md）才會出現。未開通前不影響私房店。</p>';
+      return;
+    }
+    if(!rows.length){
+      box.innerHTML='<p class="note">目前沒有待票選的網友投稿。</p>';
+      return;
+    }
+    box.innerHTML=rows.map(function(p){
+      const sc=scoreOf(p.id);
+      return '<div class="card" data-id="'+escapeHtml(p.id)+'"><h3>'+escapeHtml(p.name)+
+        '</h3><p class="note">'+escapeHtml(p.address)+'　推薦 '+sc.up+'　不推薦 '+sc.down+
+        '　滿 100 張推薦才上公開地圖</p>'+voteRowHtml(p)+'</div>';
+    }).join("");
+  }
+
+  function ensureMarker(p){
+    if(!map || !p || p.lat==null || p.lng==null) return;
+    if(markers[p.id]){
+      markers[p.id].setLatLng([p.lat,p.lng]);
+      markers[p.id].bindPopup(popupHtml(p));
+      return;
+    }
+    const pin=L.divIcon({
+      className:"food-pin",
+      html:'<span class="food-pin-inner" aria-hidden="true"></span>',
+      iconSize:[28,36], iconAnchor:[14,34], popupAnchor:[0,-30]
+    });
+    const m=L.marker([p.lat,p.lng],{title:p.name, icon:pin});
+    m.bindPopup(popupHtml(p));
+    m.on("click", function(){ focusPlace(p.id, false); });
+    m.addTo(map);
+    markers[p.id]=m;
+  }
+
+  function setupCommunity(){
+    cloud = cloud || defaultCloudAdapter();
+    loadPrivate();
+    const saveBtn=$("privSaveBtn");
+    if(saveBtn) saveBtn.addEventListener("click", function(){
+      try{
+        const shop=addPrivateShop({
+          name:$("privName").value,
+          address:$("privAddr").value,
+          lat:$("privLat").value,
+          lng:$("privLng").value,
+          district:$("privDistrict").value,
+          category:$("privCat").value,
+          item:$("privItem").value,
+          price:$("privPrice").value,
+          hoursNote:$("privHours").value,
+          note:$("privNote").value
+        });
+        flashCloud("已加入私房："+shop.name);
+        $("privForm").reset();
+        renderPrivateList();
+        renderAll();
+      }catch(e){ flashCloud(String(e.message||e)); }
+    });
+    const geoBtn=$("privGeoBtn");
+    if(geoBtn) geoBtn.addEventListener("click", function(){
+      const addr=cleanText($("privAddr").value, LIMITS.address);
+      if(!addr){ flashCloud("請先填地址再定位。"); return; }
+      const url="https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&addressdetails=1&countrycodes=tw&accept-language=zh-TW&q="+encodeURIComponent(addr+" 台中");
+      flashCloud("正在用公開地圖查座標…");
+      fetch(url,{headers:{"Accept":"application/json"}}).then(function(r){ return r.json(); }).then(function(rows){
+        const hit=Array.isArray(rows)&&rows[0];
+        if(!hit){ flashCloud("找不到這個地址，請改在地圖上點位置。"); return; }
+        $("privLat").value=Number(hit.lat).toFixed(6);
+        $("privLng").value=Number(hit.lon).toFixed(6);
+        if(map){
+          const ll=[Number(hit.lat),Number(hit.lon)];
+          if(pickMarker) map.removeLayer(pickMarker);
+          pickMarker=L.marker(ll).addTo(map);
+          map.setView(ll, 16);
+        }
+        flashCloud("已填入座標，仍可改在地圖上點選微調。");
+      }).catch(function(){ flashCloud("地址查詢暫時失敗，請改在地圖上點位置。"); });
+    });
+    const pickBtn=$("privPickBtn");
+    if(pickBtn) pickBtn.addEventListener("click", function(){
+      state.pickMode=!state.pickMode;
+      document.body.classList.toggle("pick-map", state.pickMode);
+      pickBtn.setAttribute("aria-pressed", state.pickMode?"true":"false");
+      pickBtn.textContent=state.pickMode?"點地圖中（再按取消）":"在地圖上點位置";
+      flashCloud(state.pickMode?"請在地圖上點一下店的位置。":"");
+    });
+    if(map){
+      map.on("click", function(ev){
+        if(!state.pickMode) return;
+        $("privLat").value=ev.latlng.lat.toFixed(6);
+        $("privLng").value=ev.latlng.lng.toFixed(6);
+        if(pickMarker) map.removeLayer(pickMarker);
+        pickMarker=L.marker(ev.latlng).addTo(map);
+        flashCloud("已用地圖點選位置。");
+      });
+    }
+    function togglePanel(id, btnId){
+      const pan=$(id), btn=$(btnId);
+      if(!pan||!btn) return;
+      const open=pan.hasAttribute("hidden");
+      ["passportPanel","privatePanel","candidatePanel"].forEach(function(other){
+        if(other===id) return;
+        const el=$(other);
+        if(el) el.setAttribute("hidden","");
+      });
+      ["passportBtn","privateBtn","candidateBtn"].forEach(function(other){
+        const el=$(other);
+        if(el) el.setAttribute("aria-expanded","false");
+      });
+      if(open) pan.removeAttribute("hidden"); else pan.setAttribute("hidden","");
+      btn.setAttribute("aria-expanded", open?"true":"false");
+      if(id==="privatePanel") renderPrivateList();
+      if(id==="candidatePanel") renderCandidates();
+      sizeLayout();
+    }
+    if($("privateBtn")) $("privateBtn").addEventListener("click", function(){ togglePanel("privatePanel","privateBtn"); });
+    if($("candidateBtn")) $("candidateBtn").addEventListener("click", function(){ togglePanel("candidatePanel","candidateBtn"); });
+    if($("cloudLoginBtn")) $("cloudLoginBtn").addEventListener("click", async function(){
+      if(!cloud || !cloud.signIn){ flashCloud("公開登入尚未開通，請先完成 CLOUD.md 的 Google 與 SQL 設定。"); return; }
+      const sess=await getSession();
+      if(sess && cloud.signOut){ await cloud.signOut(); await refreshSessionUi(); flashCloud("已登出。"); return; }
+      try{ await cloud.signIn(); }catch(e){ flashCloud("登入沒有開始，請確認 Google 登入已設定。"); }
+    });
+    document.addEventListener("click", function(ev){
+      const rec=ev.target.closest("[data-recommend]");
+      if(rec){ ev.preventDefault(); recommendPublic(rec.getAttribute("data-recommend")); return; }
+      const del=ev.target.closest("[data-del-priv]");
+      if(del){ ev.preventDefault(); removePrivateShop(del.getAttribute("data-del-priv")); renderPrivateList(); return; }
+      const voteBtn=ev.target.closest("[data-vote-store]");
+      if(voteBtn){ ev.preventDefault(); castVote(voteBtn.getAttribute("data-vote-store"), Number(voteBtn.getAttribute("data-vote"))); return; }
+      const rep=ev.target.closest("[data-report]");
+      if(rep){ ev.preventDefault(); reportStore(rep.getAttribute("data-report")); }
+    });
+    renderPrivateList();
+    refreshSessionUi();
+    refreshCloud();
+  }
+
 
   function prefersReduce(){
     return !!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -325,7 +870,7 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
     return DAY_LABEL[parts.dow]+" "+hh+":"+mm+(parts.sim?"（預覽）":"（現在）");
   }
   function openPlaces(parts){
-    return state.places.filter(function(p){ return isOpenAt(p,parts)===true; });
+    return state.places.filter(function(p){ return !state.delistedIds.has(p.id) && isOpenAt(p,parts)===true; });
   }
   function loadVisited(){
     try{
@@ -360,7 +905,7 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
   }
   function visible(){
     const q = state.q.trim().toLowerCase();
-    return state.places.filter(p=>{
+    return catalog().filter(p=>{
       if(state.district !== "全部" && p.district !== state.district) return false;
       if(state.cat !== "全部" && p.category !== state.cat) return false;
       if(p.price == null){
@@ -395,15 +940,15 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
   }
 
   function popupHtml(p){
-    return `<div class="popup" data-id="${p.id}"><h3>${p.name}</h3>
-      <p>${p.item}・<strong>${money(p)}</strong></p>
-      <p>${p.district}・${p.category}</p>
+    return `<div class="popup" data-id="${escapeHtml(p.id)}"><h3>${escapeHtml(p.name)}</h3>
+      <p>${escapeHtml(p.item||"")}・<strong>${money(p)}</strong></p>
+      <p>${escapeHtml(p.district||"")}・${escapeHtml(p.category||"")}${p.origin==="private"?"・私房":p.origin==="community"?"・網友票選":""}</p>
       <p><a href="${mapsUrl(p)}" target="_blank" rel="noopener">Google 地圖導航</a></p></div>`;
   }
 
   function renderList(){
     const rows = visible();
-    metaEl.textContent = "顯示 " + rows.length + " / " + state.places.length + " 家（價格可能變動）";
+    metaEl.textContent = "顯示 " + rows.length + " / " + catalog().length + " 家（價格可能變動）";
     emptyEl.classList.toggle("show", rows.length===0);
     listEl.innerHTML = "";
     rows.forEach(p=>{
@@ -421,19 +966,23 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
       if(open===null) el.classList.add("hours-unknown");
       const openBadge=open===true?'<span class="badge open">營業中</span>':open===false?'<span class="badge closed">休息</span>':'<span class="badge unknown">營業時間待確認</span>';
       const hoursTxt=todayHoursText(p,parts);
-      const hoursBody=open===null?(p.hoursNote||"查不到完整營業時間，不以推測。"):(hoursTxt+(p.hoursNote? "・"+p.hoursNote:""));
-      const hoursSrc=p.hoursKnown?`來源：<a href="${p.hoursSource||p.source}" target="_blank" rel="noopener">${p.hoursSourceTitle||"食記"}</a>　查核 ${p.hoursChecked||p.checked}`:"查不到完整營業時間，不以推測顯示為營業或休息。";
-      el.innerHTML = `<h3>${p.name}</h3>
-        <div class="badges"><span class="badge">${p.district}</span><span class="badge cat">${p.category}</span>${openBadge}</div>
+      const hoursBody=open===null?escapeHtml(p.hoursNote||(p.origin==="private"?"營業時間待確認（未填則不推測）":"查不到完整營業時間，不以推測。")):escapeHtml(hoursTxt+(p.hoursNote? "・"+p.hoursNote:""));
+      const hoursSrc=p.hoursKnown?`來源：<a href="${escapeHtml(p.hoursSource||p.source)}" target="_blank" rel="noopener">${escapeHtml(p.hoursSourceTitle||"食記")}</a>　查核 ${escapeHtml(p.hoursChecked||p.checked)}`:(p.origin==="private"?"這是你的私房店，只有你看得到。":p.origin==="community"?"這是網友票選上架的店，請以現場為準。":"查不到完整營業時間，不以推測顯示為營業或休息。");
+      const srcBlock=p.origin==="private"?"":p.origin==="community"?`<p class="src">標示為網友票選，尚未經官方逐筆查核。</p>`:`<p class="src">來源：<a href="${escapeHtml(p.source)}" target="_blank" rel="noopener">${escapeHtml(p.sourceTitle||"食記")}</a><br><span class="nowrap">食記日期 ${escapeHtml(p.sourceDate)}</span>　<span class="nowrap">查核 ${escapeHtml(p.checked)}</span></p>`;
+      const stampBtn=p.origin?"":`<button type="button" class="stamp${eaten?" done":""}" data-stamp="${escapeHtml(p.id)}">${eaten?"已蓋章，吃過了":"我吃過了"}</button>`;
+      const coordSafe = p.lat==null ? `<p class="note">座標待確認，導航改用地址搜尋</p>` :
+        ((p.geocodeNote||"").includes("待確認") ? `<p class="note">${escapeHtml(p.geocodeNote)}</p>` : "");
+      el.innerHTML = `<h3>${escapeHtml(p.name)}</h3>
+        <div class="badges"><span class="badge">${escapeHtml(p.district)}</span><span class="badge cat">${escapeHtml(p.category)}</span>${originBadge(p)}${openBadge}</div>
         <p class="hours-line${open===null?" unknown":""}">${hoursBody}</p>
         <p class="src">${hoursSrc}</p>
-        <div><span class="price">${money(p)}</span>　${p.item}${p.priceNote? "・"+p.priceNote:""}</div>
-        <p class="addr">${p.address}${near}</p>
-        ${coordNote}
+        <div><span class="price">${money(p)}</span>　${escapeHtml(p.item||"")}${p.priceNote? "・"+escapeHtml(p.priceNote):""}${p.note && p.origin? "・"+escapeHtml(p.note):""}</div>
+        <p class="addr">${escapeHtml(p.address)}${near}</p>
+        ${coordSafe}
         <p class="warn">價格可能變動，請以店家現場為準。</p>
-        <p class="src">來源：<a href="${p.source}" target="_blank" rel="noopener">${p.sourceTitle||"食記"}</a><br><span class="nowrap">食記日期 ${p.sourceDate}</span>　<span class="nowrap">查核 ${p.checked}</span></p>
-        <div class="actions"><a class="navlink" href="${mapsUrl(p)}" target="_blank" rel="noopener" data-nav="${p.id}">Google 地圖導航</a>
-        <button type="button" class="stamp${eaten?" done":""}" data-stamp="${p.id}">${eaten?"已蓋章，吃過了":"我吃過了"}</button></div>`;
+        ${srcBlock}
+        <div class="actions"><a class="navlink" href="${mapsUrl(p)}" target="_blank" rel="noopener" data-nav="${escapeHtml(p.id)}">Google 地圖導航</a>
+        ${stampBtn}</div>${voteRowHtml(p)}`;
       el.addEventListener("click", (ev)=>{
         if(ev.target.closest("a,button")) return;
         focusPlace(p.id, true);
@@ -457,9 +1006,10 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
       if(state.visitedOnly && !state.visited.has(p.id)) return false;
       return true;
     }).map(function(p){ return p.id; }));
+    rows.forEach(ensureMarker);
     Object.keys(markers).forEach(function(id){
       const m=markers[id];
-      const place=state.places.find(function(p){ return p.id===id; });
+      const place=findPlace(id);
       if(show.has(id)){ if(!map.hasLayer(m)) m.addTo(map); }
       else if(map.hasLayer(m)) map.removeLayer(m);
       const el=m.getElement && m.getElement();
@@ -479,7 +1029,7 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
       const el=markers[k].getElement();
       if(el) el.classList.toggle("is-active", k===id);
     });
-    const p=state.places.find(x=>x.id===id);
+    const p=findPlace(id);
     if(!p) return;
     const card=document.querySelector(`.card[data-id="${id}"]`);
     if(card && !fromList){ card.scrollIntoView({behavior:"smooth", block:"nearest"}); }
@@ -616,6 +1166,8 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
     $("passportBtn").addEventListener("click", function(){
       const pan=$("passportPanel");
       const open=pan.hasAttribute("hidden");
+      ["privatePanel","candidatePanel"].forEach(function(id){ const el=$(id); if(el) el.setAttribute("hidden",""); });
+      ["privateBtn","candidateBtn"].forEach(function(id){ const el=$(id); if(el) el.setAttribute("aria-expanded","false"); });
       if(open) pan.removeAttribute("hidden"); else pan.setAttribute("hidden","");
       $("passportBtn").setAttribute("aria-expanded", open?"true":"false");
       sizeLayout();
@@ -702,8 +1254,18 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
     if(window.matchMedia("(min-width:900px)").matches){
       const h=header.offsetHeight+filters.offsetHeight+(tools?tools.offsetHeight:0);
       layout.style.height=Math.max(200, window.innerHeight-h)+"px";
+      const bottom=tools?tools.getBoundingClientRect().bottom:h;
+      const maxH=Math.max(160, window.innerHeight-bottom-8);
+      ["passportPanel","privatePanel","candidatePanel"].forEach(function(id){
+        const el=document.getElementById(id);
+        if(el) el.style.maxHeight=maxH+"px";
+      });
     }else{
       layout.style.height="";
+      ["passportPanel","privatePanel","candidatePanel"].forEach(function(id){
+        const el=document.getElementById(id);
+        if(el) el.style.maxHeight="";
+      });
     }
     if(map) map.invalidateSize();
   }
@@ -737,16 +1299,18 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
     return r.json();
   }).then(data=>{
     state.places=data.places||[];
+    loadPrivate();
     setupFilters(state.places);
     setupNear();
     setupClockAndPassport();
     initMap(state.places);
+    setupCommunity();
     renderList();
     refreshClock();
     sizeLayout();
     window.addEventListener("resize", sizeLayout);
     if(document.fonts&&document.fonts.ready) document.fonts.ready.then(sizeLayout);
-    window.Food100={state, visible, focusPlace, renderList, applyFilters, mapsUrl, isOpenAt, currentParts, setNow, setSimSlot, startPlay, stopPlay, tzParts, normalizeInterval, openPlaces, todayHoursText, loadVisited, saveVisited, toggleVisited, buildShareImage, renderAll, SHARE_URL, PASS_KEY, DAY_KEYS};
+    window.Food100={state, visible, focusPlace, renderList, applyFilters, mapsUrl, isOpenAt, currentParts, setNow, setSimSlot, startPlay, stopPlay, tzParts, normalizeInterval, openPlaces, todayHoursText, loadVisited, saveVisited, toggleVisited, buildShareImage, renderAll, SHARE_URL, PASS_KEY, DAY_KEYS, PRIV_KEY, catalog, findPlace, addPrivateShop, removePrivateShop, loadPrivate, savePrivate, installCloudAdapter, refreshCloud, castVote, recommendPublic, reportStore, getSession, escapeHtml, cleanText};
   }).catch(err=>{
     $("meta").textContent="資料載入失敗，請稍後再試。";
     console.error(err);
