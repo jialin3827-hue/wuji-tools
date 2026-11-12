@@ -61,8 +61,10 @@ select store_id, count(*)::int as reports
 from food100_reports
 group by store_id;
 
--- 官方店：預設已上架；不推薦票 >= 100 或隱藏／檢舉達標則下架。
--- 網友投稿：推薦票 >= 100 且不推薦票 < 100 且未隱藏才公開。
+-- 官方店：預設已上架；總票數滿 50 且不推薦超過 4 成，或隱藏／檢舉滿 10 則下架。
+-- 網友投稿：推薦票 >= 100、未達下架比例、未隱藏且檢舉未滿 10 才公開。
+-- 下架比例：total = up+down >= 50 且 down/total > 0.4（以 down*5 > total*2 計算，避免除以 0）。
+-- 例：4000 推薦 / 250 不推薦 → 仍上架；20 / 40 → 下架；10 / 30（總 40）→ 仍上架。
 create or replace view food100_public_shops as
 select s.id, s.kind, s.name, s.address, s.lat, s.lng, s.district, s.category,
        s.item, s.price, s.hours_note, s.note, s.created_at,
@@ -73,7 +75,10 @@ left join food100_vote_tally v on v.store_id = s.id
 left join food100_report_tally r on r.store_id = s.id
 where s.hidden_at is null
   and coalesce(r.reports,0) < 10
-  and coalesce(v.downvotes,0) < 100
+  and not (
+    (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) >= 50
+    and coalesce(v.downvotes,0) * 5 > (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) * 2
+  )
   and (
     s.kind = 'official'
     or (s.kind = 'community' and coalesce(v.upvotes,0) >= 100)
@@ -84,7 +89,12 @@ select s.id,
        coalesce(v.upvotes,0) as upvotes,
        coalesce(v.downvotes,0) as downvotes,
        coalesce(r.reports,0) as reports,
-       (s.hidden_at is null and coalesce(v.downvotes,0) < 100 and coalesce(r.reports,0) < 10) as listed
+       (s.hidden_at is null
+         and coalesce(r.reports,0) < 10
+         and not (
+           (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) >= 50
+           and coalesce(v.downvotes,0) * 5 > (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) * 2
+         )) as listed
 from food100_stores s
 left join food100_vote_tally v on v.store_id = s.id
 left join food100_report_tally r on r.store_id = s.id
@@ -99,7 +109,10 @@ from food100_stores s
 left join food100_vote_tally v on v.store_id = s.id
 where s.hidden_at is null
   and s.kind = 'community'
-  and coalesce(v.downvotes,0) < 100;
+  and not (
+    (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) >= 50
+    and coalesce(v.downvotes,0) * 5 > (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) * 2
+  );
 
 create or replace function food100_clean_text(t text, max_len int)
 returns text language sql immutable as $$
