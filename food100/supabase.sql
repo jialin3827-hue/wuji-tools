@@ -61,10 +61,11 @@ select store_id, count(*)::int as reports
 from food100_reports
 group by store_id;
 
--- 官方店：預設已上架；總票數滿 50 且不推薦超過 4 成，或隱藏／檢舉滿 10 則下架。
--- 網友投稿：推薦票 >= 100、未達下架比例、未隱藏且檢舉未滿 10 才公開。
--- 下架比例：total = up+down >= 50 且 down/total > 0.4（以 down*5 > total*2 計算，避免除以 0）。
--- 例：4000 推薦 / 250 不推薦 → 仍上架；20 / 40 → 下架；10 / 30（總 40）→ 仍上架。
+-- 官方店：預設已上架。下架條件（仍加 hidden_at、檢舉滿 10）：
+--   (總票 >= 20 且不推薦 > 推薦) 或 (總票 >= 50 且不推薦 / 總票 > 0.4)。
+--   後者用 down*5 > total*2，避免除以 0；剛好 4 成仍上架。總票 < 20 不上架條件、僅前端標「觀察中」。
+-- 網友投稿：推薦票 >= 100、未達下架條件、未隱藏且檢舉未滿 10 才公開。
+-- 例：4000/250 上架；10/30 下架；5/8（總 13）上架；28/22（總 50，44%）下架。
 create or replace view food100_public_shops as
 select s.id, s.kind, s.name, s.address, s.lat, s.lng, s.district, s.category,
        s.item, s.price, s.hours_note, s.note, s.created_at,
@@ -76,8 +77,14 @@ left join food100_report_tally r on r.store_id = s.id
 where s.hidden_at is null
   and coalesce(r.reports,0) < 10
   and not (
-    (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) >= 50
-    and coalesce(v.downvotes,0) * 5 > (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) * 2
+    (
+      (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) >= 20
+      and coalesce(v.downvotes,0) > coalesce(v.upvotes,0)
+    )
+    or (
+      (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) >= 50
+      and coalesce(v.downvotes,0) * 5 > (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) * 2
+    )
   )
   and (
     s.kind = 'official'
@@ -92,8 +99,14 @@ select s.id,
        (s.hidden_at is null
          and coalesce(r.reports,0) < 10
          and not (
-           (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) >= 50
-           and coalesce(v.downvotes,0) * 5 > (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) * 2
+           (
+             (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) >= 20
+             and coalesce(v.downvotes,0) > coalesce(v.upvotes,0)
+           )
+           or (
+             (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) >= 50
+             and coalesce(v.downvotes,0) * 5 > (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) * 2
+           )
          )) as listed
 from food100_stores s
 left join food100_vote_tally v on v.store_id = s.id
@@ -110,8 +123,14 @@ left join food100_vote_tally v on v.store_id = s.id
 where s.hidden_at is null
   and s.kind = 'community'
   and not (
-    (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) >= 50
-    and coalesce(v.downvotes,0) * 5 > (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) * 2
+    (
+      (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) >= 20
+      and coalesce(v.downvotes,0) > coalesce(v.upvotes,0)
+    )
+    or (
+      (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) >= 50
+      and coalesce(v.downvotes,0) * 5 > (coalesce(v.upvotes,0) + coalesce(v.downvotes,0)) * 2
+    )
   );
 
 create or replace function food100_clean_text(t text, max_len int)
