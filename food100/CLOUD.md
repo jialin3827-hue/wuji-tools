@@ -1,4 +1,4 @@
-# 百元好食地圖：雲端投票開通步驟（需你本人登入，代理人不能代做）
+# 全民公投美食地圖：雲端投票開通步驟（需你本人登入，代理人不能代做）
 
 私房店（只存在你的手機、標「私房」）已可使用，不必做下列步驟。
 「推薦公開」、Google 登入投票、官方店不推薦滿 100 自動下架，要等下列設定完成才會生效。
@@ -23,7 +23,7 @@
 需要你登入 Google Cloud 與 Supabase，代理人沒有你的密碼、也不能自行建立 OAuth 用戶端。
 
 1. 打開 [Google Cloud 憑證](https://console.cloud.google.com/apis/credentials)，選一個專案（或建立免費專案）。
-2. 若尚未設定「OAuth 同意畫面」：User Type 選 External，應用程式名稱填「台中百元好食地圖」，填你的聯絡信箱，範圍用預設的 `email`、`profile`、`openid` 即可。測試期間可把要用的 Google 帳號加進測試使用者。
+2. 若尚未設定「OAuth 同意畫面」：User Type 選 External，應用程式名稱填「全民公投美食地圖」，填你的聯絡信箱，範圍用預設的 `email`、`profile`、`openid` 即可。測試期間可把要用的 Google 帳號加進測試使用者。
 3. 「建立憑證」→「OAuth 用戶端 ID」→ 應用程式類型選 **Web application**。
 4. **已授權的 JavaScript 來源**加：
    - `https://jialin3827-hue.github.io`

@@ -1,4 +1,4 @@
--- 台中百元好食地圖：社群投稿／投票／官方店下架（Supabase 免費方案）
+-- 全民公投美食地圖：社群投稿／投票／官方店下架（Supabase 免費方案）
 -- 請在既有專案 vuzfdndkushfoiljlxpv（花壇備品倉儲同一專案）的 SQL Editor 整份執行。
 -- 只新增 food100_* 物件，不改動 wh_* 倉儲資料與函式。
 -- 前端只使用 anon key；本檔不含 service_role。
