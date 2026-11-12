@@ -157,10 +157,19 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
 
 .badge.private{background:#eee;color:#111;border:1px solid #111}
 .badge.community{background:var(--brand);color:#111}
-.vote-row{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;margin-top:.4rem}
+.vote-row{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;margin-top:.4rem;scroll-margin-top:5.5rem}
 .vote-row .btn.picked{background:var(--brand);color:#111;font-weight:900}
 .vote-withdraw{appearance:none;border:0;background:none;color:var(--link);font:inherit;font-size:.78rem;font-weight:700;cursor:pointer;padding:0 .15rem;text-decoration:underline;text-underline-offset:.15em}
 .vote-withdraw:hover{color:var(--ink)}
+.vote-notice{flex-basis:100%;margin:0;padding:.35rem .5rem;font-size:.8rem;font-weight:700;line-height:1.35;background:var(--brand);color:#111;border:2px solid #111;border-radius:2px}
+@keyframes vote-pulse{
+  0%,100%{box-shadow:none;transform:scale(1)}
+  50%{box-shadow:0 0 0 3px var(--brand);transform:scale(1.05)}
+}
+.vote-row.vote-pulse .btn{animation:vote-pulse .6s ease-in-out 3}
+@media (prefers-reduced-motion:reduce){
+  .vote-row.vote-pulse .btn{animation:none;box-shadow:0 0 0 3px var(--brand)}
+}
 
 .vote-guide{margin:.25rem 0 .1rem;padding:.4rem .65rem;border:2px solid #111;background:#fff;border-radius:2px}
 .vote-guide p{margin:0;font-size:.82rem;font-weight:700;line-height:1.4}
@@ -366,6 +375,8 @@ body.pick-map #map{cursor:crosshair}
   state.cloudReady=false;
   state.pickMode=false;
   state.session=null;
+  state.voteNotice=null;
+  state.loginPulseDone=false;
   let pickMarker=null;
   let cloud=null;
 
@@ -585,7 +596,42 @@ body.pick-map #map{cursor:crosshair}
     return String(meta.full_name||meta.name||"").trim();
   }
 
-  async function refreshSessionUi(){
+  let voteNoticeTimer=null;
+
+  function showVoteNotice(id, text){
+    if(voteNoticeTimer){ clearTimeout(voteNoticeTimer); voteNoticeTimer=null; }
+    state.voteNotice={id:id, text:text};
+    if(listEl) renderAll();
+    renderCandidates();
+    voteNoticeTimer=setTimeout(function(){
+      if(state.voteNotice && state.voteNotice.id===id){
+        state.voteNotice=null;
+        document.querySelectorAll(".vote-notice").forEach(function(el){ el.remove(); });
+      }
+      voteNoticeTimer=null;
+    }, 2500);
+  }
+
+  function welcomeToVote(){
+    if(state.loginPulseDone) return;
+    state.loginPulseDone=true;
+    const row=document.querySelector("#list .vote-row");
+    if(!row) return;
+    const pane=$("listPane");
+    const motion=prefersReduce()?"auto":"smooth";
+    if(pane && window.matchMedia("(min-width:900px)").matches){
+      const paneBox=pane.getBoundingClientRect();
+      const rowBox=row.getBoundingClientRect();
+      const top=pane.scrollTop+(rowBox.top-paneBox.top)-Math.max(0,(paneBox.height-rowBox.height)/2);
+      pane.scrollTo({top:Math.max(0,top), behavior:motion});
+    }else{
+      row.scrollIntoView({behavior:motion, block:"center"});
+    }
+    row.classList.add("vote-pulse");
+    setTimeout(function(){ row.classList.remove("vote-pulse"); }, 2000);
+  }
+
+  async function refreshSessionUi(opts){
     const sess=await getSession();
     state.session=sess;
     const btn=$("cloudLoginBtn");
@@ -599,10 +645,14 @@ body.pick-map #map{cursor:crosshair}
       flashCloud(name?("已登入："+name+"。可選店家按讚投票，每人每店一票，可隨時改成贊成或反對。"):"已登入。可選店家按讚投票，每人每店一票，可隨時改成贊成或反對。");
     }else if(state.cloudReady){
       flashCloud("請先用 Google 登入，再選店家按讚投票。每人每店一票，可隨時改成贊成或反對。");
+      state.loginPulseDone=false;
     }
     renderPrivateList();
     renderCandidates();
     if(listEl) renderAll();
+    if(opts && opts.fromAuth==="SIGNED_IN" && sess){
+      setTimeout(welcomeToVote, 80);
+    }
   }
 
   function voteErrorReason(err){
@@ -641,9 +691,13 @@ body.pick-map #map{cursor:crosshair}
       if(vote===0) delete state.myVotes[id];
       else state.myVotes[id]=vote;
       await refreshCloud();
-      if(vote===0) flashCloud("已收回這家的票。");
-      else if(prev && prev!==vote) flashCloud(vote===1?"已改成推薦票。":"已改成不推薦票。");
-      else flashCloud(vote===1?"已送出推薦票。":"已送出不推薦票。");
+      if(vote===0){
+        showVoteNotice(id, "已收回你的票");
+      }else if(prev && prev!==vote){
+        showVoteNotice(id, vote===1?"已從不推薦改成推薦":"已從推薦改成不推薦");
+      }else{
+        flashCloud(vote===1?"已送出推薦票。":"已送出不推薦票。");
+      }
       return {ok:true};
     }catch(e){
       const reason=voteErrorReason(e);
@@ -738,12 +792,14 @@ body.pick-map #map{cursor:crosshair}
     const upCls=mine===1?" brand picked":"";
     const downCls=mine===-1?" brand picked":"";
     const withdraw=(!reason && mine!=null)?'<button type="button" class="vote-withdraw" data-withdraw="'+escapeHtml(p.id)+'">收回</button>':"";
+    const notice=(state.voteNotice && state.voteNotice.id===p.id)?'<p class="vote-notice" role="status">'+escapeHtml(state.voteNotice.text)+'</p>':"";
     return '<div class="vote-row">'+
       '<button type="button" class="btn'+upCls+'" data-vote="1" data-vote-store="'+escapeHtml(p.id)+'"'+dis+(mine===1?' aria-pressed="true"':"")+'>推薦 '+up+'</button>'+
       '<button type="button" class="btn'+downCls+'" data-vote="-1" data-vote-store="'+escapeHtml(p.id)+'"'+dis+(mine===-1?' aria-pressed="true"':"")+'>不推薦 '+down+'</button>'+
       withdraw+
       (p.origin==="community"?'<button type="button" class="btn" data-report="'+escapeHtml(p.id)+'"'+(state.session?"":" disabled")+'>檢舉</button>':'')+
       (reason?'<span class="vote-reason">'+escapeHtml(reason)+'</span>':'')+
+      notice+
       '</div>';
   }
 
@@ -806,7 +862,7 @@ body.pick-map #map{cursor:crosshair}
       state.authHooked=true;
       cloud.client.auth.onAuthStateChange(function(event){
         if(event==="SIGNED_IN" || event==="SIGNED_OUT" || event==="USER_UPDATED"){
-          refreshSessionUi();
+          refreshSessionUi({fromAuth:event});
         }
       });
     }
@@ -1435,7 +1491,7 @@ body.pick-map #map{cursor:crosshair}
     sizeLayout();
     window.addEventListener("resize", sizeLayout);
     if(document.fonts&&document.fonts.ready) document.fonts.ready.then(sizeLayout);
-    window.Food100={state, visible, focusPlace, renderList, applyFilters, mapsUrl, isOpenAt, currentParts, setNow, setSimSlot, startPlay, stopPlay, tzParts, normalizeInterval, openPlaces, todayHoursText, loadVisited, saveVisited, toggleVisited, buildShareImage, renderAll, SHARE_URL, PASS_KEY, DAY_KEYS, PRIV_KEY, catalog, findPlace, addPrivateShop, removePrivateShop, loadPrivate, savePrivate, installCloudAdapter, refreshCloud, refreshSessionUi, castVote, withdrawVote, applyVote, currentVote, recommendPublic, reportStore, getSession, voteDisabledReason, escapeHtml, cleanText};
+    window.Food100={state, visible, focusPlace, renderList, applyFilters, mapsUrl, isOpenAt, currentParts, setNow, setSimSlot, startPlay, stopPlay, tzParts, normalizeInterval, openPlaces, todayHoursText, loadVisited, saveVisited, toggleVisited, buildShareImage, renderAll, SHARE_URL, PASS_KEY, DAY_KEYS, PRIV_KEY, catalog, findPlace, addPrivateShop, removePrivateShop, loadPrivate, savePrivate, installCloudAdapter, refreshCloud, refreshSessionUi, castVote, withdrawVote, applyVote, currentVote, showVoteNotice, welcomeToVote, recommendPublic, reportStore, getSession, voteDisabledReason, escapeHtml, cleanText};
   }).catch(err=>{
     $("meta").textContent="資料載入失敗，請稍後再試。";
     console.error(err);
