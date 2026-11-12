@@ -152,16 +152,39 @@ declare
   uid uuid := auth.uid();
 begin
   if uid is null then raise exception 'login-required'; end if;
-  if p_vote not in (1, -1) then raise exception 'invalid-vote'; end if;
+  if p_vote not in (1, -1, 0) then raise exception 'invalid-vote'; end if;
   if not exists (select 1 from food100_stores s where s.id = p_store and s.hidden_at is null) then
     raise exception 'not-found';
   end if;
-  begin
-    insert into food100_votes(store_id, user_id, vote) values (p_store, uid, p_vote);
-  exception when unique_violation then
-    raise exception 'already-voted';
-  end;
+  if p_vote = 0 then
+    delete from food100_votes where store_id = p_store and user_id = uid;
+    return;
+  end if;
+  insert into food100_votes(store_id, user_id, vote)
+  values (p_store, uid, p_vote)
+  on conflict (store_id, user_id) do update
+    set vote = excluded.vote
+    where food100_votes.user_id = uid;
 end $$;
+
+create or replace function food100_my_votes()
+returns table(store_id text, vote smallint)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+begin
+  if uid is null then
+    return;
+  end if;
+  return query
+    select v.store_id, v.vote
+    from food100_votes v
+    where v.user_id = uid;
+end;
+$$;
 
 create or replace function food100_report_store(p_store text, p_reason text)
 returns void language plpgsql security definer set search_path = public as $$
@@ -188,22 +211,33 @@ begin
 end $$;
 
 revoke all on table food100_stores, food100_votes, food100_reports from public, anon, authenticated;
-revoke all on function food100_submit, food100_cast_vote, food100_report_store, food100_clean_text from public, anon, authenticated;
+revoke all on function food100_submit, food100_cast_vote, food100_my_votes, food100_report_store, food100_clean_text from public, anon, authenticated;
 
 alter table food100_stores enable row level security;
 alter table food100_votes enable row level security;
 alter table food100_reports enable row level security;
 
 -- 不開放直接讀寫基表；anon／登入者只能讀 view、登入者只能呼叫函式。
--- 票數與上架條件由 view／函式計算。votes 以 primary key (store_id, user_id) 保證一帳一店一票。
+-- 票數與上架條件由 view／函式計算。votes 以 primary key (store_id, user_id) 保證一帳一店一票，同一票可改投或收回。
 
 drop policy if exists food100_votes_select_own on food100_votes;
 drop policy if exists food100_votes_insert_own on food100_votes;
--- 即使暫時 grant 也不允許改別人的票；預設不 grant 基表。
+drop policy if exists food100_votes_update_own on food100_votes;
+drop policy if exists food100_votes_delete_own on food100_votes;
+-- 即使暫時 grant 也不允許改別人的票；預設不 grant 基表。前端仍只呼叫函式。
+create policy food100_votes_select_own on food100_votes
+  for select to authenticated using (user_id = auth.uid());
+create policy food100_votes_insert_own on food100_votes
+  for insert to authenticated with check (user_id = auth.uid());
+create policy food100_votes_update_own on food100_votes
+  for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy food100_votes_delete_own on food100_votes
+  for delete to authenticated using (user_id = auth.uid());
 
 grant select on food100_public_shops, food100_official_status, food100_candidates to anon, authenticated;
 grant execute on function food100_submit(text,text,double precision,double precision,text,text,text,int,text,text) to authenticated;
 grant execute on function food100_cast_vote(text, smallint) to authenticated;
+grant execute on function food100_my_votes() to authenticated;
 grant execute on function food100_report_store(text, text) to authenticated;
 
 insert into food100_stores (id, kind, name, address, lat, lng, district, category, item, price)

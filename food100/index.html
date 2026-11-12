@@ -158,6 +158,9 @@ body.tab-paused .food-pin-inner.is-open{animation-play-state:paused}
 .badge.private{background:#eee;color:#111;border:1px solid #111}
 .badge.community{background:var(--brand);color:#111}
 .vote-row{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;margin-top:.4rem}
+.vote-row .btn.picked{background:var(--brand);color:#111;font-weight:900}
+.vote-withdraw{appearance:none;border:0;background:none;color:var(--link);font:inherit;font-size:.78rem;font-weight:700;cursor:pointer;padding:0 .15rem;text-decoration:underline;text-underline-offset:.15em}
+.vote-withdraw:hover{color:var(--ink)}
 
 .vote-guide{margin:.25rem 0 .1rem;padding:.4rem .65rem;border:2px solid #111;background:#fff;border-radius:2px}
 .vote-guide p{margin:0;font-size:.82rem;font-weight:700;line-height:1.4}
@@ -265,7 +268,7 @@ body.pick-map #map{cursor:crosshair}
 
     <p id="cloudStatus" class="note">私房店只存在你的裝置。公開投票需 Google 登入。</p>
     <div id="voteGuide" class="vote-guide">
-      <p>怎麼投票：① Google 登入 → ② 選店家 → ③ 按讚投票。每人每店一票，投過就不能改。</p>
+      <p>怎麼投票：① Google 登入 → ② 選店家 → ③ 按讚投票。每人每店一票，可隨時改成贊成或反對。</p>
     </div>
     <div id="privatePanel" hidden>
       <div class="pass-head">
@@ -309,7 +312,7 @@ body.pick-map #map{cursor:crosshair}
       <div class="pass-head">
         <h2>網友候選池</h2>
       </div>
-      <p class="note">推薦公開的店會進這裡。一個 Google 帳號對一店只能投一票；滿 100 張推薦票才出現在公開地圖，標「網友票選」。官方 30 家已在地圖上，也可投票；不推薦滿 100 會由伺服器判定下架。</p>
+      <p class="note">推薦公開的店會進這裡。一個 Google 帳號對一店只有一票，可隨時改成贊成或反對，也可收回；滿 100 張推薦票才出現在公開地圖，標「網友票選」。官方 30 家已在地圖上，也可投票；不推薦滿 100 會由伺服器判定下架。</p>
       <div id="candList"></div>
     </div>
 
@@ -320,7 +323,7 @@ body.pick-map #map{cursor:crosshair}
   <div id="map" role="application" aria-label="店家地圖"></div>
   <div id="listPane">
     <p id="meta"></p>
-    <p id="listVoteHint">選一家店後，在卡片或地圖氣泡上按「推薦」或「不推薦」。每人每店一票。</p>
+    <p id="listVoteHint">選一家店後，在卡片或地圖氣泡上按「推薦」或「不推薦」。每人每店一票，可隨時改成贊成或反對，再點一次或按「收回」可取消。</p>
     <div id="empty">沒有符合的店家，試試放寬區域、類別或價格上限。</div>
     <div id="list"></div>
   </div>
@@ -549,7 +552,7 @@ body.pick-map #map{cursor:crosshair}
       state.communityPlaces.forEach(ensureMarker);
       renderCandidates();
       renderAll();
-      if(!state.session) flashCloud("請先用 Google 登入，再選店家按讚投票。每人每店一票。");
+      if(!state.session) flashCloud("請先用 Google 登入，再選店家按讚投票。每人每店一票，可隨時改成贊成或反對。");
       return {ok:true};
     }catch(e){
       state.cloudReady=false;
@@ -593,9 +596,9 @@ body.pick-map #map{cursor:crosshair}
     await loadMyVotes();
     if(sess){
       const name=sessionName(sess);
-      flashCloud(name?("已登入："+name+"。可選店家按讚投票，每人每店一票。"):"已登入。可選店家按讚投票，每人每店一票。");
+      flashCloud(name?("已登入："+name+"。可選店家按讚投票，每人每店一票，可隨時改成贊成或反對。"):"已登入。可選店家按讚投票，每人每店一票，可隨時改成贊成或反對。");
     }else if(state.cloudReady){
-      flashCloud("請先用 Google 登入，再選店家按讚投票。每人每店一票。");
+      flashCloud("請先用 Google 登入，再選店家按讚投票。每人每店一票，可隨時改成贊成或反對。");
     }
     renderPrivateList();
     renderCandidates();
@@ -606,12 +609,22 @@ body.pick-map #map{cursor:crosshair}
     const m=String(err && (err.message||err.details||err)) ;
     if(/login-required|not authenticated|JWT/i.test(m)) return "login-required";
     if(/already-voted|duplicate|unique/i.test(m)) return "already-voted";
+    if(/invalid-vote/i.test(m)) return "invalid-vote";
     if(/daily-limit/i.test(m)) return "daily-limit";
     if(/already-reported/i.test(m)) return "already-reported";
     return "error";
   }
 
-  async function castVote(id, vote){
+  function currentVote(id){
+    if(state.myVotes && Object.prototype.hasOwnProperty.call(state.myVotes, id)) return state.myVotes[id];
+    return null;
+  }
+
+  function flashVoteLocked(){
+    flashCloud("改票還沒開通。請先在 Supabase 執行 vote-change.sql，目前暫時不能改成另一票或收回。");
+  }
+
+  async function applyVote(id, vote){
     const sess=await getSession();
     if(!sess){
       flashCloud("請先用 Google 登入再投票。");
@@ -621,26 +634,39 @@ body.pick-map #map{cursor:crosshair}
       flashCloud("公開投票尚未開通。");
       return {ok:false, reason:"no-cloud"};
     }
+    const prev=currentVote(id);
     try{
       await cloud.vote(id, vote);
       if(!state.myVotes) state.myVotes={};
-      state.myVotes[id]=vote;
+      if(vote===0) delete state.myVotes[id];
+      else state.myVotes[id]=vote;
       await refreshCloud();
-      flashCloud(vote===1?"已送出推薦票。":"已送出不推薦票。");
+      if(vote===0) flashCloud("已收回這家的票。");
+      else if(prev && prev!==vote) flashCloud(vote===1?"已改成推薦票。":"已改成不推薦票。");
+      else flashCloud(vote===1?"已送出推薦票。":"已送出不推薦票。");
       return {ok:true};
     }catch(e){
       const reason=voteErrorReason(e);
-      if(reason==="already-voted"){
-        if(!state.myVotes) state.myVotes={};
-        if(state.myVotes[id]==null) state.myVotes[id]=vote;
+      if(reason==="already-voted" || reason==="invalid-vote"){
         if(listEl) renderAll();
         renderCandidates();
-        flashCloud("這家你已經投過票了，一個帳號一店只能投一票。");
+        flashVoteLocked();
+        return {ok:false, reason:"vote-locked"};
       }
-      else if(reason==="login-required") flashCloud("請先用 Google 登入再投票。");
-      else flashCloud("投票沒有送出，請稍後再試。");
+      if(reason==="login-required") flashCloud("請先用 Google 登入再投票。");
+      else flashCloud(vote===0?"收回沒有成功，請稍後再試。":"投票沒有送出，請稍後再試。");
       return {ok:false, reason:reason};
     }
+  }
+
+  async function castVote(id, vote){
+    const prev=currentVote(id);
+    if(vote===0 || (prev!=null && prev===vote)) return applyVote(id, 0);
+    return applyVote(id, vote);
+  }
+
+  async function withdrawVote(id){
+    return applyVote(id, 0);
   }
 
   async function recommendPublic(id){
@@ -689,10 +715,9 @@ body.pick-map #map{cursor:crosshair}
     return "";
   }
 
-  function voteDisabledReason(id){
+  function voteDisabledReason(){
     if(!state.cloudReady) return "公開投票尚未開通";
     if(!state.session) return "請先登入";
-    if(state.myVotes && Object.prototype.hasOwnProperty.call(state.myVotes, id)) return "你已投過";
     return "";
   }
 
@@ -707,11 +732,16 @@ body.pick-map #map{cursor:crosshair}
     }
     const sc=scoreOf(p.id);
     const up=sc.up, down=sc.down;
-    const reason=voteDisabledReason(p.id);
+    const reason=voteDisabledReason();
     const dis=reason?" disabled":"";
+    const mine=currentVote(p.id);
+    const upCls=mine===1?" brand picked":"";
+    const downCls=mine===-1?" brand picked":"";
+    const withdraw=(!reason && mine!=null)?'<button type="button" class="vote-withdraw" data-withdraw="'+escapeHtml(p.id)+'">收回</button>':"";
     return '<div class="vote-row">'+
-      '<button type="button" class="btn" data-vote="1" data-vote-store="'+escapeHtml(p.id)+'"'+dis+'>推薦 '+up+'</button>'+
-      '<button type="button" class="btn" data-vote="-1" data-vote-store="'+escapeHtml(p.id)+'"'+dis+'>不推薦 '+down+'</button>'+
+      '<button type="button" class="btn'+upCls+'" data-vote="1" data-vote-store="'+escapeHtml(p.id)+'"'+dis+(mine===1?' aria-pressed="true"':"")+'>推薦 '+up+'</button>'+
+      '<button type="button" class="btn'+downCls+'" data-vote="-1" data-vote-store="'+escapeHtml(p.id)+'"'+dis+(mine===-1?' aria-pressed="true"':"")+'>不推薦 '+down+'</button>'+
+      withdraw+
       (p.origin==="community"?'<button type="button" class="btn" data-report="'+escapeHtml(p.id)+'"'+(state.session?"":" disabled")+'>檢舉</button>':'')+
       (reason?'<span class="vote-reason">'+escapeHtml(reason)+'</span>':'')+
       '</div>';
@@ -872,6 +902,8 @@ body.pick-map #map{cursor:crosshair}
       if(rec){ ev.preventDefault(); recommendPublic(rec.getAttribute("data-recommend")); return; }
       const del=ev.target.closest("[data-del-priv]");
       if(del){ ev.preventDefault(); removePrivateShop(del.getAttribute("data-del-priv")); renderPrivateList(); return; }
+      const wd=ev.target.closest("[data-withdraw]");
+      if(wd){ ev.preventDefault(); withdrawVote(wd.getAttribute("data-withdraw")); return; }
       const voteBtn=ev.target.closest("[data-vote-store]");
       if(voteBtn){ ev.preventDefault(); castVote(voteBtn.getAttribute("data-vote-store"), Number(voteBtn.getAttribute("data-vote"))); return; }
       const rep=ev.target.closest("[data-report]");
@@ -1403,7 +1435,7 @@ body.pick-map #map{cursor:crosshair}
     sizeLayout();
     window.addEventListener("resize", sizeLayout);
     if(document.fonts&&document.fonts.ready) document.fonts.ready.then(sizeLayout);
-    window.Food100={state, visible, focusPlace, renderList, applyFilters, mapsUrl, isOpenAt, currentParts, setNow, setSimSlot, startPlay, stopPlay, tzParts, normalizeInterval, openPlaces, todayHoursText, loadVisited, saveVisited, toggleVisited, buildShareImage, renderAll, SHARE_URL, PASS_KEY, DAY_KEYS, PRIV_KEY, catalog, findPlace, addPrivateShop, removePrivateShop, loadPrivate, savePrivate, installCloudAdapter, refreshCloud, refreshSessionUi, castVote, recommendPublic, reportStore, getSession, voteDisabledReason, escapeHtml, cleanText};
+    window.Food100={state, visible, focusPlace, renderList, applyFilters, mapsUrl, isOpenAt, currentParts, setNow, setSimSlot, startPlay, stopPlay, tzParts, normalizeInterval, openPlaces, todayHoursText, loadVisited, saveVisited, toggleVisited, buildShareImage, renderAll, SHARE_URL, PASS_KEY, DAY_KEYS, PRIV_KEY, catalog, findPlace, addPrivateShop, removePrivateShop, loadPrivate, savePrivate, installCloudAdapter, refreshCloud, refreshSessionUi, castVote, withdrawVote, applyVote, currentVote, recommendPublic, reportStore, getSession, voteDisabledReason, escapeHtml, cleanText};
   }).catch(err=>{
     $("meta").textContent="資料載入失敗，請稍後再試。";
     console.error(err);
