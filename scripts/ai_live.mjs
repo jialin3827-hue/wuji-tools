@@ -1,14 +1,14 @@
 // AI 跟單實戰模擬（每日前進式、虛擬錢）。只用「到今天為止」的資料，每個市場每天最多處理一次。
 // PROFIT_TARGET_MODE 2026-10-30：偏動能達標——現金補滿只買近1週報酬>0；cash>8%就補；連虧1筆換交易員；開局偏 Rocket/Flash/Dragon/Wave。虛擬錢不保證收益。
 // MOON_V2 2026-11-14（分支 moon-bots-v2）：台股還原價＋ETF 證交稅 0.1%；連虧 N 筆才換、一天最多換 1 次；可關 cash-fill；
-//   大盤 200MA 濾網（台股 ±2% 緩衝）；30% 移動停損＋停損後再進場條件。各市場開關見 CFG，依 2016–2021 樣本內結果選定。
+//   大盤 200MA 濾網（台股 ±2% 緩衝）；30% 移動停損＋停損後再進場條件。各市場開關見 CFG，目前三市場統一用 B（①+②a+③+④）。
 // 用法：node scripts/ai_live.mjs tw|us|crypto|all [--catchup-fill]   （AI_LIVE_FILE 可指定別的狀態檔，用於離線測試）
 import fs from 'node:fs';
 const FILE=process.env.AI_LIVE_FILE||'market/data/ai_live.json',INIT=100000,VER='v2';
 // adj:台股還原價  switchN:連虧幾筆才換  cashFill:訊號外補滿現金  filter:大盤濾網  stop:移動停損比例(0=關)  rearm:停損後再進場 hi20|flip
-const CFG={tw:{adj:true,switchN:2,cashFill:false,filter:false,stop:0,rearm:'flip'},
- us:{adj:true,switchN:2,cashFill:true,filter:false,stop:0,rearm:'hi20'},
- crypto:{adj:true,switchN:1,cashFill:true,filter:false,stop:.3,rearm:'hi20'}};
+const CFG={tw:{adj:true,switchN:2,cashFill:true,filter:true,stop:.3,rearm:'flip'},
+ us:{adj:true,switchN:2,cashFill:true,filter:true,stop:.3,rearm:'hi20'},
+ crypto:{adj:true,switchN:2,cashFill:true,filter:true,stop:.3,rearm:'hi20'}}; // B 設定（CEO 2026-11-14 選定）：①+②a+③+④
 const IDX={tw:'TAIEX',us:'SPY',crypto:'BTC'},BAND={tw:.02,us:0,crypto:0};
 const isETF=(mk,s)=>mk==='tw'&&/^00/.test(s);
 const U={tw:['2330','2317','2454','2308','2303','2881','2882','2603','3008','0050'],us:['NVDA','AAPL','MSFT','TSLA','AMZN','GOOGL','META','AMD','AVGO','TSM'],crypto:['BTC','ETH','SOL','BNB','XRP']};
