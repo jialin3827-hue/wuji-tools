@@ -197,7 +197,7 @@ async function load(){const sym=norm(C.mk,$('sym').value);if(!sym){showErr('請�
  catch(e){if(my!==SEQ)return;first=false;DATA=null;RES=null;$('kp').innerHTML='';const x=$('eqc').getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,$('eqc').width,$('eqc').height);
   const m=sym+'：'+tr('載入失敗')+' — '+tr(e.message||'請確認代號或稍後再試');$('st').innerHTML='<span class="up"></span>';$('st').firstChild.textContent=m;showErr(m)}
  finally{if(my===SEQ)busy(false)}}
-function compute(){if(C.m==='live')return live();if(!DATA)return;const c=DATA.c,N=c.length,fee=FEE[DATA.mk];if(N<30){showErr('資料太少');return}
+function compute(){if(C.m==='live')return live();if(!DATA)return;const c=DATA.c,N=c.length,fee=(DATA.mk==='tw'&&/^00/.test(DATA.sym))?[.001425,.002425]:FEE[DATA.mk];/* 台股 ETF 證交稅 0.1% */if(N<30){showErr('資料太少');return}
  const i0=C.per&&N-C.per>0?N-C.per:Math.min(N-2,0),dates=DATA.d.slice(i0),bh=run(c,c.map(()=>1),i0,fee),bs=stats(bh.eq);let k=[],lines,marks;
  $('rng').textContent=dates[0]+' → '+dates[dates.length-1];
  if(C.m==='bt'){const P=C.p;const r=C.s==='dca'?runDCA(c,P.iv,i0,fee):run(c,C.s==='ma'?sigMA(c,P.f,P.sl):C.s==='rsi'?sigRSI(c,P.rp,P.lo,P.hi):c.map(()=>1),i0,fee),s=stats(r.eq);
@@ -217,6 +217,8 @@ function compute(){if(C.m==='live')return live();if(!DATA)return;const c=DATA.c,
   RES={sym:DATA.sym,lines,dates,marks,ret:s.ret,dd:s.dd,bh:bs.ret,name:'AI 跟單',n:a.trs.length}}
  $('kp').innerHTML=k.map(([l,v,c])=>`<div class="k"><span>${l}</span><b class="${c}">${v}</b></div>`).join('');draw();$('card').classList.add('hide')}
 /* ---------- 實戰模擬（每日）：讀 GitHub Actions 每天寫入的 data/ai_live.json ---------- */
+function v2line(M,mk){const c=M.cfg||{},f=M.filter,L=Object.keys(M.lock||{}),cur=mk==='tw'?'NT$':'$',x=[];x.push('規則 v2：連虧 '+(c.switchN||1)+' 筆才換人');x.push(c.cashFill?'補滿現金 開':'補滿現金 關');
+ if(f)x.push((c.filter?'大盤濾網 ':'大盤參考 ')+f.sym+' '+(f.on?'多':'空')+'（200MA '+Math.round(f.ma).toLocaleString()+'）');if(c.stop)x.push('移動停損 '+Math.round(c.stop*100)+'%');if(L.length)x.push('停損鎖定 '+L.join('、'));if(M.costs!=null)x.push('累計費稅 '+cur+Math.round(M.costs).toLocaleString());if(mk==='tw'&&c.adj)x.push('還原價');return x.join(' · ')}
 let LIVE=null;const MKN={tw:'台股',us:'美股',crypto:'虛擬幣'},BN={tw:'0050',us:'SPY',crypto:'BTC'};
 async function live(){const mk=C.lmk||'tw';
  if(!LIVE){busy(true,'載入中…');try{const r=await fetch('data/ai_live.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);LIVE=await r.json()}catch(e){busy(false);showErr('實戰資料尚未產生，請稍後再試');return}busy(false)}
@@ -224,12 +226,12 @@ async function live(){const mk=C.lmk||'tw';
  if(!M||!M.equity||!M.equity.length){$('lday').textContent='';$('lst').textContent=tr('這個市場還沒開始，等下一次收盤後自動執行');$('kp').innerHTML='';RES=null;const x=$('eqc').getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,9999,9999);['lhold','ltoday','ltr','lsw'].forEach(i=>$(i).innerHTML='');return}
  const E=M.equity,eq=E.map(x=>x[1]),bh=E.map(x=>x[2]),s=stats(eq),bs=stats(bh),N=M.day||E.length,last=E[E.length-1];
  $('lday').textContent='Day '+N;$('rng').textContent=M.start+' → '+M.lastDate;
- $('lst').innerHTML=`<b style="color:var(--ac)">Day ${N}</b> · ${tr('開始日')} ${M.start} · ${tr('跟隨交易員')} <b>${(M.switches.at(-1)||{}).to||'—'}</b>`;
+ $('lst').innerHTML=`<b style="color:var(--ac)">Day ${N}</b> · ${tr('開始日')} ${M.start} · ${tr('跟隨交易員')} <b>${(M.switches.at(-1)||{}).to||'—'}</b>${M.ver?'<div class="mu" style="margin-top:4px;font-size:12px">'+v2line(M,mk)+'</div>':''}`;
  $('kp').innerHTML=[['總報酬',pct(s.ret),cls(s.ret)],['最大回撤',pct(s.dd),'dn'],['目前資產',cur+Math.round(last[1]).toLocaleString(),cls(s.ret)],['買入持有',BN[mk]+' '+pct(bs.ret),cls(bs.ret)]].map(([l,v,c])=>`<div class="k"><span>${l}</span><b class="${c}">${v}</b></div>`).join('');
  $('lg').innerHTML=`<span><i style="background:#5B5CFF"></i>AI 跟單</span><span><i style="background:#94A3B8"></i>${BN[mk]} 買入持有</span>`;
  const PS=M.positions||(M.pos?[M.pos]:[]),eqL=last[1],cw=M.cash/eqL;
  $('lhold').innerHTML=PS.length?`<tr><th>代號</th><th>權重</th><th>股數</th><th>成本</th></tr>`+PS.map(p=>{const w=p.w!=null?p.w:(PS.length===1?1-cw:null);return`<tr><td>${p.sym}${p.core?' ★':''}</td><td>${w==null?'—':(w*100).toFixed(1)+'%'}</td><td>${(+p.sh).toFixed(mk==='crypto'?4:0)}</td><td>${cur}${Math.round(p.cost).toLocaleString()}</td></tr>`}).join('')+`<tr><td>現金</td><td>${(cw*100).toFixed(1)}%</td><td></td><td>${cur}${Math.round(M.cash).toLocaleString()}</td></tr>`:'<tr><td>空手（全部現金）</td></tr>';
- const row=t=>`<tr><td>${t.date}</td><td class="${t.side==='BUY'?'up':'dn'}">${t.side==='BUY'?'買':'賣'}</td><td>${t.sym}</td><td>${(+t.px).toLocaleString()}</td><td class="${t.pnl==null?'':cls(t.pnl)}">${t.pnl==null?'':pct(t.pnl)}</td><td>${t.trader||''}</td></tr>`,hd='<tr><th>日期</th><th>買賣</th><th>代號</th><th>價格</th><th>損益</th><th>交易員</th></tr>';
+ const row=t=>`<tr><td>${t.date}</td><td class="${t.side==='BUY'?'up':'dn'}">${t.side==='BUY'?'買':'賣'}</td><td>${t.sym}</td><td>${(+t.px).toLocaleString()}</td><td class="${t.pnl==null?'':cls(t.pnl)}">${t.pnl==null?'':pct(t.pnl)}</td><td>${t.trader||''}${t.why==='stop'?' · 停損':''}</td></tr>`,hd='<tr><th>日期</th><th>買賣</th><th>代號</th><th>價格</th><th>損益</th><th>交易員</th></tr>';
  $('ltoday').innerHTML=(M.today&&M.today.length)?hd+M.today.map(row).join(''):'<tr><td>今天沒有交易</td></tr>';
  $('ltr').innerHTML=M.trades.length?hd+M.trades.slice().reverse().slice(0,50).map(row).join(''):'<tr><td>尚無交易</td></tr>';
  $('lsw').innerHTML='<tr><th>日期</th><th>從</th><th>換成</th><th>原因</th></tr>'+M.switches.slice().reverse().map(w=>`<tr><td>${w.date}</td><td>${w.from||'—'}</td><td>${w.to}</td><td>${w.why}</td></tr>`).join('');
