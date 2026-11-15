@@ -1,6 +1,9 @@
 // 真實行情模擬比較場（虛擬錢，不跟單、不影響 ai_live.mjs 的台股 B 帳戶）。2026-11-16 起，使用者 2026-11-15 同意。
 //  A：動能 Top20（研究候選 A，參數照研究原樣）：從第一天起每 21 個交易日的收盤，從當期 0050 成分股挑 60 日漲幅前 20 檔，
 //     依 60 日波動率倒數加權；大盤濾網（加權指數 200 日線 ±2% 緩衝）在調倉日判斷，空頭就全部轉現金；調倉時權重偏離超過 20% 才交易。
+//  A2：動能 Top20（每日檢查）：選股、權重、偏離 20% 才交易都和 A 相同，但大盤濾網每天收盤檢查：
+//     加權指數跌破 200 日線 −2% → 隔日開盤全部轉現金；站回 +2% → 當天收盤立即重新選股（不沿用舊名單），隔日開盤買進，
+//     並從這天重新起算 21 個交易日的調倉週期。2026-11-15 使用者要求與 A 並列比較（參數不依回測結果調整）。
 //  10 位 AI 交易員：各用自己的訊號（突破／動能／均線／RSI），在當期 0050 成分股裡自由買賣，最多 5 檔、每檔約 20%；
 //     訊號轉空就賣、有空位就買訊號為多且近一週自己方法報酬最好的股票。不用大盤濾網、不停損。
 //  0050 買入持有：第一天收盤決定、隔日開盤買進後不動。
@@ -63,13 +66,16 @@ function decideTrader(acc,D,i,ti,codes){const held=Object.keys(acc.pos),sellL=he
   return sellL.length||cand.length?{sell:sellL,buy:cand}:null}
 // ---------- 每日一步（i＝今天在 D 中的索引） ----------
 export function step(S,D,i,ev={}){const d=D.dates[i],codes=membersAt(D.K,d);
-  if(!S.accs){S.start=d;S.accs=[newAcc('A','動能 Top20（候選 A）','每 21 個交易日：60 日漲幅前 20、波動倒數加權、大盤濾網'),newAcc('BH','0050 買入持有','第一天收盤決定、隔日開盤買進後不動'),
+  if(!S.accs){S.start=d;S.accs=[newAcc('A','動能 Top20（21 天檢查）','每 21 個交易日：60 日漲幅前 20、波動倒數加權；大盤濾網只在調倉日檢查'),newAcc('A2','動能 Top20（每日檢查）','選股同 A；大盤濾網每天檢查，跌破轉現金、站回立即重選'),newAcc('BH','0050 買入持有','第一天收盤決定、隔日開盤買進後不動'),
     ...V.TR.map(([n,k,a],ti)=>newAcc('T'+ti,n,{brk:'突破',mom:'動能',ma:'均線',rsi:'RSI'}[k]+' '+a.join('/')))]}
+  if(!S.accs.find(a=>a.id==='A2')){const a2=newAcc('A2','動能 Top20（每日檢查）','選股同 A；大盤濾網每天檢查，跌破轉現金、站回立即重選');a2.lastDate=S.lastDate;S.accs.splice(1,0,a2)}// 舊狀態補開 A2（從下一個處理日起）
   for(const acc of S.accs){const last=acc.lastDate||'';if(last>=d)continue;credit(acc,ev,last,d);
     if(acc.pend){if(acc.pend.t)execTarget(acc,D,i,acc.pend.t);else execOrders(acc,D,i,acc.pend);acc.pend=null}
     acc.last=acc.last||{};for(const s in acc.pos){const c=D.C[s]&&D.C[s][i];if(c===c)acc.last[s]=c}
     const E=eqAt(acc,D,i,pxC);acc.equity.push([d,+E.toFixed(2)]);
     if(acc.id==='A'){if(acc.n%21===0){const r=targetA(D,i,codes);acc.pend={t:r.t};acc.filter={on:r.F.on,px:+r.F.px.toFixed(2),ma:+r.F.ma.toFixed(2),date:d}}}
+    else if(acc.id==='A2'){const F=filterAt(D.idx,i),flip=acc.filter&&acc.filter.on!==F.on;
+      if(acc.k==null||acc.k>=21||flip){const r=targetA(D,i,codes);acc.pend={t:r.t};acc.k=0}acc.k++;acc.filter={on:F.on,px:+F.px.toFixed(2),ma:+F.ma.toFixed(2),date:d}}
     else if(acc.id==='BH'){if(acc.n===0)acc.pend={t:{'0050':1}}}
     else{const o=decideTrader(acc,D,i,+acc.id.slice(1),codes);if(o)acc.pend=o}
     acc.n++;acc.lastDate=d}
