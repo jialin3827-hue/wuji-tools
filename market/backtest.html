@@ -56,7 +56,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:6px 4px;b
 <main>
 <div class="disc">⚠️ 虛擬模擬，非投資建議。歷史績效不代表未來表現，本頁不連接任何真實帳戶。</div>
 <div class="pn"><div class="seg tabs" id="mode"><button data-m="bt" class="on">📈 策略回測</button><button data-m="ai">🤖 AI 跟單</button><button data-m="live">📅 每日實戰</button></div></div>
-<div class="pn" id="livepn"><h3>實戰模擬（每日）<em id="lday"></em></h3><div id="lpause" class="hide" role="status" style="margin:0 0 8px;padding:8px 10px;border-radius:10px;background:#FEF3C7;color:#92400E;font-weight:700"></div><div style="color:var(--mu)">每天收盤後自動跑一次，只用當天以前的資料；每個市場虛擬資金十萬，不連接任何帳戶。<br>分散持股：台股、美股最多五檔各約兩成；虛擬幣比特幣、以太幣各四分之一，另一半由智能挑一檔。</div>
+<div class="pn" id="livepn"><h3>實戰模擬（每日）<em id="lday"></em></h3><div id="lpause" class="hide" role="status" style="margin:0 0 8px;padding:8px 10px;border-radius:10px;background:#FEF3C7;color:#92400E;font-weight:700"></div><div id="lstrat" class="hide" style="margin:0 0 8px;padding:8px 10px;border-radius:10px;background:#ECFDF5;color:#065F46"></div><div id="ldesc" style="color:var(--mu)">每天收盤後自動跑一次，只用當天以前的資料；每個市場虛擬資金十萬，不連接任何帳戶。<br>分散持股：台股、美股最多五檔各約兩成；虛擬幣比特幣、以太幣各四分之一，另一半由智能挑一檔。</div>
  <div class="seg" id="lmk" style="margin-top:8px"><button data-k="tw">台股</button><button data-k="us">美股</button><button data-k="crypto">₿ 虛擬幣</button></div><div id="lst" style="margin-top:8px"></div><a id="v2bt" class="lnk2" href="#">📊 先看歷史回測（v2 規則）→</a></div>
 <div class="pn" id="sympn"><h3>選擇標的<em id="src"></em></h3>
  <div class="seg" id="mk"><button data-k="crypto">₿ 虛擬幣</button><button data-k="tw">台股</button><button data-k="us">美股</button></div>
@@ -87,7 +87,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:6px 4px;b
  <img id="card" class="hide" alt="card"></div>
 <div class="disc">虛擬模擬，非投資建議。資料可能延遲或缺漏。 FinMind · Binance · GeckoTerminal</div>
 </main>
-<script src="i18n.js?v=36"></script><script src="v2sim.js?v=2"></script><script src="store.js?v=29"></script>
+<script src="i18n.js?v=37"></script><script src="v2sim.js?v=3"></script><script src="store.js?v=29"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id),tr=s=>(window.i18nT?i18nT(s):s);
@@ -247,16 +247,28 @@ let LIVE=null;const MKN={tw:'台股',us:'美股',crypto:'虛擬幣'},BN={tw:'005
 async function live(){const mk=C.lmk||'tw';$('kpn').classList.add('hide');$('kpn2').classList.add('hide');
  if(!LIVE){busy(true,'載入中…');try{const r=await fetch('data/ai_live.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);LIVE=await r.json()}catch(e){busy(false);showErr('實戰資料尚未產生，請稍後再試');return}busy(false)}
  showErr('');const M=LIVE[mk],cur=mk==='tw'?'NT$':'$';/* 實盤暫停：顯示暫停訊息，歷史紀錄照常顯示 */
- {const pz=LIVE.paused,el=$('lpause');el.classList.toggle('hide',!pz);if(pz)el.textContent='⏸ '+tr('實盤暫停中，策略研究改進中')+'（'+tr('自')+' '+pz.since+tr('起，以下為暫停前的歷史紀錄')+'）'}
+ {const pz=LIVE.paused||(LIVE.pausedMk&&LIVE.pausedMk[mk]),el=$('lpause');el.classList.toggle('hide',!pz);if(pz)el.textContent='⏸ '+tr('暫停中')+'（'+tr('自')+' '+pz.since+tr('起；策略尚未經無偏差研究，恢復需使用者同意。以下為暫停前的歷史紀錄')+'）';
+  const B=M&&M.strategy&&M.strategy.id==='B',PL=!B&&M&&M.plan,sb=$('lstrat');sb.classList.toggle('hide',!(B||PL));$('ldesc').classList.toggle('hide',!!(B||PL));
+  if(PL){const f=M.filter||{};sb.innerHTML='';const h=document.createElement('b');h.textContent=tr('策略')+'：'+tr('0050 擇時（加權指數 200 日線 ±2%）')+' · '+tr('自')+' '+PL.from+' '+tr('開盤起');sb.appendChild(h);
+   const ln=t=>{const d=document.createElement('div');d.style.fontSize='13px';d.style.marginTop='4px';d.textContent=t;sb.appendChild(d)};
+   ln(tr('規則：加權指數收盤站上 200 日均線 +2% 就持有 0050；跌破 −2% 就全部轉現金，介於中間維持原狀態。收盤決策、隔日開盤成交，費稅照實盤；0050 配息入帳（還原價）。'));
+   if(f.ma)ln(tr('大盤')+' '+(f.on?tr('多（持有 0050）'):tr('空（現金）'))+' · '+tr('加權指數')+' '+Math.round(f.px).toLocaleString()+' / 200MA '+Math.round(f.ma).toLocaleString());
+   ln(tr('下一個交易日開盤')+'：'+tr('舊持股轉換')+'——'+tr('賣出 0050 以外的持股，現金全部買 0050（大盤轉空則全部轉現金）'))}
+  if(B){const f=M.filter||{},pe=M.pend,cv=M.convert;sb.innerHTML='';const h=document.createElement('b');h.textContent=tr('策略')+'：'+tr('0050 擇時（加權指數 200 日線 ±2%）')+' · '+tr('自')+' '+M.strategy.since;sb.appendChild(h);
+   const ln=t=>{const d=document.createElement('div');d.style.fontSize='13px';d.style.marginTop='4px';d.textContent=t;sb.appendChild(d)};
+   ln(tr('規則：加權指數收盤站上 200 日均線 +2% 就持有 0050；跌破 −2% 就全部轉現金，介於中間維持原狀態。收盤決策、隔日開盤成交，費稅照實盤；0050 配息入帳（還原價）。'));
+   if(f.ma)ln(tr('大盤')+' '+(f.on?tr('多（持有 0050）'):tr('空（現金）'))+' · '+tr('加權指數')+' '+Math.round(f.px).toLocaleString()+' / 200MA '+Math.round(f.ma).toLocaleString()+'（'+tr('轉空線')+' '+Math.round(f.ma*.98).toLocaleString()+'、'+tr('轉多線')+' '+Math.round(f.ma*1.02).toLocaleString()+'）');
+   ln(pe?tr('下一個交易日開盤')+'：'+(Object.keys(pe.target).length?tr('買進 0050'):tr('全部賣出轉現金'))+(pe.why==='convert'?'（'+tr('舊持股轉換')+'）':''):tr('下一個交易日開盤：不動作'));
+   if(cv&&cv.after)ln(tr('舊 v2 持股已於')+' '+cv.date+' '+tr('開盤轉換')+'：'+tr('轉換前')+' '+cur+Math.round(cv.before.equity).toLocaleString()+' → '+tr('轉換後')+' '+cur+Math.round(cv.after.equity).toLocaleString())}}
  if(!M||!M.equity||!M.equity.length){$('lday').textContent='';$('lst').textContent=tr('這個市場還沒開始，等下一次收盤後自動執行');$('kp').innerHTML='';RES=null;const x=$('eqc').getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,9999,9999);['lhold','ltoday','ltr','lsw'].forEach(i=>$(i).innerHTML='');return}
  const E=M.equity,eq=E.map(x=>x[1]),bh=E.map(x=>x[2]),s=stats(eq),bs=stats(bh),N=M.day||E.length,last=E[E.length-1];
  $('lday').textContent='Day '+N;$('rng').textContent=M.start+' → '+M.lastDate;
- $('lst').innerHTML=`<b style="color:var(--ac)">Day ${N}</b> · ${tr('開始日')} ${M.start} · ${tr('跟隨交易員')} <b>${(M.switches.at(-1)||{}).to||'—'}</b>${M.ver?'<div class="mu" style="margin-top:4px;font-size:12px">'+v2line(M,mk)+'</div>':''}`;
+ $('lst').innerHTML=M.strategy&&M.strategy.id==='B'?`<b style="color:var(--ac)">Day ${N}</b> · ${tr('開始日')} ${M.start} · ${tr('策略')} <b>${tr('0050 擇時')}</b>（${tr('自')} ${M.strategy.since}；${tr('之前為 v2 跟交易員')}）`:`<b style="color:var(--ac)">Day ${N}</b> · ${tr('開始日')} ${M.start} · ${tr('跟隨交易員')} <b>${(M.switches.at(-1)||{}).to||'—'}</b>${M.ver?'<div class="mu" style="margin-top:4px;font-size:12px">'+v2line(M,mk)+'</div>':''}`;
  $('kp').innerHTML=[['總報酬',pct(s.ret),cls(s.ret)],['最大回撤',pct(s.dd),'dn'],['目前資產',cur+Math.round(last[1]).toLocaleString(),cls(s.ret)],['買入持有',BN[mk]+' '+pct(bs.ret),cls(bs.ret)]].map(([l,v,c])=>`<div class="k"><span>${l}</span><b class="${c}">${v}</b></div>`).join('');
- $('lg').innerHTML=`<span><i style="background:#5B5CFF"></i>AI 跟單</span><span><i style="background:#94A3B8"></i>${BN[mk]} 買入持有</span>`;
+ $('lg').innerHTML=`<span><i style="background:#5B5CFF"></i>${M.strategy&&M.strategy.id==='B'?tr('0050 擇時')+'（'+M.strategy.since+' '+tr('前為 v2')+'）':'AI 跟單'}</span><span><i style="background:#94A3B8"></i>${BN[mk]} ${tr('買入持有')}</span>`;
  const PS=M.positions||(M.pos?[M.pos]:[]),eqL=last[1],cw=M.cash/eqL;
  $('lhold').innerHTML=PS.length?`<tr><th>代號</th><th>權重</th><th>股數</th><th>成本</th></tr>`+PS.map(p=>{const w=p.w!=null?p.w:(PS.length===1?1-cw:null);return`<tr><td>${p.sym}${p.core?' ★':''}</td><td>${w==null?'—':(w*100).toFixed(1)+'%'}</td><td>${(+p.sh).toFixed(mk==='crypto'?4:0)}</td><td>${cur}${Math.round(p.cost).toLocaleString()}</td></tr>`}).join('')+`<tr><td>現金</td><td>${(cw*100).toFixed(1)}%</td><td></td><td>${cur}${Math.round(M.cash).toLocaleString()}</td></tr>`:'<tr><td>空手（全部現金）</td></tr>';
- const row=t=>`<tr><td>${t.date}</td><td class="${t.side==='BUY'?'up':'dn'}">${t.side==='BUY'?'買':'賣'}</td><td>${t.sym}</td><td>${(+t.px).toLocaleString()}</td><td class="${t.pnl==null?'':cls(t.pnl)}">${t.pnl==null?'':pct(t.pnl)}</td><td>${t.trader||''}${t.why==='stop'?' · 停損':''}</td></tr>`,hd='<tr><th>日期</th><th>買賣</th><th>代號</th><th>價格</th><th>損益</th><th>交易員</th></tr>';
+ const row=t=>`<tr><td>${t.date}</td><td class="${t.side==='BUY'?'up':'dn'}">${t.side==='BUY'?'買':'賣'}</td><td>${t.sym}</td><td>${(+t.px).toLocaleString()}</td><td class="${t.pnl==null?'':cls(t.pnl)}">${t.pnl==null?'':pct(t.pnl)}</td><td>${t.trader||''}${t.why==='stop'?' · 停損':t.why==='convert'?' · '+tr('舊持股轉換'):''}</td></tr>`,hd='<tr><th>日期</th><th>買賣</th><th>代號</th><th>價格</th><th>損益</th><th>交易員</th></tr>';
  $('ltoday').innerHTML=(M.today&&M.today.length)?hd+M.today.map(row).join(''):'<tr><td>今天沒有交易</td></tr>';
  $('ltr').innerHTML=M.trades.length?hd+M.trades.slice().reverse().slice(0,50).map(row).join(''):'<tr><td>尚無交易</td></tr>';
  $('lsw').innerHTML='<tr><th>日期</th><th>從</th><th>換成</th><th>原因</th></tr>'+M.switches.slice().reverse().map(w=>`<tr><td>${w.date}</td><td>${w.from||'—'}</td><td>${w.to}</td><td>${w.why}</td></tr>`).join('');
@@ -296,7 +308,7 @@ async function tw50Data(){const V=V2SIM,[K,PK]=await Promise.all([getJ('data/tw5
  const dates=PK.dates,nn=a=>a.map(v=>v==null?NaN:v),u=[...new Set(K.periods.flatMap(p=>p.codes))].filter(t=>PK.c[t]),C0={},O0={};
  for(const t of Object.keys(PK.c)){C0[t]=nn(PK.c[t]);O0[t]=nn(PK.o[t])}const ic=nn(PK.idx),bn=C0['0050'],mem=V.members(K.periods,dates,u);
  const R={};for(const t of Object.keys(PK.c))R[t]=dates.map((d,i)=>[d,C0[t][i],O0[t][i]]).filter(x=>x[1]===x[1]);
- return{R,dates,K,PK,mem,P:V.prep('tw',u,dates,C0,O0,ic,bn,mem),Pold:V.prep('tw',V.U.tw,dates,C0,O0,ic,bn)}}
+ return{R,dates,K,PK,mem,tB:{c:C0['0050'],o:O0['0050'],ic},P:V.prep('tw',u,dates,C0,O0,ic,bn,mem),Pold:V.prep('tw',V.U.tw,dates,C0,O0,ic,bn)}}
 async function v2Data(mk,my){if(V2D[mk])return V2D[mk];if(mk==='tw')return V2D.tw=await tw50Data();const V=V2SIM,syms=[...new Set([...V.U[mk],V.IDX[mk],V.BENCH[mk]])],R={};let k=0;
  for(const s of syms){if(my!==V2SEQ)return null;$('busyt').textContent=tr('載入中…')+' '+(++k)+'/'+syms.length;R[s]=(await getBars(mk,s)).d}
  const dates=R[V.BENCH[mk]].map(x=>x[0]),al=(s,j)=>{const m=new Map(R[s].map(x=>[x[0],x[j]]));return dates.map(d=>m.has(d)?m.get(d):NaN)};
@@ -308,19 +320,20 @@ async function aiRun(){const mk=C.mk,my=++V2SEQ;showErr('');busy(true,'載入中
  const V=V2SIM,P=D.P,N=D.dates.length;if(N<300)return noBT(tr('資料太少'));
  const i0=Math.min(N-2,Math.max(250,C.per&&N-C.per>0?N-C.per:250));
  if(mk!=='tw')for(const s of V.U[mk]){const b=D.R[s],k=b.findIndex(x=>x[0]>=D.dates[i0]);const g=gapAt(mk,b.map(x=>x[0]),b.map(x=>x[1]),k-250);if(g)return noBT(s+'：'+tr('此標的有分割／除權資料不足，暫不提供回測'))}
- const opt={stop:C.v2.stop/100,tp:C.v2.tp/100,maxPos:C.v2.mp[mk]/100},r=V.run(P,i0,opt),bq=r.bench.map(v=>v/r.bench[0]*INIT),ro=D.Pold?V.run(D.Pold,i0,opt):null;
+ const opt={stop:C.v2.stop/100,tp:C.v2.tp/100,maxPos:C.v2.mp[mk]/100},r=V.run(P,i0,opt),bq=r.bench.map(v=>v/r.bench[0]*INIT),ro=D.Pold?V.run(D.Pold,i0,opt):null,rb=D.tB?V.timing(D.dates,D.tB.c,D.tB.o,D.tB.ic,i0):null;
  const s=stats(r.eq),bs=stats(bq),ppy=mk==='crypto'?365:252,d0=r.dates[0],d1=r.dates[r.dates.length-1],cg=cagr(r.eq,d0,d1),sp=sharpe(r.eq,ppy),bcg=cagr(bq,d0,d1),bsp=sharpe(bq,ppy),f2=v=>isNaN(v)?'—':v.toFixed(2),BNm=V.BENCH[mk];
  $('rng').textContent=d0+' → '+d1;
  const k=[['總報酬',pct(s.ret),cls(s.ret)],['年化報酬',isNaN(cg)?'—':pct(cg),cls(cg)],['夏普比率',f2(sp),''],['最大回撤',pct(s.dd),'dn'],
   ['期末資產',money(r.eq[r.eq.length-1]),cls(s.ret)],['交易次數',r.ntr+'',''],['切換次數',r.nsw+'',''],['目前跟隨',V.TR[r.trader][0],''],
   ['買入持有',BNm+' '+pct(bs.ret),cls(bs.ret)],['持有年化',isNaN(bcg)?'—':pct(bcg),cls(bcg)],['持有夏普',f2(bsp),''],['持有回撤',pct(bs.dd),'dn']];
+ if(rb){const s2=stats(rb.eq),c2=cagr(rb.eq,d0,d1);k.push(['比較基準 B',pct(s2.ret),cls(s2.ret)],['B 年化',isNaN(c2)?'—':pct(c2),cls(c2)],['B 夏普',f2(sharpe(rb.eq,ppy)),''],['B 回撤',pct(s2.dd),'dn'])}
  if(ro){const os=stats(ro.eq),oc=cagr(ro.eq,d0,d1);k.push(['舊版固定10檔',pct(os.ret),cls(os.ret)],['舊版年化',isNaN(oc)?'—':pct(oc),cls(oc)],['舊版夏普',f2(sharpe(ro.eq,ppy)),''],['舊版回撤',pct(os.dd),'dn'])}
- $('lg').innerHTML=`<span><i style="background:#5B5CFF"></i>${tr('AI 跟單 v2')}${ro?'（'+tr('0050 成分股')+'）':''}</span>${ro?`<span><i style="background:#F59E0B"></i>${tr('舊版固定10檔')}</span>`:''}<span><i style="background:#94A3B8"></i>${BNm} ${tr('買入持有')}</span>`;
+ $('lg').innerHTML=`<span><i style="background:#5B5CFF"></i>${tr('AI 跟單 v2')}${ro?'（'+tr('0050 成分股')+'）':''}</span>${rb?`<span><i style="background:#059669"></i>${tr('比較基準 B：0050 擇時（實盤使用中）')}</span>`:''}${ro?`<span><i style="background:#F59E0B"></i>${tr('舊版固定10檔')}</span>`:''}<span><i style="background:#94A3B8"></i>${BNm} ${tr('買入持有')}</span>`;
  const L=N-1,av=P.u.filter(t=>P.have[t][L]&&(!P.mem||P.mem[t][L])),sc=V.TR.map((t,ti)=>{let a=0,m=0;for(const u of av){const v=P.WK[ti+'|'+u][L];if(v===v){a+=v;m++}}return[ti,m?a/m:NaN]}).sort((a,b)=>(b[1]||-9)-(a[1]||-9));
  $('rk').innerHTML='<tr><th>#</th><th>交易員</th><th>風格</th><th>上週</th></tr>'+sc.map(([ti,w],i)=>{const t=V.TR[ti];return`<tr class="${ti===r.trader?'me':''}"><td>${i+1}</td><td>${t[0]}${ti===r.trader?' ◀ AI':''}</td><td>${tr(KIND[t[1]])} ${t[2].join('/')}</td><td class="${cls(w)}">${isNaN(w)?'—':pct(w)}</td></tr>`}).join('');
  $('sw').innerHTML='<tr><th>日期</th><th>從</th><th>換成</th><th>原因</th></tr>'+r.sw.slice().reverse().slice(0,100).map(([d,f,t])=>`<tr><td>${d}</td><td>${f==null?'—':V.TR[f][0]}</td><td>${V.TR[t][0]}</td><td>${tr(f==null?'開始跟單':'連續虧損兩筆')}</td></tr>`).join('');
  if(mk==='tw')consUI(D,d0,d1);
- RES={sym:MKN[mk],lines:[{v:r.eq,c:'#5B5CFF',w:2}].concat(ro?[{v:ro.eq,c:'#F59E0B',d:[5,4]}]:[],[{v:bq,c:'#94A3B8'}]),dates:r.dates,marks:null,ret:s.ret,dd:s.dd,bh:bs.ret,cagr:cg,sharpe:sp,name:'AI 跟單 v2',n:r.ntr};
+ RES={sym:MKN[mk],lines:[{v:r.eq,c:'#5B5CFF',w:2}].concat(rb?[{v:rb.eq,c:'#059669',w:1.8}]:[],ro?[{v:ro.eq,c:'#F59E0B',d:[5,4]}]:[],[{v:bq,c:'#94A3B8'}]),dates:r.dates,marks:null,ret:s.ret,dd:s.dd,bh:bs.ret,cagr:cg,sharpe:sp,name:'AI 跟單 v2',n:r.ntr};
  showK(k,mk)}
 /* 每期成分股（可收合）：回測區間內用到的期間標示「回測使用」；官方公告附連結，替代資料另標 */
 function consUI(D,d0,d1){const K=D.K,P=K.periods,nm=c=>(K.names[c]||'')+' '+c,el=$('cons');

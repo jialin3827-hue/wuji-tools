@@ -80,5 +80,12 @@ function run(P,i0,opt){const {mk,u,dates}=P,C=P.C,O=P.O,o=Object.assign({},DEF[m
    while(sat<maxN&&est>E*.08){const cc=av.filter(t=>!CORE[t]&&!held.has(t)&&!lock.has(t)&&P.RAW[t][i]>0).sort((a,b)=>P.RAW[b][i]-P.RAW[a][i]);if(!cc.length)break;const t=cc[0];pe.push(['B',t,slot,'cash-fill']);held.add(t);sat++;est-=slot*E}}
   pend=pe}
  return{eq,bench:P.bench.slice(i0),dates:dates.slice(i0),ntr,cost,nsw,sw,trades,trader,score,pos}}
-const API={TR,U,IDX,BENCH,DEF,INIT,prep,run,feeOf,sig,members};
+/* 候選 B：0050 擇時（與實盤 scripts/ai_live.mjs runTwTiming 同規則）。加權指數收盤站上 ma 日均線×(1+band) 轉多、跌破×(1−band) 轉空；
+   多＝100% 0050、空＝現金；收盤決策、隔日開盤成交；費稅：買 0.1425%、賣 0.1425%＋ETF 證交稅 0.1%。c/o 為還原收盤／開盤（總報酬） */
+function timing(dates,c,o,ic,i0,opt){const ma=(opt&&opt.ma)||200,band=opt&&opt.band!=null?opt.band:.02,m=rollMean(ffill(ic),ma),fb=.001425,fs=.002425;let on=false;const F=ic.map((v,i)=>{if(m[i]===m[i]&&v===v){if(v>m[i]*(1+band))on=true;else if(v<m[i]*(1-band))on=false}return on});
+ let cash=INIT,sh=0,pend=null,ntr=0,cost=0;const eq=[],tr=[],cf=ffill(c);
+ for(let i=i0;i<dates.length;i++){if(pend!=null){const px=o[i]===o[i]?o[i]:cf[i-1];if(pend&&sh===0&&cash>0){sh=cash*(1-fb)/px;cost+=cash*fb;cash=0;ntr++;tr.push([dates[i],'B',px])}else if(!pend&&sh>0){const v=sh*px;cash+=v*(1-fs);cost+=v*fs;sh=0;ntr++;tr.push([dates[i],'S',px])}pend=null}
+  eq.push(cash+sh*cf[i]);if((F[i]&&sh===0)||(!F[i]&&sh>0))pend=F[i]}
+ return{eq,dates:dates.slice(i0),ntr,cost,trades:tr,on:F[dates.length-1]}}
+const API={TR,U,IDX,BENCH,DEF,INIT,prep,run,feeOf,sig,members,timing};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.V2SIM=API})(typeof window!=='undefined'?window:this);

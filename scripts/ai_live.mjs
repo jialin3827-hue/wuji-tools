@@ -96,12 +96,64 @@ async function runMarket(mk,S,catchup=false){
   if(!catchup){M.equity.push([today,+eq.toFixed(2),+(M.benchUnits*bp).toFixed(2)]);M.lastDate=today;M.day=M.equity.length;M.today=todayTr;
   M.log.push({date:today,ran:new Date().toISOString(),n:poolS.length});M.log=M.log.slice(-60);}else M.today=todayTr;
   console.log(mk,catchup?'Catchup':'Day',M.day||0,today,'equity',eq.toFixed(0),'trader',TR[M.trader][0],todayTr.map(t=>t.side+' '+t.sym).join(','))}
+// ===== 台股候選 B（2026-11-16 起，使用者 2026-11-15 同意）：0050 擇時 =====
+// 規則：加權指數收盤站上 200 日均線 +2% 轉多、跌破 −2% 轉空（中間維持原狀態）；多＝100% 0050、空＝100% 現金。
+// 收盤決策、隔日開盤成交（M.pend 記下決策，下一次執行用當天開盤價成交）；費稅照實盤（買 0.1425%、賣 0.1425%＋ETF 證交稅 0.1%）。
+// 還原價（總報酬）記帳：0050 除息日把每股配息（除息前收−參考價）入現金，分割依比例調股數；0050 買入持有比較線同樣把配息再投入。
+// 舊 v2 持股的轉換：第一次以 B 執行時，用上一個已處理交易日（M.lastDate）的收盤狀態決定目標，當天開盤賣掉非 0050 持股、剩餘現金買 0050。
+const TIM={id:'B',sym:'0050',idx:'TAIEX',ma:200,band:.02,since:'2026-11-16',name:'0050 擇時（加權指數 200 日線 ±2%）'};
+async function fmData(q){const j=await getJ('https://api.finmindtrade.com/api/v4/data?dataset='+q);if(!j||(j.status&&j.status!==200)||!Array.isArray(j.data))throw new Error('FinMind '+(j&&j.msg));await sleep(1200);return j.data}
+function timFilter(idx,upto){const b=idx.filter(x=>x[0]<=upto).map(x=>x[1]),m=sma(b,TIM.ma);let on=false;for(let i=0;i<b.length;i++){if(isNaN(m[i]))continue;if(b[i]>m[i]*(1+TIM.band))on=true;else if(b[i]<m[i]*(1-TIM.band))on=false}return{on,px:+b.at(-1).toFixed(2),ma:+m.at(-1).toFixed(2),sym:TIM.idx,used:true,band:TIM.band}}
+async function runTwTiming(S,opt={}){
+  const M=S.tw;if(!M)return console.log('tw','沒有既有狀態');
+  const D=opt.data||{};const st=ymd(Date.now()-60*864e5);
+  const idx=D.idx||(await fmData('TaiwanStockPrice&data_id=TAIEX&start_date=2021-01-01')).map(x=>[x.date,+x.close]).filter(x=>x[1]>0);
+  const P={};const bar=async s=>P[s]=P[s]||(D.px&&D.px[s])||(await fmData(`TaiwanStockPrice&data_id=${s}&start_date=${st}`)).map(x=>({d:x.date,o:+x.open,c:+x.close})).filter(x=>x.c>0);
+  const px0=await bar(TIM.sym);const today=px0.at(-1).d;
+  if(idx.at(-1)[0]!==today)return console.log('tw','加權指數與 0050 日期不一致（',idx.at(-1)[0],today,'），資料未齊，今天跳過');
+  if(M.lastDate&&today<=M.lastDate)return console.log('tw','已處理',today,'略過（idempotent）');
+  const dv=D.dv||await fmData(`TaiwanStockDividendResult&data_id=${TIM.sym}&start_date=${st}`);
+  const sp=D.sp||(await fmData(`TaiwanStockSplitPrice&start_date=${st}`)).filter(x=>x.stock_id===TIM.sym);
+  for(const p of M.positions||[])if(p.sym!==TIM.sym)await bar(p.sym);
+  const O=s=>{const b=P[s]&&P[s].find(x=>x.d===today);return b&&b.o>0?b.o:null},Cl=s=>{const b=P[s]&&P[s].filter(x=>x.d<=today).at(-1);return b?b.c:null};
+  const tdy=[];M.divs=M.divs||[];M.positions=M.positions||[];
+  // 0) 第一次用 B：記錄轉換，依上一個已處理日的收盤狀態下單（今天開盤成交）
+  if(!M.strategy||M.strategy.id!==TIM.id){const f0=timFilter(idx,M.lastDate||today);const E0=M.cash+M.positions.reduce((a,p)=>a+p.sh*(M.lastPx&&M.lastPx[p.sym]||Cl(p.sym)||0),0);
+    M.convert={date:today,decidedOn:M.lastDate,filterOn:f0.on,before:{cash:+M.cash.toFixed(2),positions:M.positions.map(p=>({sym:p.sym,sh:p.sh,px:M.lastPx&&M.lastPx[p.sym]})),equity:+E0.toFixed(2)},from:(M.ver||'v2')+'（跟交易員）'};
+    M.strategy={id:TIM.id,name:TIM.name,since:today,rule:'加權指數站上 200 日均線 +2% 持有 0050；跌破 −2% 全部轉現金；收盤決策、隔日開盤成交'};
+    M.pend={date:M.lastDate||today,target:f0.on?{[TIM.sym]:1}:{},why:'convert'};M.lock={};delete M.pool;delete M.plan}
+  // 1) 除息／分割（持有過夜的股數才有）：除息日在 (lastDate, today]
+  for(const x of dv){if(!(x.date>(M.lastDate||'')&&x.date<=today))continue;const per=+x.before_price-+x.after_price;if(!(per>0))continue;const p=M.positions.find(p=>p.sym===TIM.sym);
+    if(M.benchUnits)M.benchUnits*= +x.before_price/+x.after_price;if(p){const amt=p.sh*per;M.cash+=amt;M.divs.push({date:x.date,sym:TIM.sym,perShare:+per.toFixed(4),sh:+p.sh.toFixed(6),amt:+amt.toFixed(2)})}}
+  for(const x of sp){if(!(x.date>(M.lastDate||'')&&x.date<=today))continue;const r=+x.before_price/+x.after_price;if(!(r>0&&isFinite(r)))continue;const p=M.positions.find(p=>p.sym===TIM.sym);if(p)p.sh*=r;if(M.benchUnits)M.benchUnits*=r;M.divs.push({date:x.date,sym:TIM.sym,split:+r.toFixed(4)})}
+  // 2) 執行前一個收盤的決策：今天開盤價成交，先賣後買
+  if(M.pend&&M.pend.date<today){const T=M.pend.target,why=M.pend.why||'timing';let left=false;
+    for(const p of M.positions.slice()){if(T[p.sym])continue;const o=O(p.sym);if(!o){left=true;console.log('tw',p.sym,'今天沒有開盤價，明天再賣');continue}
+      const fee=feeOf('tw',p.sym),v=p.sh*o*(1-fee[1]);M.costs=(M.costs||0)+p.sh*o*fee[1];const pnl=v/p.cost-1;M.cash+=v;
+      const t={date:today,side:'SELL',sym:p.sym,px:o,sh:+p.sh.toFixed(6),pnl:+pnl.toFixed(4),trader:TIM.name,why};M.trades.push(t);tdy.push(t);p.sh=0}
+    M.positions=M.positions.filter(p=>p.sh>1e-9);
+    if(T[TIM.sym]&&M.cash>1){const o=O(TIM.sym);if(o){const fee=feeOf('tw',TIM.sym),amt=M.cash,sh=amt*(1-fee[0])/o;M.costs=(M.costs||0)+amt*fee[0];M.cash=0;let p=M.positions.find(p=>p.sym===TIM.sym);if(p){p.sh+=sh;p.cost+=amt}else M.positions.push(p={sym:TIM.sym,sh,cost:amt,date:today,core:false});
+      const t={date:today,side:'BUY',sym:TIM.sym,px:o,sh:+sh.toFixed(6),trader:TIM.name,why};M.trades.push(t);tdy.push(t)}else left=true}
+    if(!left)M.pend=null}
+  // 3) 今天收盤決策（明天開盤成交）
+  const F=timFilter(idx,today);M.filter=F;M.lastPx=M.lastPx||{};for(const s in P){const c=Cl(s);if(c)M.lastPx[s]=c}
+  const E=M.cash+M.positions.reduce((a,p)=>a+p.sh*(Cl(p.sym)||M.lastPx[p.sym]||0),0);
+  const needBuy=F.on&&(M.positions.some(p=>p.sym!==TIM.sym)||M.cash>E*.005),needSell=!F.on&&M.positions.length>0;
+  if(!M.pend&&(needBuy||needSell))M.pend={date:today,target:F.on?{[TIM.sym]:1}:{},why:'timing'};
+  // 4) 收盤記帳
+  const bp=Cl(TIM.sym);if(!M.benchUnits)M.benchUnits=INIT/bp;
+  M.positions.forEach(p=>{p.w=+(p.sh*Cl(p.sym)/E).toFixed(4);p.sh=+p.sh.toFixed(6);p.cost=+p.cost.toFixed(2)});M.costs=+(M.costs||0).toFixed(2);M.cash=+M.cash.toFixed(2);
+  if(M.convert&&M.convert.date===today&&!M.convert.after)M.convert.after={cash:M.cash,positions:M.positions.map(p=>({sym:p.sym,sh:p.sh,px:Cl(p.sym)})),equity:+E.toFixed(2),fills:tdy.map(t=>({side:t.side,sym:t.sym,px:t.px,sh:t.sh}))};
+  M.equity.push([today,+E.toFixed(2),+(M.benchUnits*bp).toFixed(2)]);M.lastDate=today;M.day=M.equity.length;M.today=tdy;M.ver='B';M.cfg={mode:'timing',ma:TIM.ma,band:TIM.band,sym:TIM.sym};
+  M.log=(M.log||[]).concat({date:today,ran:new Date().toISOString(),filter:F.on,pend:M.pend?Object.keys(M.pend.target).join('|')||'cash':null}).slice(-60);
+  console.log('tw','B Day',M.day,today,'equity',E.toFixed(0),'filter',F.on?'多':'空',`TAIEX ${F.px} / MA200 ${F.ma}`,'fills',tdy.map(t=>t.side+' '+t.sym+'@'+t.px).join(',')||'-','next',M.pend?JSON.stringify(M.pend.target):'none')}
 if(import.meta.url===`file://${process.argv[1]}`){
 const S=fs.existsSync(FILE)?JSON.parse(fs.readFileSync(FILE,'utf8')):{};
-if(S.paused&&!process.argv.includes('--force')){console.log('實盤暫停中（'+S.paused.since+'）：不執行、不寫檔。恢復需使用者同意。');process.exit(0)}
-const which=process.argv[2]||'all';const catchup=process.argv.includes('--catchup-fill');
-for(const mk of which==='all'?['tw','us','crypto']:[which]){try{await runMarket(mk,S,catchup)}catch(e){console.log(mk,'失敗，今天跳過：',e.message)}}
+// 暫停：S.pausedMk[mk] 存在就不跑該市場（美股、虛擬幣 2026-11-15 起暫停，恢復需使用者同意）；--force 可略過
+const which=process.argv[2]||'all';const catchup=process.argv.includes('--catchup-fill'),force=process.argv.includes('--force');
+for(const mk of which==='all'?['tw','us','crypto']:[which]){if(S.pausedMk&&S.pausedMk[mk]&&!force){console.log(mk,'暫停中（'+S.pausedMk[mk].since+'），不執行');continue}
+  try{if(mk==='tw')await runTwTiming(S);else await runMarket(mk,S,catchup)}catch(e){console.log(mk,'失敗，今天跳過：',e.message)}}
 S.updated=new Date().toISOString();S.bench=BENCH;S.init=INIT;
 fs.writeFileSync(FILE,JSON.stringify(S));
 }
-export {adjustTW,sig,sma,CFG,feeOf};
+export {adjustTW,sig,sma,CFG,feeOf,runTwTiming,timFilter,TIM};
