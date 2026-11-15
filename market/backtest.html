@@ -17,6 +17,7 @@ main{max-width:980px;margin:0 auto;padding:12px;display:grid;gap:12px}
 .pn h3{margin:0 0 10px;font-size:14px;color:var(--ac);letter-spacing:0;display:flex;justify-content:space-between;gap:8px;font-weight:800}
 .pn h3 em{color:var(--mu);font-style:normal;font-weight:500}
 #cons details{border-top:1px solid var(--ln);padding:6px 0}#cons summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}#cons summary b{font-family:var(--mono);font-size:13px}#cons .tg{font-size:11px;padding:1px 6px;border-radius:8px;background:#E0F2FE;color:#0E7490}#cons .tg.sub{background:#FEF3C7;color:#92400E}#cons .ch{font-size:12px;color:var(--mu)}#cons .up{color:var(--g)}#cons .dn2{color:var(--r)}#cons .nm{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}#cons .nm span{font-size:12px;background:#F1F5F9;border-radius:6px;padding:1px 6px;white-space:nowrap}#cons .nm span.in{background:#DCFCE7}#cons details.use summary b{color:var(--ac)}#cons a{color:var(--ac)}
+#cmp table{width:100%;border-collapse:collapse;font-size:13px}#cmp th,#cmp td{padding:6px 4px;border-bottom:1px solid var(--ln);text-align:right;white-space:nowrap}#cmp th:first-child,#cmp td:first-child{text-align:left;white-space:normal}#cmp td small{display:block;color:var(--mu);font-size:11px}#cmp details{margin-top:8px}#cmp summary{cursor:pointer;font-weight:700;color:var(--ac);padding:6px 0}#cmp .me td{background:#F0F9FF}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
 .chip{display:flex;flex-direction:column;align-items:center;line-height:1.2}.chip small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:10px;color:var(--mu)}.chip.on small{color:#fff}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#12203A;border:0;color:#fff;font-weight:700;padding:10px 16px;opacity:0;transition:opacity .3s;z-index:60;pointer-events:none;white-space:nowrap;border-radius:16px;box-shadow:0 8px 28px rgba(30,40,90,.18),0 0 16px rgba(34,211,238,.2)}#toast.on{opacity:1}
@@ -76,6 +77,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:6px 4px;b
 <div id="toast"></div><div id="busy" class="hide"><div class="spin"></div><span id="busyt">載入中…</span></div><div id="err" class="hide"></div>
 <div class="pn" id="respn"><h3>回測結果<em id="rng"></em></h3><div class="kp" id="kp"></div><div class="note hide" id="kpn">年化報酬＝(期末資產÷起始資金)^(1÷年數)−1；夏普比率＝日報酬平均÷日報酬標準差×√252（虛擬幣 ×√365），無風險利率設為 0。定期定額未投入的現金也計入資產。</div><div class="note hide" id="kpn2">台股股價已依 FinMind 除權息、減資、分割資料還原。</div></div>
 <div class="pn"><h3>資產曲線<em>▲買 ▼賣</em></h3><div class="cv"><canvas id="eqc"></canvas></div><div class="lg" id="lg"></div></div>
+<div class="pn hide" id="cmpn"><h3>真實行情比較<em id="cmpd"></em></h3><div class="note" id="cmpnote"></div><div id="cmp"></div></div>
 <div class="pn" id="livex"><h3>目前持股<em>★ 核心</em></h3><div class="tw"><table id="lhold"></table></div><h3 style="margin-top:10px">今日交易</h3><div class="tw"><table id="ltoday"></table></div><h3 style="margin-top:10px">交易紀錄</h3><div class="tw"><table id="ltr"></table></div><h3 style="margin-top:10px">切換紀錄</h3><div class="tw"><table id="lsw"></table></div></div>
 <div class="pn" id="aipn"><h3>交易員排行<em>上週報酬</em></h3><div class="tw"><table id="rk"></table></div>
  <h3 style="margin-top:10px">切換紀錄</h3><div class="tw"><table id="sw"></table></div></div>
@@ -87,7 +89,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:6px 4px;b
  <img id="card" class="hide" alt="card"></div>
 <div class="disc">虛擬模擬，非投資建議。資料可能延遲或缺漏。 FinMind · Binance · GeckoTerminal</div>
 </main>
-<script src="i18n.js?v=37"></script><script src="v2sim.js?v=3"></script><script src="store.js?v=29"></script>
+<script src="i18n.js?v=38"></script><script src="v2sim.js?v=3"></script><script src="store.js?v=29"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id),tr=s=>(window.i18nT?i18nT(s):s);
@@ -208,7 +210,7 @@ function ui(){document.querySelectorAll('#mode button').forEach(b=>b.classList.t
  document.querySelectorAll('#stg button').forEach(b=>b.classList.toggle('on',b.dataset.s===C.s));
  $('chips').innerHTML=chipsOf(C.mk).map(s=>{const n=(NM[C.mk]||{})[s];return`<button class="chip ${s===C.sym?'on':''}" data-s="${s}"><span>${s}</span>${n?`<small>${n.replace(/[<>&"]/g,'')}</small>`:''}</button>`}).join('');
  $('chips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{$('sym').value=b.dataset.s;load()});
- $('sym').value=C.sym;$('cfg').classList.toggle('hide',C.m!=='bt');$('sympn').classList.toggle('hide',C.m==='live');$('livepn').classList.toggle('hide',C.m!=='live');$('livex').classList.toggle('hide',C.m!=='live');document.querySelectorAll('#lmk button').forEach(b=>b.classList.toggle('on',b.dataset.k===(C.lmk||'tw')));$('aicfg').classList.toggle('hide',C.m!=='ai');$('chips').classList.toggle('hide',C.m==='ai');$('symf').classList.toggle('hide',C.m==='ai');$('aipn').classList.toggle('hide',C.m!=='ai');$('conspn').classList.toggle('hide',C.m!=='ai'||C.mk!=='tw');sliders();feeUI();v2UI()}
+ $('sym').value=C.sym;$('cfg').classList.toggle('hide',C.m!=='bt');$('sympn').classList.toggle('hide',C.m==='live');$('livepn').classList.toggle('hide',C.m!=='live');$('livex').classList.toggle('hide',C.m!=='live');$('cmpn').classList.toggle('hide',C.m!=='live'||(C.lmk||'tw')!=='tw');document.querySelectorAll('#lmk button').forEach(b=>b.classList.toggle('on',b.dataset.k===(C.lmk||'tw')));$('aicfg').classList.toggle('hide',C.m!=='ai');$('chips').classList.toggle('hide',C.m==='ai');$('symf').classList.toggle('hide',C.m==='ai');$('aipn').classList.toggle('hide',C.m!=='ai');$('conspn').classList.toggle('hide',C.m!=='ai'||C.mk!=='tw');sliders();feeUI();v2UI()}
 let SEQ=0,first=true;
 function norm(mk,v){let x=(v||'').trim().toUpperCase().replace(/\s+/g,'');if(mk==='tw')x=x.replace(/\.(TW|TWO)$/,'');if(mk==='crypto')x=x.replace(/[-\/]?(USDT|USD)$/,'');return x}
 function busy(on,t){$('busy').classList.toggle('hide',!on);if(t)$('busyt').textContent=tr(t);$('load').disabled=on;$('respn').classList.toggle('stale',on)}
@@ -243,10 +245,24 @@ function showK(k,mk){$('kpn').classList.remove('hide');$('kpn2').classList.toggl
 /* ---------- 實戰模擬（每日）：讀 GitHub Actions 每天寫入的 data/ai_live.json ---------- */
 function v2line(M,mk){const c=M.cfg||{},f=M.filter,L=Object.keys(M.lock||{}),cur=mk==='tw'?'NT$':'$',x=[];x.push('規則 v2：連虧 '+(c.switchN||1)+' 筆才換人');x.push(c.cashFill?'補滿現金 開':'補滿現金 關');
  if(f)x.push((c.filter?'大盤濾網 ':'大盤參考 ')+f.sym+' '+(f.on?'多':'空')+'（200MA '+Math.round(f.ma).toLocaleString()+'）');if(c.stop)x.push('移動停損 '+Math.round(c.stop*100)+'%');if(L.length)x.push('停損鎖定 '+L.join('、'));if(M.costs!=null)x.push('累計費稅 '+cur+Math.round(M.costs).toLocaleString());if(mk==='tw'&&c.adj)x.push('還原價');return x.join(' · ')}
+/* 真實行情比較：B（ai_live.json 台股）、A／10 位 AI／0050 買入持有（ai_arena.json），都從 START 收盤起算 */
+let ARENA=null;
+async function arenaUI(MB){const el=$('cmp');if(!ARENA){try{const r=await fetch('data/ai_arena.json?t='+Date.now(),{cache:'no-store'});ARENA=r.ok?await r.json():{}}catch(e){ARENA={}}}
+ const A=ARENA,st=A.start||'2026-11-16';$('cmpd').textContent=tr('自')+' '+st+' '+tr('收盤起・各 10 萬虛擬資金');
+ $('cmpnote').textContent=tr('全部用真實收盤行情：收盤決策、隔日開盤成交，費稅照實盤，配息入帳。10 位 AI 各自獨立買賣當期 0050 成分股，不跟單、不影響 0050 擇時帳戶。勝率＝已平倉交易中賺錢的比例。');
+ const fp=v=>v==null||isNaN(v)?'—':pct(v),row=(n,sub,x,me)=>`<tr${me?' class="me"':''}><td>${escH(n)}${sub?'<small>'+escH(sub)+'</small>':''}</td><td class="${cls(x.ret)}">${fp(x.ret)}</td><td class="dn">${fp(x.mdd)}</td><td>${x.win==null?'—':(x.win*100).toFixed(0)+'%'}${x.closed!=null?'<small>'+x.closed+' '+tr('筆')+'</small>':''}</td><td>${x.start||'—'}</td></tr>`;
+ const hd=`<tr><th>${tr('策略')}</th><th>${tr('報酬')}</th><th>${tr('最大回撤')}</th><th>${tr('勝率')}</th><th>${tr('起始日')}</th></tr>`;
+ // B：從 START 當天收盤的資產起算
+ let xb={ret:null,mdd:null,win:null,start:null};if(MB&&MB.equity){const E=MB.equity.filter(e=>e[0]>=st);if(E.length){const b0=E[0][1];let pk=b0,dd=0;for(const e of E){pk=Math.max(pk,e[1]);dd=Math.min(dd,e[1]/pk-1)}const cl=(MB.trades||[]).filter(t=>t.side==='SELL'&&t.date>st&&t.why!=='convert');xb={ret:E.at(-1)[1]/b0-1,mdd:dd,win:cl.length?cl.filter(t=>t.pnl>0).length/cl.length:null,closed:cl.length,start:E[0][0]}}}
+ const bd=A.board||[],g=id=>bd.find(b=>b.id===id),T=bd.filter(b=>/^T/.test(b.id)).sort((a,b)=>b.ret-a.ret),none={ret:null,mdd:null,win:null,start:null};
+ let h='<div class="tw"><table>'+hd+row(tr('0050 擇時（B）'),tr('實盤使用中'),xb,1)+row(tr('動能 Top20（A）'),tr('每 21 交易日調倉'),g('A')||none)+row(tr('0050 買入持有'),'',Object.assign({},g('BH')||none,{win:null,closed:null}))+(T.length?row(tr('AI 第 1 名')+'：'+T[0].name,T[0].style,T[0]):row(tr('10 位 AI 交易員'),'',none))+'</table></div>';
+ h+=`<details><summary>${tr('10 位 AI 交易員排行')}${A.lastDate?'（'+A.lastDate+'）':''}</summary>`+(T.length?'<div class="tw"><table><tr><th>#</th>'+hd.slice(4)+T.map((t,i)=>row(t.name,t.style,t).replace('<tr>','<tr><td>'+(i+1)+'</td>').replace('<tr class="me">','<tr class="me"><td>'+(i+1)+'</td>')).join('')+'</table></div>':'<div class="note">'+escH(tr('2026-11-16 收盤後第一次更新（收盤決策、隔日開盤成交）'))+'</div>')+'</details>';
+ if(!A.board)h+='<div class="note">'+escH(tr('A、10 位 AI、0050 買入持有將於 2026-11-16 收盤後開始；11/17 開盤第一次成交。'))+'</div>';
+ el.innerHTML=h}
 let LIVE=null;const MKN={tw:'台股',us:'美股',crypto:'虛擬幣'},BN={tw:'0050',us:'SPY',crypto:'BTC'};
 async function live(){const mk=C.lmk||'tw';$('kpn').classList.add('hide');$('kpn2').classList.add('hide');
  if(!LIVE){busy(true,'載入中…');try{const r=await fetch('data/ai_live.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);LIVE=await r.json()}catch(e){busy(false);showErr('實戰資料尚未產生，請稍後再試');return}busy(false)}
- showErr('');const M=LIVE[mk],cur=mk==='tw'?'NT$':'$';/* 實盤暫停：顯示暫停訊息，歷史紀錄照常顯示 */
+ showErr('');const M=LIVE[mk],cur=mk==='tw'?'NT$':'$';$('cmpn').classList.toggle('hide',mk!=='tw');if(mk==='tw')arenaUI(M);/* 實盤暫停：顯示暫停訊息，歷史紀錄照常顯示 */
  {const pz=LIVE.paused||(LIVE.pausedMk&&LIVE.pausedMk[mk]),el=$('lpause');el.classList.toggle('hide',!pz);if(pz)el.textContent='⏸ '+tr('暫停中')+'（'+tr('自')+' '+pz.since+tr('起；策略尚未經無偏差研究，恢復需使用者同意。以下為暫停前的歷史紀錄')+'）';
   const B=M&&M.strategy&&M.strategy.id==='B',PL=!B&&M&&M.plan,sb=$('lstrat');sb.classList.toggle('hide',!(B||PL));$('ldesc').classList.toggle('hide',!!(B||PL));
   if(PL){const f=M.filter||{};sb.innerHTML='';const h=document.createElement('b');h.textContent=tr('策略')+'：'+tr('0050 擇時（加權指數 200 日線 ±2%）')+' · '+tr('自')+' '+PL.from+' '+tr('開盤起');sb.appendChild(h);

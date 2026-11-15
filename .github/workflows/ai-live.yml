@@ -16,7 +16,7 @@ concurrency: { group: ai-live, cancel-in-progress: false }
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,11 +26,13 @@ jobs:
           W="${{ github.event.inputs.which }}"
           if [ -z "$W" ]; then case "${{ github.event.schedule }}" in "40 22 * * 1-5") W=us;; "20 0 * * *") W=crypto;; *) W=tw;; esac; fi
           node scripts/ai_live.mjs "$W" || echo "sim failed, keeping previous state"
+          # 台股比較場（A 動能 Top20、10 位 AI 交易員、0050 買入持有；獨立虛擬帳戶，不影響 B）
+          if [ "$W" = tw ] || [ "$W" = all ]; then node scripts/ai_arena.mjs || echo "arena failed, keeping previous state"; fi
       - name: Commit if changed
         run: |
           git config user.name "wuji-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add market/data/ai_live.json
+          git add market/data/ai_live.json market/data/ai_arena.json
           git diff --cached --quiet && exit 0
           git commit -m "ai live sim: $(TZ=Asia/Taipei date +%F_%H%M)"
           for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done
