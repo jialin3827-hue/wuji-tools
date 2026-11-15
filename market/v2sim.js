@@ -1,12 +1,15 @@
 /* 月光股市 AI 跟單 v2 歷史回測引擎（瀏覽器與 Node 共用）。
    照 papertrade/usjp/moon_v2_backtest.py 的 B 設定（①還原價 ②a 連虧2筆才換、一天最多換1次 ③大盤200MA濾網 ④移動停損＋再進場）移植：
    收盤決策、隔日開盤成交。只做歷史模擬，不影響 scripts/ai_live.mjs 的實盤規則。
-   可調：stop 移動停損比例（0=關，預設 .3）、tp 停利比例（0=關）、maxPos 單一標的目標上限（預設台美 .2、幣 .5）。 */
+   可調：stop 移動停損比例（0=關，預設 .3）、tp 停利比例（0=關）、maxPos 單一標的目標上限（預設台美 .2、幣 .5）。
+   標的池可隨時間變動（mem[sym][i]=當天是否在池內，例如台股跟 0050 每季成分股）：只從池內挑新倉、算交易員排行；
+   已持有但被移出池的標的不強制賣，照停損／停利／訊號轉空／超重減碼規則出場。 */
 (function(root){
 'use strict';
 const TR=[['🐢 Turtle','brk',[20,10]],['🚀 Rocket','mom',[10]],['🌊 Wave','ma',[5,20]],['🦉 Owl','ma',[20,60]],['🐘 Elephant','ma',[50,200]],
  ['🦊 Fox','rsi',[14,30,70]],['🐇 Rabbit','rsi',[7,25,75]],['🐼 Panda','rsi',[14,40,60]],['⚡ Flash','ma',[3,10]],['🐉 Dragon','mom',[30]]];
 const PREFER=new Set([1,8,9,2]);
+/* U.tw 是舊版固定 10 檔（只留作新舊對照）；台股回測標的池改用 data/tw50_constituents.json 的 0050 季度成分股 */
 const U={tw:['2330','2317','2454','2308','2303','2881','2882','2603','3008','0050'],us:['NVDA','AAPL','MSFT','TSLA','AMZN','GOOGL','META','AMD','AVGO','TSM'],crypto:['BTC','ETH','SOL','BNB','XRP']};
 const IDX={tw:'TAIEX',us:'SPY',crypto:'BTC'},BENCH={tw:'0050',us:'SPY',crypto:'BTC'},WKN={tw:5,us:5,crypto:7};
 const DEF={tw:{stop:.3,tp:0,maxPos:.2},us:{stop:.3,tp:0,maxPos:.2},crypto:{stop:.3,tp:0,maxPos:.5}};
@@ -28,8 +31,11 @@ function sig(c,k,a){const n=c.length,o=new Array(n).fill(0);
  let p=0;for(let i=a[0];i<n;i++){let H=-Infinity,L=Infinity;for(let j=i-a[0];j<i;j++)H=Math.max(H,c[j]);for(let j=i-a[1];j<i;j++)L=Math.min(L,c[j]);if(c[i]>H)p=1;else if(c[i]<L)p=0;o[i]=p}return o}
 const ffill=a=>{let l=NaN;return a.map(v=>v===v&&v!=null?(l=v):l)};
 function roll(x,w){return pdRoll(x,w,false).map(v=>v===v?Math.exp(v)-1:NaN)}
+/* 成分股時間軸 → 每檔每天是否在池內。periods 依 from 排序，from＝新名單第一個生效交易日 */
+function members(periods,dates,u){const m={};for(const t of u)m[t]=new Array(dates.length).fill(false);let k=-1;
+ for(let i=0;i<dates.length;i++){while(k+1<periods.length&&periods[k+1].from<=dates[i])k++;if(k<0)continue;for(const t of periods[k].codes)if(m[t])m[t][i]=true}return m}
 /* 輸入：dates（基準標的交易日）、C/O：{sym:[對齊 dates 的還原收盤／開盤，缺值 NaN]}、ic：大盤指數收盤、bench：基準收盤 */
-function prep(mk,u,dates,C,O,ic,bench){const n=dates.length,w=WKN[mk],P={mk,u,dates,C:{},O:{},have:{},S:{},WK:{},RAW:{},hi20:{},n};
+function prep(mk,u,dates,C,O,ic,bench,mem){const n=dates.length,w=WKN[mk],P={mk,u,dates,C:{},O:{},have:{},S:{},WK:{},RAW:{},hi20:{},n,mem:mem||null};
  for(const t of u){const c=C[t]||new Array(n).fill(NaN);let cnt=0;P.have[t]=c.map(v=>{if(v===v)cnt++;return v===v&&cnt>60});
   const cf=ffill(c);P.C[t]=cf;P.O[t]=ffill(O[t]||new Array(n).fill(NaN));
   const ix=[],cv=[];c.forEach((v,i)=>{if(v===v){ix.push(i);cv.push(v)}});
@@ -52,7 +58,7 @@ function run(P,i0,opt){const {mk,u,dates}=P,C=P.C,O=P.O,o=Object.assign({},DEF[m
    else{let E=cash;for(const [k,q0] of pos){const q=O[k][i];if(q===q)E+=q0.sh*q}const amt=Math.min(x*E,cash);if(amt<E*.01)continue;
     const sh=amt*(1-fb)/px;cash-=amt;cost+=amt*fb;ntr++;if(pos.has(t)){const q=pos.get(t);q.sh+=sh;q.cost+=amt}else pos.set(t,{sh,cost:amt,peak:C[t][i]});trades.push([dates[i],'B',t,px,null,why])}}
   pend=[];let E=cash;for(const [k,q] of pos)E+=q.sh*C[k][i];eq.push(E);
-  const av=u.filter(t=>P.have[t][i]);if(av.length<3)continue;
+  const av=u.filter(t=>P.have[t][i]&&(!P.mem||P.mem[t][i]));if(av.length<3)continue;
   const scd=TR.map((_,ti)=>{let s=0,m=0;for(const t of av){const v=P.WK[ti+'|'+t][i];if(v===v){s+=v;m++}}return m?s/m:-Infinity});
   score=TR.map((_,ti)=>ti).sort((a,b)=>scd[b]-scd[a]);
   if(trader==null){const top=scd[score[0]];trader=score.find(k=>PREFER.has(k)&&scd[k]>=top-.005);if(trader==null)trader=score[0];sw.push([dates[i],null,trader])}
@@ -74,5 +80,5 @@ function run(P,i0,opt){const {mk,u,dates}=P,C=P.C,O=P.O,o=Object.assign({},DEF[m
    while(sat<maxN&&est>E*.08){const cc=av.filter(t=>!CORE[t]&&!held.has(t)&&!lock.has(t)&&P.RAW[t][i]>0).sort((a,b)=>P.RAW[b][i]-P.RAW[a][i]);if(!cc.length)break;const t=cc[0];pe.push(['B',t,slot,'cash-fill']);held.add(t);sat++;est-=slot*E}}
   pend=pe}
  return{eq,bench:P.bench.slice(i0),dates:dates.slice(i0),ntr,cost,nsw,sw,trades,trader,score,pos}}
-const API={TR,U,IDX,BENCH,DEF,INIT,prep,run,feeOf,sig};
+const API={TR,U,IDX,BENCH,DEF,INIT,prep,run,feeOf,sig,members};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.V2SIM=API})(typeof window!=='undefined'?window:this);

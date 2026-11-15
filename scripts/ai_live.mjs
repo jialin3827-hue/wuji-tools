@@ -11,7 +11,11 @@ const CFG={tw:{adj:true,switchN:2,cashFill:true,filter:true,stop:.3,rearm:'flip'
  crypto:{adj:true,switchN:2,cashFill:true,filter:true,stop:.3,rearm:'hi20'}}; // B 設定（CEO 2026-11-14 選定）：①+②a+③+④
 const IDX={tw:'TAIEX',us:'SPY',crypto:'BTC'},BAND={tw:.02,us:0,crypto:0};
 const isETF=(mk,s)=>mk==='tw'&&/^00/.test(s);
-const U={tw:['2330','2317','2454','2308','2303','2881','2882','2603','3008','0050'],us:['NVDA','AAPL','MSFT','TSLA','AMZN','GOOGL','META','AMD','AVGO','TSM'],crypto:['BTC','ETH','SOL','BNB','XRP']};
+// 台股標的池（2026-11-15 起）：跟 0050（臺灣50指數）當季成分股，讀 market/data/tw50_constituents.json（scripts/update_tw50.mjs 每季公告後手動更新）。
+// 被移出池的持股不強制賣：照樣抓價、照停損／訊號轉空／超重減碼出場，只是不再當新倉候選、也不列入交易員排行。
+const TW_OLD=['2330','2317','2454','2308','2303','2881','2882','2603','3008','0050'];
+function twPool(day){try{const J=JSON.parse(fs.readFileSync('market/data/tw50_constituents.json','utf8'));const p=J.periods.filter(x=>x.from<=day).at(-1);if(p&&p.codes.length===50)return{codes:p.codes,from:p.from,news:p.news}}catch(e){console.log('tw','成分股檔讀取失敗，改用舊固定清單',e.message)}return{codes:TW_OLD,from:null,news:null}}
+const U={tw:twPool(new Date(Date.now()+8*36e5).toISOString().slice(0,10)).codes,us:['NVDA','AAPL','MSFT','TSLA','AMZN','GOOGL','META','AMD','AVGO','TSM'],crypto:['BTC','ETH','SOL','BNB','XRP']};
 const BENCH={tw:'0050',us:'SPY',crypto:'BTC'};
 const FEE={tw:[.001425,.004425],us:[.001,.001],crypto:[.001,.001]};const feeOf=(mk,s)=>isETF(mk,s)?[.001425,.002425]:FEE[mk]; // 台股 ETF 證交稅 0.1%，個股 0.3%
 const WK={tw:5,us:5,crypto:7};
@@ -37,21 +41,22 @@ function sig(c,f,a){if(f==='ma'){const x=sma(c,a[0]),y=sma(c,a[1]);return c.map(
 // 交易員在某標的的近一週報酬（只用 <= 今天的收盤）
 function wkRet(c,s,w){const n=c.length;let eq=1;for(let i=n-w;i<n;i++)if(s[i-1])eq*=c[i]/c[i-1];return eq-1}
 async function runMarket(mk,S,catchup=false){
-  const cf=CFG[mk],syms=[...new Set([...U[mk],BENCH[mk],IDX[mk]])],D={};
+  const cf=CFG[mk],held0=((S[mk]&&S[mk].positions)||[]).map(p=>p.sym),POOL=new Set(U[mk]),syms=[...new Set([...U[mk],...held0,BENCH[mk],IDX[mk]])],D={};
   for(const s of syms){try{D[s]=await bars(mk,s)}catch(e){console.log(mk,'skip',s,e.message)}await sleep(mk==='crypto'?200:1200)}
-  const ok=U[mk].filter(s=>D[s]&&D[s].length>60);if(ok.length<3||!D[BENCH[mk]])return console.log(mk,'資料不足，今天跳過');
+  const ok=[...new Set([...U[mk],...held0])].filter(s=>D[s]&&D[s].length>60);if(ok.length<3||!D[BENCH[mk]])return console.log(mk,'資料不足，今天跳過');
   let today=D[BENCH[mk]].at(-1)[0];
   const M=S[mk]||(S[mk]={start:today,lastDate:null,cash:INIT,pos:null,trader:null,loss:0,benchUnits:null,equity:[],trades:[],switches:[],ranking:[],log:[]});
   if(!catchup&&M.lastDate&&today<=M.lastDate)return console.log(mk,'已處理',today,'略過（idempotent）');
   // 對齊到今天：只用日期 <= today 的資料，且必須有今天的收盤
   let useDate=(catchup&&M.lastDate)?M.lastDate:today;const C={},CD={},SG={};for(const s of ok){const b=D[s].filter(x=>x[0]<=useDate);if(b.at(-1)[0]!==useDate){console.log(mk,s,'今天沒有收盤，不納入');continue}C[s]=b.map(x=>x[1]);CD[s]=b.map(x=>x[0])}
   today=useDate;const syms2=Object.keys(C),w=WK[mk];const ones=Array(999).fill(1);
- const score=TR.map(([n,f,a],ti)=>{let t=0;for(const s of syms2){const sg=(SG[s+ti]=sig(C[s],f,a));t+=wkRet(C[s],sg,w)}return{ti,n,w:t/syms2.length}}).sort((a,b)=>b.w-a.w);
+ for(const s of syms2)TR.forEach(([n,f,a],ti)=>{SG[s+ti]=sig(C[s],f,a)});const poolS=syms2.filter(s=>POOL.has(s)); // 排行與新倉只看池內
+ const score=TR.map(([n,f,a],ti)=>{let t=0;for(const s of poolS)t+=wkRet(C[s],SG[s+ti],w);return{ti,n,w:t/poolS.length}}).sort((a,b)=>b.w-a.w);
  M.ranking=score.map(x=>({n:x.n,w:+x.w.toFixed(4)}));
   if(M.trader==null){const prefer=new Set(['🚀 Rocket','⚡ Flash','🐉 Dragon','🌊 Wave']);const top=score[0].w;const hit=score.find(x=>prefer.has(x.n)&&x.w>=top-0.005)||score[0];M.trader=hit.ti;M.switches.push({date:today,from:null,to:TR[M.trader][0],why:'開始跟單(偏動能)'})}
   // 分散持股：台/美 max5 各~20%；crypto BTC/ETH 25%核心 +1 AI。idle-cash fill(after4): while sat<maxN && cash>eq*0.15 buy next-best wkRet non-core(ignore sig) amt=slotW*E, trader=TR[], why:'cash-fill'/'ai-pick'(crypto)
   if(M.pos!==undefined){M.positions=M.pos?[M.pos]:[];delete M.pos} // 舊版單一持股 → 轉換
-  M.positions=M.positions||[];M.ver=VER;M.cfg=cf;M.lock=M.lock||{};if(M.costs==null)M.costs=(M.trades||[]).reduce((a,t)=>{const f=feeOf(mk,t.sym);return a+(t.side==='BUY'?t.px*t.sh*f[0]/(1-f[0]):t.px*t.sh*f[1])},0); // 首次 v2：用歷史成交回推累計費稅
+  M.positions=M.positions||[];M.ver=VER;if(mk==='tw'){const tp=twPool(today);M.pool={src:tp.from?'0050 成分股':'舊固定清單',from:tp.from,news:tp.news,n:POOL.size,outOfPool:M.positions.map(p=>p.sym).filter(s=>!POOL.has(s))}}M.cfg=cf;M.lock=M.lock||{};if(M.costs==null)M.costs=(M.trades||[]).reduce((a,t)=>{const f=feeOf(mk,t.sym);return a+(t.side==='BUY'?t.px*t.sh*f[0]/(1-f[0]):t.px*t.sh*f[1])},0); // 首次 v2：用歷史成交回推累計費稅
   
   // 大盤濾網（200MA；台股 ±2% 緩衝、跌破下緣才轉空）：只決定能不能開新倉
   const FL=(()=>{const b=(D[IDX[mk]]||[]).filter(x=>x[0]<=today).map(x=>x[1]);if(b.length<200)return null;const m=sma(b,200),bd=BAND[mk];let on=false;for(let i=0;i<b.length;i++){if(isNaN(m[i]))continue;if(b[i]>m[i]*(1+bd))on=true;else if(b[i]<m[i]*(1-bd))on=false}return{on,px:+b.at(-1).toFixed(2),ma:+m.at(-1).toFixed(2)}})();
@@ -81,15 +86,15 @@ async function runMarket(mk,S,catchup=false){
   {const E=eqNow();for(const s in CORE)if(C[s]){const p=M.positions.find(x=>x.sym===s),w=p?p.sh*px(s)/E:0;if(w<CORE[s]*.8)buy(s,(CORE[s]-w)*E,true)}}
   // 4) 衛星部位：跟隨交易員有多單訊號、近一週表現最好的標的
   if(!catchup){const E=eqNow(),held=new Set(M.positions.map(p=>p.sym)),sat=M.positions.filter(p=>!CORE[p.sym]).length;
-   const cand=syms2.filter(s=>!CORE[s]&&!held.has(s)&&!out.has(s)&&!M.lock[s]&&SG[s+M.trader].at(-1)).map(s=>[s,wkRet(C[s],SG[s+M.trader],w)]).sort((a,b)=>b[1]-a[1]);
+   const cand=poolS.filter(s=>!CORE[s]&&!held.has(s)&&!out.has(s)&&!M.lock[s]&&SG[s+M.trader].at(-1)).map(s=>[s,wkRet(C[s],SG[s+M.trader],w)]).sort((a,b)=>b[1]-a[1]);
    for(const [s] of cand.slice(0,Math.max(0,maxN-sat)))buy(s,slotW*E)}
   // 5) PROFIT_TARGET_MODE idle-cash fill: only positive 1w return; deploy when cash>8%（v2：cf.cashFill=false 時關閉，訊號全空就留現金）
   if(cf.cashFill&&gate){let E=eqNow(),held=new Set(M.positions.map(p=>p.sym)),sat=M.positions.filter(p=>!CORE[p.sym]).length;const fy=mk==='crypto'?'ai-pick':'cash-fill';
-   while(sat<maxN&&M.cash>E*0.08){const cand=syms2.filter(s=>!CORE[s]&&!held.has(s)&&!M.lock[s]).map(s=>[s,wkRet(C[s],ones,w)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);if(!cand.length)break;const [s]=cand[0];const pre=M.cash;buy(s,slotW*E,false,fy);if(M.cash===pre)break;held.add(s);sat++;E=eqNow()}}
+   while(sat<maxN&&M.cash>E*0.08){const cand=poolS.filter(s=>!CORE[s]&&!held.has(s)&&!M.lock[s]).map(s=>[s,wkRet(C[s],ones,w)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);if(!cand.length)break;const [s]=cand[0];const pre=M.cash;buy(s,slotW*E,false,fy);if(M.cash===pre)break;held.add(s);sat++;E=eqNow()}}
   const bp=D[BENCH[mk]].at(-1)[1];if(!M.benchUnits)M.benchUnits=INIT/bp;
   const eq=eqNow();M.positions.forEach(p=>{p.w=+(p.sh*px(p.sym)/eq).toFixed(4);p.sh=+p.sh.toFixed(6);p.cost=+p.cost.toFixed(2);if(p.peak!=null)p.peak=+(+p.peak).toPrecision(8)});M.costs=+M.costs.toFixed(2);
   if(!catchup){M.equity.push([today,+eq.toFixed(2),+(M.benchUnits*bp).toFixed(2)]);M.lastDate=today;M.day=M.equity.length;M.today=todayTr;
-  M.log.push({date:today,ran:new Date().toISOString(),n:syms2.length});M.log=M.log.slice(-60);}else M.today=todayTr;
+  M.log.push({date:today,ran:new Date().toISOString(),n:poolS.length});M.log=M.log.slice(-60);}else M.today=todayTr;
   console.log(mk,catchup?'Catchup':'Day',M.day||0,today,'equity',eq.toFixed(0),'trader',TR[M.trader][0],todayTr.map(t=>t.side+' '+t.sym).join(','))}
 if(import.meta.url===`file://${process.argv[1]}`){
 const S=fs.existsSync(FILE)?JSON.parse(fs.readFileSync(FILE,'utf8')):{};

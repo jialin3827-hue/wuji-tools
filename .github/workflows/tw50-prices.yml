@@ -1,0 +1,28 @@
+name: TW50 backtest price pack (weekly)
+# 每週六重算台股 AI 回測用的還原價資料包（0050 歷來成分股）。成分股時間軸本身不自動改，
+# 每季審核公告後請手動跑：node scripts/update_tw50.mjs constituents --anchor=<元大 0050 持股 50 檔>
+on:
+  schedule:
+    - cron: '0 2 * * 6'   # 10:00 Asia/Taipei 週六
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: { group: tw50-prices, cancel-in-progress: false }
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Build price pack
+        run: node scripts/update_tw50.mjs prices || echo "build failed, keeping previous pack"
+      - name: Commit if changed
+        run: |
+          git config user.name "wuji-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add market/data/tw50_prices.json
+          git diff --cached --quiet && exit 0
+          git commit -m "tw50 price pack: $(TZ=Asia/Taipei date +%F)"
+          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done
