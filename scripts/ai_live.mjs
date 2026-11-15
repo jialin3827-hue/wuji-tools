@@ -98,6 +98,7 @@ async function runMarket(mk,S,catchup=false){
   console.log(mk,catchup?'Catchup':'Day',M.day||0,today,'equity',eq.toFixed(0),'trader',TR[M.trader][0],todayTr.map(t=>t.side+' '+t.sym).join(','))}
 if(import.meta.url===`file://${process.argv[1]}`){
 const S=fs.existsSync(FILE)?JSON.parse(fs.readFileSync(FILE,'utf8')):{};
+if(S.paused&&!process.argv.includes('--force')){console.log('實盤暫停中（'+S.paused.since+'）：不執行、不寫檔。恢復需使用者同意。');process.exit(0)}
 const which=process.argv[2]||'all';const catchup=process.argv.includes('--catchup-fill');
 for(const mk of which==='all'?['tw','us','crypto']:[which]){try{await runMarket(mk,S,catchup)}catch(e){console.log(mk,'失敗，今天跳過：',e.message)}}
 S.updated=new Date().toISOString();S.bench=BENCH;S.init=INIT;

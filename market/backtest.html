@@ -56,7 +56,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:6px 4px;b
 <main>
 <div class="disc">⚠️ 虛擬模擬，非投資建議。歷史績效不代表未來表現，本頁不連接任何真實帳戶。</div>
 <div class="pn"><div class="seg tabs" id="mode"><button data-m="bt" class="on">📈 策略回測</button><button data-m="ai">🤖 AI 跟單</button><button data-m="live">📅 每日實戰</button></div></div>
-<div class="pn" id="livepn"><h3>實戰模擬（每日）<em id="lday"></em></h3><div style="color:var(--mu)">每天收盤後自動跑一次，只用當天以前的資料；每個市場虛擬資金十萬，不連接任何帳戶。<br>分散持股：台股、美股最多五檔各約兩成；虛擬幣比特幣、以太幣各四分之一，另一半由智能挑一檔。</div>
+<div class="pn" id="livepn"><h3>實戰模擬（每日）<em id="lday"></em></h3><div id="lpause" class="hide" role="status" style="margin:0 0 8px;padding:8px 10px;border-radius:10px;background:#FEF3C7;color:#92400E;font-weight:700"></div><div style="color:var(--mu)">每天收盤後自動跑一次，只用當天以前的資料；每個市場虛擬資金十萬，不連接任何帳戶。<br>分散持股：台股、美股最多五檔各約兩成；虛擬幣比特幣、以太幣各四分之一，另一半由智能挑一檔。</div>
  <div class="seg" id="lmk" style="margin-top:8px"><button data-k="tw">台股</button><button data-k="us">美股</button><button data-k="crypto">₿ 虛擬幣</button></div><div id="lst" style="margin-top:8px"></div><a id="v2bt" class="lnk2" href="#">📊 先看歷史回測（v2 規則）→</a></div>
 <div class="pn" id="sympn"><h3>選擇標的<em id="src"></em></h3>
  <div class="seg" id="mk"><button data-k="crypto">₿ 虛擬幣</button><button data-k="tw">台股</button><button data-k="us">美股</button></div>
@@ -87,7 +87,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:6px 4px;b
  <img id="card" class="hide" alt="card"></div>
 <div class="disc">虛擬模擬，非投資建議。資料可能延遲或缺漏。 FinMind · Binance · GeckoTerminal</div>
 </main>
-<script src="i18n.js?v=35"></script><script src="v2sim.js?v=2"></script><script src="store.js?v=29"></script>
+<script src="i18n.js?v=36"></script><script src="v2sim.js?v=2"></script><script src="store.js?v=29"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id),tr=s=>(window.i18nT?i18nT(s):s);
@@ -246,7 +246,8 @@ function v2line(M,mk){const c=M.cfg||{},f=M.filter,L=Object.keys(M.lock||{}),cur
 let LIVE=null;const MKN={tw:'台股',us:'美股',crypto:'虛擬幣'},BN={tw:'0050',us:'SPY',crypto:'BTC'};
 async function live(){const mk=C.lmk||'tw';$('kpn').classList.add('hide');$('kpn2').classList.add('hide');
  if(!LIVE){busy(true,'載入中…');try{const r=await fetch('data/ai_live.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);LIVE=await r.json()}catch(e){busy(false);showErr('實戰資料尚未產生，請稍後再試');return}busy(false)}
- showErr('');const M=LIVE[mk],cur=mk==='tw'?'NT$':'$';
+ showErr('');const M=LIVE[mk],cur=mk==='tw'?'NT$':'$';/* 實盤暫停：顯示暫停訊息，歷史紀錄照常顯示 */
+ {const pz=LIVE.paused,el=$('lpause');el.classList.toggle('hide',!pz);if(pz)el.textContent='⏸ '+tr('實盤暫停中，策略研究改進中')+'（'+tr('自')+' '+pz.since+tr('起，以下為暫停前的歷史紀錄')+'）'}
  if(!M||!M.equity||!M.equity.length){$('lday').textContent='';$('lst').textContent=tr('這個市場還沒開始，等下一次收盤後自動執行');$('kp').innerHTML='';RES=null;const x=$('eqc').getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,9999,9999);['lhold','ltoday','ltr','lsw'].forEach(i=>$(i).innerHTML='');return}
  const E=M.equity,eq=E.map(x=>x[1]),bh=E.map(x=>x[2]),s=stats(eq),bs=stats(bh),N=M.day||E.length,last=E[E.length-1];
  $('lday').textContent='Day '+N;$('rng').textContent=M.start+' → '+M.lastDate;
