@@ -280,7 +280,7 @@ function vsLine(r){if(!r)return'<div class="mu">AI 實況資料尚未產生</div
  const d=r.me-r.ai,lead=d>=0;return`<div class="vs"><div><b>${MKL[r.m]}</b><span class="rl">${r.start} → ${r.end}</span></div><div class="r">你 <b class="${cls(r.me)}">${pf(r.me)}</b> vs AI <b class="${cls(r.ai)}">${pf(r.ai)}</b><br><span class="${lead?'lead':'lag'}">${lead?'領先':'落後'} ${nf(Math.abs(d)*100,1)}%</span></div></div>`}
 let VS=[];
 async function renderVS(){const el=$('#vsai');if(!el)return;VS=[];for(const m of['tw','us','crypto']){try{VS.push(await vsAI(m))}catch(e){VS.push(null)}}
- if(!$('#vsai'))return;el.innerHTML=`<h3>🤖 你 vs AI 操盤實況</h3>${VS.map(vsLine).join('')}<div class="note" style="padding:6px 0 0">區間從「你的起跑日」與「AI 開始日」較晚者算到 AI 最新資料日，雙方同一區間比較。台股、美股以收盤價估值，不含股利。</div><button class="cta" onclick="shareCard()">📤 分享戰績</button>`}
+ if(!$('#vsai'))return;el.innerHTML=`<h3>🤖 你 vs AI 操盤實況</h3>${VS.map(vsLine).join('')}<div class="note" style="padding:6px 0 0">區間從「你的起跑日」與「AI 開始日」較晚者算到 AI 最新資料日，雙方同一區間比較。台股、美股以收盤價估值，不含股利。</div><a href="backtest.html?m=ai&amp;mk=tw" style="display:inline-block;margin:6px 0;color:var(--ac);font-weight:800;text-decoration:none">📊 先看 AI 歷史回測</a><button class="cta" onclick="shareCard()">📤 分享戰績</button>`}
 const SITE='jialin3827-hue.github.io/wuji-tools/market/';
 function loadImg(u){return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=u})}
 async function shareCard(){const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
