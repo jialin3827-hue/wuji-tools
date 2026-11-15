@@ -82,7 +82,12 @@ function fill(o,price,date){const m=o.a,a=S.a[m];const dtq=o.side==='S'&&m==='tw
 /* ---------- dividends: credited on ex-date to shares held before ex-date (from fills) ---------- */
 let TWDIV=null;
 async function loadDiv(){try{TWDIV=(await getJSON('../budget/data/dividends.json')).list||[]}catch(e){TWDIV=TWDIV||[]}}
-function heldBefore(m,s,ex){let q=0;for(const o of S.orders)if(o.a===m&&o.s===s&&o.st==='F'&&o.fd<ex)q+=o.side==='B'?o.q:-o.q;for(const d of S.divs)if(d.a===m&&d.s===s&&d.ex<ex)q+=d.sh||0;return q}
+/* 持股重播（依日期）：成交、配股、分割都照時間順序套用；分割只作用在分割日前已持有的股數 */
+function heldBefore(m,s,ex,incl){const ev=[],ok=d=>incl?d<=ex:d<ex;
+ for(const o of S.orders)if(o.a===m&&o.s===s&&o.st==='F'&&ok(o.fd))ev.push([o.fd,1,o.side==='B'?o.q:-o.q]);
+ for(const d of S.divs)if(d.a===m&&d.s===s&&ok(d.ex))ev.push([d.ex,1,d.sh||0]);
+ for(const p of S.splits||[])if(p.a===m&&p.s===s&&ok(p.d))ev.push([p.d,0,p.r]);
+ ev.sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:a[1]-b[1]);let q=0;for(const e of ev)q=e[1]?q+e[2]:splitQ(q,e[2]);return q}
 async function processDivs(){let n=0;for(const m of['tw','us']){const asof=D[m]&&D[m].asof,start=S.start[m];if(!asof)continue;
  const syms=[...new Set(S.orders.filter(o=>o.a===m&&o.st==='F').map(o=>o.s))];
  for(const s of syms){const ev=m==='tw'?(TWDIV||[]).filter(x=>x.code===s).map(x=>({ex:x.ex,cash:x.cash||0,stock:x.stock||0})):((await file(m,s)).divs||[]).map(x=>({ex:x[0],cash:x[1],stock:0}));
@@ -92,6 +97,40 @@ async function processDivs(){let n=0;for(const m of['tw','us']){const asof=D[m]&
    else{const g=Math.round(q*e.cash*100)/100,wh=Math.round(g*RT.wh*100)/100;r={a:m,s,ex:e.ex,q,ps:e.cash,cash:g,sh:0,nhi:0,wh,net:+(g-wh).toFixed(2)}}
    a.cash+=r.net;a.divs=(a.divs||0)+r.net;r.ts=Date.now();S.divs.push(r);n++}}}
  if(n){save();toast(`收到 ${n} 筆股利（模擬）`)}}
+/* ---------- 分割／反分割／面額變更（FinMind 免費資料 TaiwanStockSplitPrice）：存檔持股自動換算、走勢用還原價 ---------- */
+let SPL=null;const SPK='wuji_splits_v1',ADK='wuji_adj_v1_';
+const FMU='https://api.finmindtrade.com/api/v4/data?dataset=';
+function shareRatio(f){const r=1/f,n=r>=1?Math.round(r):Math.round(f);if(r>=1)return n>0&&Math.abs(r/n-1)<.03?n:r;return n>0&&Math.abs(f/n-1)<.03?1/n:r}
+const splitQ=(q,r)=>q>0?Math.floor(q*r+1e-6):q;
+async function loadSplits(){let c=null;try{c=JSON.parse(localStorage.getItem(SPK))}catch(e){}if(c&&Date.now()-c.t<12*36e5){SPL=c.d;return}
+ try{const j=await getJSON(FMU+'TaiwanStockSplitPrice&start_date=2020-01-01');if(!j||j.status!==200||!Array.isArray(j.data))throw 0;const d={};
+  for(const x of j.data){const f=+x.after_price/+x.before_price;if(!(f>0&&isFinite(f)))continue;(d[x.stock_id]=d[x.stock_id]||[]).push({d:x.date,f,r:shareRatio(f),pa:+x.after_price})}
+  for(const k in d)d[k].sort((a,b)=>a.d<b.d?-1:1);SPL=d;try{localStorage.setItem(SPK,JSON.stringify({t:Date.now(),d}))}catch(e){}}catch(e){SPL=c?c.d:null}}
+const splitsOf=(m,s)=>m==='tw'&&SPL?(SPL[s]||[]):[];
+/* 存檔遷移：每個分割事件只處理一次（S.splits 記錄＝版本旗標），持股數 ×比例、總成本不變（每股成本 ÷比例）；反分割的零股按參考價折現 */
+function processSplits(){if(!SPL||!S)return 0;S.splits=S.splits||[];S.splitv=1;let n=0;const m='tw',a=S.a[m],asof=D[m]&&D[m].asof;if(!asof)return 0;
+ const syms=new Set([...Object.keys(a.pos),...S.orders.filter(o=>o.a===m).map(o=>o.s)]);
+ for(const s of syms)for(const e of splitsOf(m,s)){if(e.d>asof||S.splits.some(x=>x.a===m&&x.s===s&&x.d===e.d))continue;
+  for(const o of S.orders)if(o.a===m&&o.s===s&&o.st==='P'&&o.dd<e.d){o.q=splitQ(o.q,e.r);if(o.type==='L')o.px=+(o.px/e.r).toFixed(2);o.spl=e.d}
+  const qb=heldBefore(m,s,e.d),rec={a:m,s,d:e.d,r:e.r,qb,qa:qb,cash:0,ts:Date.now()};
+  if(qb>0){const exact=qb*e.r,qa=splitQ(qb,e.r),frac=exact-qa;rec.qa=qa;const p=a.pos[s]||(a.pos[s]={q:0,t:0}),t0=p.t,q0=p.q;
+   rec.before={q:q0,t:+t0.toFixed(2)};p.q=q0-qb+qa;
+   if(frac>1e-6&&e.pa>0){const cash=Math.round(frac*e.pa);rec.cash=cash;a.cash+=cash;const cut=t0*frac/(p.q+frac);p.t=t0-cut}
+   if(p.q<=0)delete a.pos[s];rec.after={q:p.q||0,t:+(p.t||0).toFixed(2)};n++}
+  S.splits.push(rec)}
+ if(n){save();toast(`有 ${n} 檔持股因分割自動調整股數`)}return n}
+/* 還原價（只用於走勢圖與量能）：分割＋除權息＋減資，往回乘因子；量能 ÷因子 */
+async function adjEvents(m,s){if(m!=='tw')return{ev:[],full:true};const ev=splitsOf(m,s).map(e=>[e.d,e.f]);const k=ADK+s;let c=null;try{c=JSON.parse(localStorage.getItem(k))}catch(e){}
+ if(!(c&&Date.now()-c.t<12*36e5)){try{const st='2024-01-01',x=[];
+   const a=await getJSON(FMU+'TaiwanStockDividendResult&data_id='+encodeURIComponent(s)+'&start_date='+st);if(a.status!==200)throw 0;for(const r of a.data||[]){const f=+r.after_price/+r.before_price;if(f>0&&f<1.5)x.push([r.date,f])}
+   const b=await getJSON(FMU+'TaiwanStockCapitalReductionReferencePrice&data_id='+encodeURIComponent(s)+'&start_date='+st);if(b.status!==200)throw 0;for(const r of b.data||[]){const f=+r.PostReductionReferencePrice/+r.ClosingPriceonTheLastTradingDay;if(f>0&&f<20)x.push([r.date,f])}
+   c={t:Date.now(),d:x};try{localStorage.setItem(k,JSON.stringify(c))}catch(e){}}catch(e){c=c&&c.d?c:null}}
+ return{ev:ev.concat(c?c.d:[]),full:!!c&&!!SPL}}
+function applyAdj(b,ev){if(!ev.length)return b;const E=ev.slice().sort((x,y)=>x[0]<y[0]?1:-1),o=new Array(b.length);let f=1,k=0;
+ for(let i=b.length-1;i>=0;i--){while(k<E.length&&E[k][0]>b[i][0]){f*=E[k][1];k++}const x=b[i];o[i]=[x[0],x[1]*f,x[2]*f,x[3]*f,x[4]*f,x[5]/f]}return o}
+/* 還原後仍有異常單日跳動 → 資料不足：台股個股超過 ±11%（漲跌幅 10%）；ETF 含槓桿／海外標的無 10% 限制，只抓分割等級的跳動 */
+function adjGap(m,s,b){if(m!=='tw')return null;const etf=/^00/.test(s),lo=etf?.6:.89,hi=etf?1.67:1.11;for(let i=1;i<b.length;i++){const r=b[i][4]/b[i-1][4];if(r<lo||r>hi)return b[i][0]}return null}
+async function adjBars(m,s){const b=await bars(m,s),{ev}=await adjEvents(m,s);return applyAdj(b,ev)}
 /* pending orders: matched against the first daily bar after the order's data date (next price update) */
 async function processOrders(){let n=0;for(const o of S.orders){if(o.st!=='P')continue;const b=(await bars(o.a,o.s)).find(x=>x[0]>o.dd);if(!b)continue;const[d,op,hi,lo]=b;
  if(o.type==='M'){fill(o,op,d)&&n++}else if(o.side==='B'?lo<=o.px:hi>=o.px){fill(o,o.side==='B'?Math.min(o.px,op):Math.max(o.px,op),d)&&n++}else{o.st='E';o.why='當日未成交，已失效';o.fd=d}}
@@ -103,7 +142,7 @@ async function simBot(bot,m){const init=initOf(m),start=S.start[m];const a=newAc
  const dates=[...new Set(syms.flatMap(s=>B[s].map(x=>x[0])))].sort();const R=rng(bot.id+m+start);const px={};
  const buy=(s,cashAmt)=>{const p=px[s];if(!p)return;let q=Math.floor(cashAmt/p/1.002);if(q<1)return;let k=costs(m,s,'B',p,q);while(q>0&&k.amt+k.fee>a.cash){q--;k=costs(m,s,'B',p,q)}if(q<1)return;a.cash-=k.amt+k.fee;const P=a.pos[s]||(a.pos[s]={q:0,t:0});P.q+=q;P.t+=k.amt+k.fee};
  const sell=(s,q)=>{const P=a.pos[s],p=px[s];if(!P||!p)return;q=Math.min(q,P.q);const k=costs(m,s,'S',p,q);a.cash+=k.net;P.t-=P.t*q/P.q;P.q-=q;if(!P.q)delete a.pos[s]};
- let prevMonth=null;dates.forEach((d,i)=>{const chg={};for(const s of syms){const b=B[s].find(x=>x[0]===d);if(b){chg[s]=px[s]?b[4]/px[s]-1:0;px[s]=b[4]}}
+ let prevMonth=null,pd=start;dates.forEach((d,i)=>{const chg={};for(const s of syms)for(const e of splitsOf(m,s))if(e.d>pd&&e.d<=d){if(a.pos[s]){a.pos[s].q=splitQ(a.pos[s].q,e.r)}if(px[s])px[s]*=e.f}pd=d;for(const s of syms){const b=B[s].find(x=>x[0]===d);if(b){chg[s]=px[s]?b[4]/px[s]-1:0;px[s]=b[4]}}
   if(bot.id==='div'&&i===0)syms.forEach(s=>buy(s,init/syms.length*0.98));
   if(bot.id==='dip'){const s=syms[0];if(i===0)buy(s,init*0.3);else if(chg[s]<-0.015)buy(s,a.cash*0.2)}
   if(bot.id==='dca'){const mo=d.slice(0,7);if(mo!==prevMonth){syms.forEach(s=>buy(s,init/12/syms.length));prevMonth=mo}}
@@ -150,7 +189,7 @@ function paintFocus(m,volMul){const el=$('#focus');if(!el)return;
  <div class="focus-acts"><button type="button" class="buy" onclick="openFocusTrade('${x.s}')">模擬買進</button><button type="button" class="det" onclick="openQ('${x.s}')">看詳情</button></div>
  <div class="focus-disc">依行情數據自動判讀，非投資建議</div></article>`;
  if(volMul==null)enrichFocusVol(m,x)}
-async function enrichFocusVol(m,x){try{const b=await bars(m,x.s);const vs=(b||[]).filter(r=>r[0]!==x.d&&r[5]>0).slice(-20).map(r=>r[5]);if(vs.length<5||!(x.v>0))return;const avg=vs.reduce((a,c)=>a+c,0)/vs.length;if(!(avg>0))return;const mul=x.v/avg;const el=$('#focus');if(!el||el.dataset.s!==x.s||UI.tab!=='list'||S.acct!==m)return;if(mul>=1.5)paintFocus(m,mul)}catch(e){}}
+async function enrichFocusVol(m,x){try{const b=applyAdj(await bars(m,x.s),splitsOf(m,x.s).map(e=>[e.d,e.f]));const vs=(b||[]).filter(r=>r[0]!==x.d&&r[5]>0).slice(-20).map(r=>r[5]);if(vs.length<5||!(x.v>0))return;const avg=vs.reduce((a,c)=>a+c,0)/vs.length;if(!(avg>0))return;const mul=x.v/avg;const el=$('#focus');if(!el||el.dataset.s!==x.s||UI.tab!=='list'||S.acct!==m)return;if(mul>=1.5)paintFocus(m,mul)}catch(e){}}
 function openFocusTrade(s){UI.side='B';openQ(s)}
 
 function vList(){const m=S.acct;
@@ -172,7 +211,7 @@ async function vQuote(){const m=S.acct,s=S.cur[m],x=D[m].map[s];if(!x){$('#view'
  <div class="trade"><div class="book" id="book"></div><div class="op" id="op"></div></div>
  <div class="note">五檔為依收盤價產生的模擬掛單，非真實委買委賣。市價單：盤中以最新可得價格成交，收盤後排隊到下一次價格更新以開盤價成交；限價單：下一次價格更新觸及限價才成交，否則當日失效。${m==='tw'?'手續費 0.1425%（整張最低 20 元、零股最低 1 元），證交稅賣出 0.3%（ETF 0.1%、現股當沖 0.15%），手續費折扣可在 ⚙️ 設定，皆為模擬。':'美股佣金預設 0（可在 ⚙️ 設定），賣出另計 SEC 與 FINRA TAF 規費（模擬）。'}</div>${DISC}`;
  if(!UI.px)UI.px=String(x.c);renderBook(x);renderOp();
- const b=await bars(m,s);if(S.cur[m]!==s||UI.tab!=='quote')return;if(b.length<60){const e=document.querySelector('.lgd .sp');if(e)e.outerHTML='<span class="sp"></span><span style="color:var(--ac)">歷史走勢補齊中（'+b.length+' 日）</span>'}drawChart(b,m)}
+ const b=await adjBars(m,s);if(S.cur[m]!==s||UI.tab!=='quote')return;{const g=adjGap(m,s,b);if(g){const el=$('#chart');if(el)el.innerHTML='<div class="empty">此標的有分割／除權資料不足，暫不顯示走勢</div>';return}}if(b.length<60){const e=document.querySelector('.lgd .sp');if(e)e.outerHTML='<span class="sp"></span><span style="color:var(--ac)">歷史走勢補齊中（'+b.length+' 日）</span>'}drawChart(b,m)}
 function renderBook(x){const m=S.acct,t=tick(m,x.c,x.s),R=rng(x.s+x.d),base=m==='tw'?(x.v/1000/300):(x.v/3000);const vol=()=>Math.max(1,Math.round(base*(0.3+R()*1.4)));
  const asks=[5,4,3,2,1].map(i=>[rt(x.c+t*i,t),vol()]),bids=[0,1,2,3,4].map(i=>[rt(x.c-t*i,t),vol()]);const mx=Math.max(...asks.map(a=>a[1]),...bids.map(a=>a[1]));
  const row=(p,v,k)=>`<div class="lv ${k}" onclick="UI.px='${p}';UI.type='L';renderOp()"><i style="width:${v/mx*100}%"></i><span class="${cls(p-x.pc)}">${pxf(p,m)}</span><span>${nf(v)}</span></div>`;
@@ -258,8 +297,9 @@ async function vBattle(){const m=UI.lbm;setTimeout(renderVS,0);
 let AIL=null;
 async function aiLive(){if(!AIL){try{AIL=await getJSON('data/ai_live.json')}catch(e){AIL={}}}return AIL}
 function closeAt(b,d){let c=null;for(const x of b){if(x[0]>d)break;c=x[4]}return c}
-async function valueAt(m,d){/* 用已成交委託重播到日期 d，以 d 當天（或之前最近）收盤價估值；股利不計 */
- let cash=initOf(m);const q={};for(const o of S.orders){if(o.a!==m||o.st!=='F'||!(o.fd<=d))continue;if(o.side==='B'){cash-=o.net;q[o.s]=(q[o.s]||0)+o.q}else{cash+=o.net;q[o.s]=(q[o.s]||0)-o.q}}
+async function valueAt(m,d){/* 用已成交委託重播到日期 d，以 d 當天（或之前最近）收盤價估值；現金股利不計，配股與分割依日期換算股數 */
+ let cash=initOf(m);const q={};for(const o of S.orders){if(o.a!==m||o.st!=='F'||!(o.fd<=d))continue;if(o.side==='B')cash-=o.net;else cash+=o.net;q[o.s]=0}
+ for(const p of S.splits||[])if(p.a===m&&p.d<=d)cash+=p.cash||0;for(const s in q)q[s]=heldBefore(m,s,d,true);
  let mv=0;for(const s in q){if(q[s]<=0)continue;const c=closeAt(await bars(m,s),d);mv+=q[s]*(c||0)}return cash+mv}
 async function vsAI(m){const L=await aiLive(),A=L&&L[m];if(!A||!A.equity||!A.equity.length)return null;
  const E=A.equity,last=E[E.length-1];
@@ -338,7 +378,7 @@ function menu(){const M=$('#modal'),c=cfg();M.classList.add('on');const D2=[[1,'
  <button class="sec" onclick="location.href='../budget/'">🌙 回月光存股模擬人生</button><button class="sec" onclick="closeM();render()">關閉</button>
  <div class="note">資料只存在你的手機（瀏覽器 localStorage）。台股行情：臺灣證券交易所、證券櫃檯買賣中心開放資料；美股：${esc((D.us||{}).src||'—')}。圖表：TradingView Lightweight Charts™（Apache-2.0）。</div></div>`}
 
-(async function init(){await loadSnap();await loadDiv();if(S){S=migrateMarket(S);S.divs=S.divs||[];S.cfg=S.cfg||{};if(!S.start.tw)S.start.tw=D.tw.asof;if(!S.start.us)S.start.us=D.us.asof;S.track=S.track||{firstTrade:false,lastActiveDay:null};checkReturnDay();await processOrders();await processDivs();save()}render();
+(async function init(){await loadSnap();await loadDiv();await loadSplits();if(S){S=migrateMarket(S);S.divs=S.divs||[];S.cfg=S.cfg||{};if(!S.start.tw)S.start.tw=D.tw.asof;if(!S.start.us)S.start.us=D.us.asof;S.track=S.track||{firstTrade:false,lastActiveDay:null};checkReturnDay();processSplits();await processOrders();await processDivs();save()}render();
   setInterval(()=>{if(S)renderTop()},60000);
-  document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&S){await loadSnap();await loadDiv();BARS={};for(const k in FILES)delete FILES[k];checkReturnDay();await processOrders();await processDivs();render()}})})();
+  document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&S){await loadSnap();await loadDiv();await loadSplits();BARS={};for(const k in FILES)delete FILES[k];checkReturnDay();processSplits();await processOrders();await processDivs();render()}})})();
 
