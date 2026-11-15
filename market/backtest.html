@@ -85,7 +85,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:6px 4px;b
  <img id="card" class="hide" alt="card"></div>
 <div class="disc">虛擬模擬，非投資建議。資料可能延遲或缺漏。 FinMind · Binance · GeckoTerminal</div>
 </main>
-<script src="i18n.js?v=31"></script><script src="v2sim.js?v=1"></script><script src="store.js?v=29"></script>
+<script src="i18n.js?v=34"></script><script src="v2sim.js?v=1"></script><script src="store.js?v=29"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id),tr=s=>(window.i18nT?i18nT(s):s);
@@ -282,7 +282,7 @@ const KIND={brk:'突破',mom:'動能',ma:'均線',rsi:'RSI'},V2D={};let V2SEQ=0;
 function noBT(m){RES=null;$('kp').innerHTML='<div class="k" style="grid-column:1/-1"><b style="font-size:15px;text-shadow:none"></b></div>';$('kp').querySelector('b').textContent=m;
  $('kpn').classList.add('hide');$('kpn2').classList.add('hide');$('lg').innerHTML='';const x=$('eqc').getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,$('eqc').width,$('eqc').height);$('card').classList.add('hide');$('rk').innerHTML='';$('sw').innerHTML=''}
 function v2UI(){const mk=C.mk;$('v2_stop').value=C.v2.stop;$('v2_tp').value=C.v2.tp;$('v2_mp').value=C.v2.mp[mk];
- $('v2d').textContent=tr('v2 預設')+'：'+tr('停損')+' 30%、'+tr('停利')+' '+tr('關閉')+'、'+tr('單一標的')+' '+V2DEF.mp[mk]+'%';
+ $('v2d').textContent=tr('v2 預設')+'：'+tr('停損')+' 30%、'+tr('停利')+' '+tr('未啟用')+'、'+tr('單一標的')+' '+V2DEF.mp[mk]+'%';
  if(C.m==='ai')$('st').textContent=tr('標的池')+'：'+V2SIM.U[mk].join('、')}
 [['v2_stop',0,90],['v2_tp',0,500],['v2_mp',5,100]].forEach(([id,a,b])=>{const el=$(id);const set=fin=>{let v=Math.round(+el.value);if(el.value===''||isNaN(v)||v<a||v>b){if(!fin)return;v=Math.min(b,Math.max(a,isNaN(v)?a:v))}if(fin)el.value=v;
  if(id==='v2_mp')C.v2.mp[C.mk]=v;else C.v2[id.slice(3)]=v;saveC();sched()};el.oninput=()=>set(0);el.onchange=()=>set(1)});
