@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0c0f14">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="額度水位">
+<meta name="description" content="每週 AI 額度水位，綠燈、黃燈、紅燈一眼看懂。">
+<title>週額度水位</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<style>
+:root{
+  --bg:#0c0f14;
+  --card:#151a22;
+  --line:#242b36;
+  --ink:#e8edf5;
+  --muted:#8b95a8;
+  --green:#3ddc8a;
+  --yellow:#f5c542;
+  --red:#f87171;
+  --track:#2a3444;
+  --accent:var(--yellow);
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink)}
+body{
+  font-family:system-ui,"Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  line-height:1.5;
+  padding:calc(20px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%),
+    var(--bg);
+  transition:background .4s ease;
+}
+.wrap{max-width:420px;margin:0 auto}
+@media(min-width:900px){
+  .wrap{max-width:920px}
+  .layout{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+  .gauge-card{margin-bottom:0}
+}
+header{text-align:center;margin-bottom:18px}
+@media(min-width:900px){header{grid-column:1/-1;margin-bottom:8px}}
+.kicker{margin:0;font-size:.8rem;letter-spacing:.14em;color:var(--muted);text-transform:none}
+h1{margin:.2rem 0 0;font-size:1.35rem;font-weight:750;letter-spacing:.04em}
+.gauge-card,.history{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:22px 20px 20px;
+  margin-bottom:16px;
+}
+.gauge-wrap{display:flex;flex-direction:column;align-items:center}
+.gauge{position:relative;width:min(260px,72vw);aspect-ratio:1;margin:4px auto 12px}
+.gauge svg{width:100%;height:100%;display:block;filter:drop-shadow(0 0 18px color-mix(in srgb,var(--accent) 35%,transparent))}
+.gauge .track{stroke:var(--track);fill:none;stroke-width:12}
+.gauge .bar{fill:none;stroke:var(--accent);stroke-width:12;stroke-linecap:round;stroke-dasharray:527.79;stroke-dashoffset:527.79;transition:stroke-dashoffset .8s cubic-bezier(.22,.7,.3,1),stroke .3s}
+.gauge-readout{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.pct{font-variant-numeric:tabular-nums;font-size:3.1rem;font-weight:800;letter-spacing:-.04em;line-height:1}
+.pct span{font-size:1.35rem;font-weight:700;margin-left:.08em;opacity:.9}
+.lvl{margin-top:.45rem;font-size:.95rem;font-weight:700;padding:.15rem .7rem;border-radius:999px;background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent);letter-spacing:.06em}
+.rule{margin:4px 0 16px;text-align:center;font-size:1rem;font-weight:600;line-height:1.45;min-height:2.9em;text-wrap:pretty}
+.rule .brk{display:none}
+@media(max-width:600px){.rule .brk{display:block}}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.meta div{background:#0c0f14;border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.meta span{display:block;font-size:.72rem;color:var(--muted);letter-spacing:.04em}
+.meta strong{display:block;margin-top:.15rem;font-size:.95rem;font-weight:700;font-variant-numeric:tabular-nums}
+.reset-at{margin:10px 0 0;text-align:center;font-size:.8rem;color:var(--muted)}
+.history h2{margin:0 0 10px;font-size:.95rem;font-weight:700}
+.spark{display:flex;align-items:flex-end;gap:4px;height:56px;margin:0 0 14px;padding:0 2px}
+.spark i{flex:1;border-radius:3px 3px 1px 1px;min-width:4px;opacity:.9;background:var(--yellow)}
+.spark i.green{background:var(--green)}
+.spark i.yellow{background:var(--yellow)}
+.spark i.red{background:var(--red)}
+ol{list-style:none;margin:0;padding:0}
+ol li{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:.9rem;font-variant-numeric:tabular-nums}
+ol li:first-child{border-top:0}
+ol .when{color:var(--ink)}
+ol .tag{font-size:.75rem;font-weight:700;color:var(--accent)}
+ol li.green .tag{color:var(--green)}
+ol li.yellow .tag{color:var(--yellow)}
+ol li.red .tag{color:var(--red)}
+ol .num{font-weight:700;min-width:4.2em;text-align:right}
+footer{text-align:center;color:var(--muted);font-size:.75rem;line-height:1.55;padding:4px 8px 0}
+.error{text-align:center;color:var(--red);font-weight:650;padding:12px}
+.hidden{display:none}
+@media(prefers-reduced-motion:reduce){
+  .gauge .bar{transition:none}
+  body{transition:none}
+}
+</style>
+</head>
+<body data-level="">
+  <div class="wrap">
+    <header>
+      <p class="kicker">本週已用</p>
+      <h1>週額度水位</h1>
+    </header>
+    <div class="layout">
+      <section class="gauge-card" aria-live="polite">
+        <div class="gauge-wrap">
+          <div class="gauge" role="img" id="gaugeFig" aria-label="額度水位載入中">
+            <svg viewBox="0 0 200 200" aria-hidden="true">
+              <circle class="track" cx="100" cy="100" r="84"></circle>
+              <circle class="bar" id="bar" cx="100" cy="100" r="84" transform="rotate(-90 100 100)"></circle>
+            </svg>
+            <div class="gauge-readout">
+              <div class="pct" id="pct">--<span>%</span></div>
+              <div class="lvl" id="lvl">載入中</div>
+            </div>
+          </div>
+          <p class="rule" id="rule">讀取最新水位…</p>
+          <div class="meta">
+            <div><span>上次更新</span><strong id="updated">—</strong></div>
+            <div><span>重置倒數</span><strong id="countdown">—</strong></div>
+          </div>
+          <p class="reset-at" id="resetAt"></p>
+        </div>
+      </section>
+      <section class="history hidden" id="historyWrap">
+        <h2>近期紀錄</h2>
+        <div class="spark" id="spark" aria-hidden="true"></div>
+        <ol id="history"></ol>
+      </section>
+    </div>
+    <footer>綠燈未滿 60%　黃燈 60% 到未滿 85%　紅燈 85% 以上<br>水位依官方規則計算，重置時間為台北時間。</footer>
+  </div>
+<script>
+(function(){
+  const CIRC = 2 * Math.PI * 84;
+  const LEVELS = {
+    green: { cls:"green", label:"綠燈" },
+    yellow:{ cls:"yellow", label:"黃燈" },
+    red:   { cls:"red", label:"紅燈" }
+  };
+  const bar = document.getElementById("bar");
+  bar.style.strokeDasharray = String(CIRC);
+  bar.style.strokeDashoffset = String(CIRC);
+
+  function fmtPct(n){
+    if (typeof n !== "number" || !isFinite(n)) return "--";
+    const rounded = Math.round(n * 10) / 10;
+    return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+  }
+  function formatUpdated(s){
+    if (!s) return "—";
+    const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(.+))?$/);
+    if (!m) return s + "（台北）";
+    const label = m[4] ? " " + m[4] : "";
+    return Number(m[2]) + "月" + Number(m[3]) + "日" + label + "（台北）";
+  }
+  function formatReset(iso){
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d)) return "";
+    const parts = new Intl.DateTimeFormat("zh-TW", {
+      timeZone:"Asia/Taipei", month:"numeric", day:"numeric",
+      weekday:"short", hour:"2-digit", minute:"2-digit", hour12:false
+    }).formatToParts(d);
+    const get = t => (parts.find(p=>p.type===t)||{}).value;
+    return "下次重置：" + get("month") + "月" + get("day") + "日（" + get("weekday") + "）" + get("hour") + ":" + get("minute") + "（台北）";
+  }
+  function countdownText(iso){
+    if (!iso) return "—";
+    const t = new Date(iso).getTime() - Date.now();
+    if (isNaN(t)) return "—";
+    if (t <= 0) return "已到重置時間";
+    const total = Math.floor(t / 1000);
+    const d = Math.floor(total / 86400);
+    const h = Math.floor((total % 86400) / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    if (d > 0) return d + " 天 " + h + " 時 " + m + " 分";
+    if (h > 0) return h + " 時 " + m + " 分";
+    return m + " 分";
+  }
+  function applyLevel(code){
+    const lv = LEVELS[code] || LEVELS.yellow;
+    document.body.dataset.level = lv.cls;
+    document.body.style.setProperty("--accent", "var(--" + lv.cls + ")");
+    return lv;
+  }
+  function render(data){
+    const code = data.level || "yellow";
+    const lv = applyLevel(code);
+    const pct = fmtPct(data.percent);
+    const used = Math.max(0, Math.min(100, Number(data.percent) || 0));
+    const label = data.levelLabel || lv.label;
+    document.getElementById("pct").innerHTML = pct + "<span>%</span>";
+    document.getElementById("lvl").textContent = label;
+    const ruleEl = document.getElementById("rule");
+    ruleEl.replaceChildren();
+    const note = data.note || "";
+    const parts = note.split("；");
+    parts.forEach((part, i) => {
+      if (i) {
+        ruleEl.append("；");
+        const brk = document.createElement("span");
+        brk.className = "brk";
+        ruleEl.appendChild(brk);
+      }
+      ruleEl.append(part);
+    });
+    document.getElementById("updated").textContent = formatUpdated(data.updated);
+    document.getElementById("resetAt").textContent = formatReset(data.resetAt);
+    const cd = document.getElementById("countdown");
+    const tick = () => { cd.textContent = countdownText(data.resetAt); };
+    tick();
+    clearInterval(window.__quotaTimer);
+    window.__quotaTimer = setInterval(tick, 30000);
+    requestAnimationFrame(() => {
+      bar.style.strokeDashoffset = String(CIRC * (1 - used / 100));
+    });
+    document.getElementById("gaugeFig").setAttribute("aria-label", "本週已用 " + pct + "%，" + label);
+
+    const hist = Array.isArray(data.history) ? data.history.slice() : [];
+    const wrap = document.getElementById("historyWrap");
+    if (!hist.length){ wrap.classList.add("hidden"); return; }
+    wrap.classList.remove("hidden");
+    const spark = document.getElementById("spark");
+    spark.replaceChildren();
+    hist.forEach((row) => {
+      const i = document.createElement("i");
+      const lvCode = row.level || "yellow";
+      i.className = lvCode;
+      const p = Math.max(0, Math.min(100, Number(row.percent) || 0));
+      i.style.height = Math.max(8, p) + "%";
+      i.title = (row.updated || "") + " " + p + "%";
+      spark.appendChild(i);
+    });
+    const ol = document.getElementById("history");
+    ol.replaceChildren();
+    hist.slice().reverse().forEach((row) => {
+      const li = document.createElement("li");
+      const lvCode = row.level || "yellow";
+      li.className = lvCode;
+      const when = document.createElement("span");
+      when.className = "when";
+      when.textContent = formatUpdated(row.updated).replace("（台北）","").trim();
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = row.levelLabel || (LEVELS[lvCode]||{}).label || "";
+      const num = document.createElement("span");
+      num.className = "num";
+      num.textContent = fmtPct(row.percent) + "%";
+      li.append(when, tag, num);
+      ol.appendChild(li);
+    });
+  }
+
+  fetch("quota.json", { cache:"no-store" })
+    .then((r) => { if (!r.ok) throw new Error("http " + r.status); return r.json(); })
+    .then(render)
+    .catch(() => {
+      document.getElementById("rule").textContent = "資料暫時無法載入，請稍後再試。";
+      document.getElementById("lvl").textContent = "—";
+    });
+
+  if (location.protocol === "https:" && "serviceWorker" in navigator){
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+  if (location.hostname.endsWith("github.io")){
+    const s = document.createElement("script");
+    s.async = true;
+    s.dataset.goatcounter = "https://wujitycoon.goatcounter.com/count";
+    s.src = "https://gc.zgo.at/count.js";
+    document.head.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>
