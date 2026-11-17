@@ -66,9 +66,13 @@ h1{margin:.2rem 0 0;font-size:1.35rem;font-weight:750;letter-spacing:.04em}
 .pct{font-variant-numeric:tabular-nums;font-size:3.1rem;font-weight:800;letter-spacing:-.04em;line-height:1}
 .pct span{font-size:1.35rem;font-weight:700;margin-left:.08em;opacity:.9}
 .lvl{margin-top:.45rem;font-size:.95rem;font-weight:700;padding:.15rem .7rem;border-radius:999px;background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent);letter-spacing:.06em}
-.rule{margin:4px 0 16px;text-align:center;font-size:1rem;font-weight:600;line-height:1.45;min-height:2.9em;text-wrap:pretty}
+.rule{margin:4px 0 8px;text-align:center;font-size:1rem;font-weight:600;line-height:1.45;min-height:2.9em;text-wrap:pretty}
 .rule .brk{display:none}
-@media(max-width:600px){.rule .brk{display:block}}
+@media(max-width:600px){.rule .brk,.headroom .brk{display:block}}
+.headroom{margin:0 0 16px;text-align:center;font-size:.98rem;font-weight:700;line-height:1.45;font-variant-numeric:tabular-nums;color:var(--ink);text-wrap:pretty}
+.headroom .n{color:var(--accent)}
+.headroom.is-red{color:var(--red)}
+.headroom .brk{display:none}
 .meta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .meta div{background:#0c0f14;border:1px solid var(--line);border-radius:14px;padding:10px 12px}
 .meta span{display:block;font-size:.72rem;color:var(--muted);letter-spacing:.04em}
@@ -118,6 +122,7 @@ footer{text-align:center;color:var(--muted);font-size:.75rem;line-height:1.55;pa
             </div>
           </div>
           <p class="rule" id="rule">讀取最新水位…</p>
+          <p class="headroom" id="headroom"></p>
           <div class="meta">
             <div><span>上次更新</span><strong id="updated">—</strong></div>
             <div><span>重置倒數</span><strong id="countdown">—</strong></div>
@@ -149,6 +154,44 @@ footer{text-align:center;color:var(--muted);font-size:.75rem;line-height:1.55;pa
     if (typeof n !== "number" || !isFinite(n)) return "--";
     const rounded = Math.round(n * 10) / 10;
     return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+  }
+  function headroomLine(percent){
+    const p = Number(percent);
+    if (!isFinite(p)) return { text: "", kind: "" };
+    const gap = (th) => fmtPct(Math.max(0, th - p));
+    if (p >= 85) return { text: "已進紅燈", kind: "red" };
+    if (p < 60) return { text: "離黃燈還差 " + gap(60) + "%，離紅燈還差 " + gap(85) + "%", kind: "green" };
+    return { text: "離紅燈還差 " + gap(85) + "%", kind: "yellow" };
+  }
+  function renderHeadroom(el, percent){
+    const { text, kind } = headroomLine(percent);
+    el.className = "headroom" + (kind === "red" ? " is-red" : "");
+    el.replaceChildren();
+    if (!text) return "";
+    const addChunk = (s) => {
+      const m = /^(.+?)(\d+(?:\.\d+)?%)(.*)$/.exec(s);
+      if (!m) { el.append(s); return; }
+      el.append(m[1]);
+      const n = document.createElement("span");
+      n.className = "n";
+      n.textContent = m[2];
+      el.append(n);
+      if (m[3]) el.append(m[3]);
+    };
+    if (kind === "green" && text.includes("，")) {
+      const [a, b] = text.split("，");
+      addChunk(a);
+      el.append("，");
+      const brk = document.createElement("span");
+      brk.className = "brk";
+      el.appendChild(brk);
+      addChunk(b);
+    } else if (kind === "red") {
+      el.textContent = text;
+    } else {
+      addChunk(text);
+    }
+    return text;
   }
   function formatUpdated(s){
     if (!s) return "—";
@@ -208,6 +251,7 @@ footer{text-align:center;color:var(--muted);font-size:.75rem;line-height:1.55;pa
       }
       ruleEl.append(part);
     });
+    const headText = renderHeadroom(document.getElementById("headroom"), data.percent);
     document.getElementById("updated").textContent = formatUpdated(data.updated);
     document.getElementById("resetAt").textContent = formatReset(data.resetAt);
     const cd = document.getElementById("countdown");
@@ -218,7 +262,7 @@ footer{text-align:center;color:var(--muted);font-size:.75rem;line-height:1.55;pa
     requestAnimationFrame(() => {
       bar.style.strokeDashoffset = String(CIRC * (1 - used / 100));
     });
-    document.getElementById("gaugeFig").setAttribute("aria-label", "本週已用 " + pct + "%，" + label);
+    document.getElementById("gaugeFig").setAttribute("aria-label", "本週已用 " + pct + "%，" + label + (headText ? "，" + headText : ""));
 
     const hist = Array.isArray(data.history) ? data.history.slice() : [];
     const wrap = document.getElementById("historyWrap");
@@ -261,6 +305,8 @@ footer{text-align:center;color:var(--muted);font-size:.75rem;line-height:1.55;pa
     .catch(() => {
       document.getElementById("rule").textContent = "資料暫時無法載入，請稍後再試。";
       document.getElementById("lvl").textContent = "—";
+      const hr = document.getElementById("headroom");
+      if (hr) { hr.textContent = ""; hr.className = "headroom"; }
     });
 
   if (location.protocol === "https:" && "serviceWorker" in navigator){
