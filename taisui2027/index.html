@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant-TW">
 <head>
+<script src="../wuji-util.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="2027 丁未羊年免費犯太歲查詢：輸入出生年即可查屬羊／牛／狗／鼠是否犯太歲，也可查日主天干。支援民俗與立春算法、全家一起查、下載安太歲行事曆。">
@@ -88,7 +89,7 @@ hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
     <h2 style="margin:0 0 .5rem;font-size:1.1rem">查詢結果</h2>
     <div id="resultBox"></div>
     <button class="btn secondary" id="btnIcs" type="button">下載 2027 安太歲行事曆（.ics）</button>
-    <a class="btn gold" href="https://payhip.com/b/WAJsu" target="_blank" rel="noopener" data-goatcounter-click="event/cta-payhip-taisui-result" data-goatcounter-title="犯太歲結果CTA">買完整白話行動卡 PDF（四肖合集・USD 1.99）</a>
+    <a class="btn gold" href="https://payhip.com/b/WAJsu" target="_blank" rel="noopener" data-goatcounter-bound="true" data-goatcounter-click="event/cta-payhip-taisui-result" data-goatcounter-title="犯太歲結果CTA">買完整白話行動卡 PDF（四肖合集・USD 1.99）</a>
   </section>
 
   <section class="card" id="tianganCard">
@@ -100,8 +101,8 @@ hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
     <button class="btn" id="btnTiangan" type="button" style="margin-top:.9rem">查日主</button>
     <div id="tgResult" style="margin-top:.75rem"></div>
     <p class="cta-note">查到日主後，看你那一型的 2027 財運行動卡（10 型合集 42 頁）</p>
-    <a class="btn gold" href="https://payhip.com/b/vpuyD" target="_blank" rel="noopener" data-goatcounter-click="event/cta-payhip-tiangan" data-goatcounter-title="天干卡CTA">買 2027 十天干財運行動卡（USD 2.99）</a>
-    <a class="btn secondary" href="https://payhip.com/b/WAJsu" target="_blank" rel="noopener" data-goatcounter-click="event/cta-payhip-taisui-tg" data-goatcounter-title="天干區犯太歲CTA">犯太歲行動卡（USD 1.99）</a>
+    <a class="btn gold" href="https://payhip.com/b/vpuyD" target="_blank" rel="noopener" data-goatcounter-bound="true" data-goatcounter-click="event/cta-payhip-tiangan" data-goatcounter-title="天干卡CTA">買 2027 十天干財運行動卡（USD 2.99）</a>
+    <a class="btn secondary" href="https://payhip.com/b/WAJsu" target="_blank" rel="noopener" data-goatcounter-bound="true" data-goatcounter-click="event/cta-payhip-taisui-tg" data-goatcounter-title="天干區犯太歲CTA">犯太歲行動卡（USD 1.99）</a>
     <p class="hint">僅供參考、不保證功效</p>
   </section>
 
@@ -588,17 +589,15 @@ function tipLine(gan, zhi){
 }
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
+let tianganTrackKey='';
+let tianganTrackAt=0;
 function trackTiangan(){
-  const fire=()=>{try{const g=window.goatcounter;if(g&&typeof g.count==='function'){g.count({path:'event/tiangan-lookup',event:true});return true;}}catch(e){}return false;};
-  if(fire())return;
-  if(!window._gcq)window._gcq=[];
-  window._gcq.push(fire);
-  if(!window._gcqT){
-    window._gcqT=setInterval(()=>{
-      for(let i=(window._gcq||[]).length-1;i>=0;i--){if(window._gcq[i]&&window._gcq[i]())window._gcq.splice(i,1);}
-      if(!(window._gcq&&window._gcq.length)){clearInterval(window._gcqT);window._gcqT=0;}
-    },400);
-  }
+  const key=document.getElementById('tgDate').value+'|'+(document.getElementById('tgLate').checked?'1':'0');
+  const now=Date.now();
+  if(key===tianganTrackKey && now-tianganTrackAt<300)return;
+  tianganTrackKey=key;
+  tianganTrackAt=now;
+  if(typeof window.wujiTrack==='function')window.wujiTrack('tiangan-lookup',{dedupeKey:'tiangan-'+now+'-'+key});
 }
 
 function shareUrl(){
