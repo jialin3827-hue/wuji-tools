@@ -1,2 +1,3 @@
 __pycache__/
 warehouse/config.local.json
+tests/node_modules/
