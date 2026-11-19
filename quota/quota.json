@@ -1,10 +1,10 @@
 {
-  "percent": 95.1,
-  "level": "red",
-  "levelLabel": "紅燈",
-  "updated": "2026-11-19",
-  "resetAt": "2026-11-19T09:10:00+08:00",
-  "note": "停掉非必要排程；只保留賺錢線與必要通知",
+  "percent": 6.4,
+  "level": "green",
+  "levelLabel": "綠燈",
+  "updated": "2026-11-19 中午",
+  "resetAt": "2026-11-26T09:10:00+08:00",
+  "note": "正常運作，可放心做研究、巡網路、試新工具",
   "history": [
     {
       "updated": "2026-11-11",
@@ -89,6 +89,12 @@
       "percent": 95.1,
       "level": "red",
       "levelLabel": "紅燈"
+    },
+    {
+      "updated": "2026-11-19 中午",
+      "percent": 6.4,
+      "level": "green",
+      "levelLabel": "綠燈"
     }
   ]
 }
