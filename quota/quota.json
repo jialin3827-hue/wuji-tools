@@ -1,110 +1,14 @@
 {
-  "percent": 20.3,
+  "percent": 36,
   "level": "green",
   "levelLabel": "綠燈",
-  "updated": "2026-11-20 中午",
+  "updated": "2026-11-21",
   "resetAt": "2026-11-26T09:10:00+08:00",
   "note": "正常運作，可放心做研究、巡網路、試新工具",
   "history": [
     {
-      "updated": "2026-11-11",
-      "percent": 55.1,
-      "level": "green",
-      "levelLabel": "綠燈"
-    },
-    {
-      "updated": "2026-11-12",
-      "percent": 93.9,
-      "level": "red",
-      "levelLabel": "紅燈"
-    },
-    {
-      "updated": "2026-11-13",
-      "percent": 18.4,
-      "level": "green",
-      "levelLabel": "綠燈"
-    },
-    {
-      "updated": "2026-11-14",
-      "percent": 35.7,
-      "level": "green",
-      "levelLabel": "綠燈"
-    },
-    {
-      "updated": "2026-11-14 中午",
-      "percent": 36.7,
-      "level": "green",
-      "levelLabel": "綠燈"
-    },
-    {
-      "updated": "2026-11-15",
-      "percent": 41.8,
-      "level": "green",
-      "levelLabel": "綠燈"
-    },
-    {
-      "updated": "2026-11-15 中午",
-      "percent": 42,
-      "level": "green",
-      "levelLabel": "綠燈"
-    },
-    {
-      "updated": "2026-11-16",
-      "percent": 65,
-      "level": "yellow",
-      "levelLabel": "黃燈"
-    },
-    {
-      "updated": "2026-11-16 中午",
-      "percent": 69.8,
-      "level": "yellow",
-      "levelLabel": "黃燈"
-    },
-    {
-      "updated": "2026-11-17",
-      "percent": 76.5,
-      "level": "yellow",
-      "levelLabel": "黃燈"
-    },
-    {
-      "updated": "2026-11-17 中午",
-      "percent": 78.8,
-      "level": "yellow",
-      "levelLabel": "黃燈"
-    },
-    {
-      "updated": "2026-11-18",
-      "percent": 88.3,
-      "level": "red",
-      "levelLabel": "紅燈"
-    },
-    {
-      "updated": "2026-11-18 中午",
-      "percent": 89.6,
-      "level": "red",
-      "levelLabel": "紅燈"
-    },
-    {
-      "updated": "2026-11-19",
-      "percent": 95.1,
-      "level": "red",
-      "levelLabel": "紅燈"
-    },
-    {
-      "updated": "2026-11-19 中午",
-      "percent": 6.4,
-      "level": "green",
-      "levelLabel": "綠燈"
-    },
-    {
-      "updated": "2026-11-20",
-      "percent": 18.9,
-      "level": "green",
-      "levelLabel": "綠燈"
-    },
-    {
-      "updated": "2026-11-20 中午",
-      "percent": 20.3,
+      "updated": "2026-11-21",
+      "percent": 36,
       "level": "green",
       "levelLabel": "綠燈"
     }
