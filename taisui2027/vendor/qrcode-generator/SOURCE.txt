@@ -1,0 +1,9 @@
+Name: qrcode-generator
+Author: Kazuhiko Arase (Tokyo)
+License: MIT (see LICENSE)
+Upstream: https://github.com/kazuhikoarase/qrcode-generator
+Tag: js2.0.4
+Commit: 83b7e8fe3fddd3b0368dbafd6ce56995bd25e3c8
+File: js/dist/qrcode.js
+Vendored: 2026-11-22
+Notes: Downloaded from GitHub raw at the pinned commit. No CDN. Dev lock file (not vendored) resolves only to registry.npmjs.org / github.com. Not used as an installed package; this file is included as a classic browser script.

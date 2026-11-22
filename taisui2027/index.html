@@ -199,6 +199,7 @@ hr{border:0;border-top:2px solid var(--line);margin:1rem 0}
   </ul>
   <p><a href="../">← 回炭武吉工具</a></p>
 </footer>
+<script src="vendor/qrcode-generator/qrcode.js"></script>
 <script>
 (function(){
 const ZODIAC=['鼠','牛','虎','兔','龍','蛇','馬','羊','猴','雞','狗','豬'];
@@ -772,6 +773,7 @@ document.getElementById('tgLate').onchange=()=>{
 // export for tests
 
 const PAGE_URL='https://jialin3827-hue.github.io/wuji-tools/taisui2027/';
+const QR_URL=PAGE_URL+(PAGE_URL.indexOf('?')>=0?'&':'?')+'utm_source=family_card_qr';
 const MONTH_FOCUS={
   '值':'立春到元宵（2/4–2/20）是常見安太歲時段；未月（7/7–8/7）是太歲所在月，重要決定多問家人一次。',
   '沖':'立春到元宵先看宮廟公告；未月大筆支出能等就等，變動時先留餘裕。',
@@ -907,7 +909,7 @@ function drawFamilyCard(members){
     ctx.fillRect(x+18,stripeY,4,stripeH);
   }
 
-  const top=284, bottom=H-150;
+  const top=284, bottom=H-220;
   const gap=16;
   const n=members.length;
   const rowH=Math.floor((bottom-top-(n-1)*gap)/n);
@@ -962,16 +964,54 @@ function drawFamilyCard(members){
     }
   });
 
-  // footer watermark
-  ctx.textAlign='center';
+  // footer: studio + disclaimer on the left, query-page QR on the right
+  const qrBox=188;
+  const qrX=W-48-qrBox;
+  const qrY=H-20-qrBox;
+  drawQueryQr(ctx, qrX, qrY, qrBox, QR_URL);
+  ctx.textAlign='left';
+  ctx.textBaseline='alphabetic';
   ctx.fillStyle='#111';
   ctx.font='900 28px '+FONT;
-  ctx.fillText('炭武吉工作室', W/2, H-88);
+  ctx.fillText('炭武吉工作室', 48, H-148);
   ctx.fillStyle='#3a3a3a';
   ctx.font='700 22px '+FONT;
-  ctx.fillText(PAGE_URL, W/2, H-50);
+  const urlMax=qrX-24-48;
+  const urlLines=wrapText(ctx, PAGE_URL, urlMax);
+  urlLines.slice(0,2).forEach((ln,i)=>ctx.fillText(ln, 48, H-110+i*26));
+  ctx.font='700 20px '+FONT;
+  ctx.fillText('掃右方圖碼回查詢頁', 48, H-56);
   ctx.font='700 18px '+FONT;
-  ctx.fillText('屬文化與心靈參考', W/2, H-22);
+  ctx.fillText('屬文化與心靈參考', 48, H-24);
+}
+
+function drawQueryQr(ctx, x, y, size, text){
+  if(typeof qrcode!=='function'){
+    throw new Error('QR 產生器未載入');
+  }
+  const qr=qrcode(0, 'M');
+  qr.addData(text, 'Byte');
+  qr.make();
+  const n=qr.getModuleCount();
+  const quiet=4; // modules, ISO quiet zone
+  const total=n+quiet*2;
+  const cell=Math.floor(size/total);
+  if(cell<3){
+    throw new Error('QR 模組太小，無法可靠掃描');
+  }
+  const drawn=cell*total;
+  const ox=x+Math.floor((size-drawn)/2);
+  const oy=y+Math.floor((size-drawn)/2);
+  ctx.fillStyle='#fff';
+  ctx.fillRect(x, y, size, size);
+  ctx.fillStyle='#111';
+  for(let r=0;r<n;r++){
+    for(let c=0;c<n;c++){
+      if(qr.isDark(r,c)){
+        ctx.fillRect(ox+(c+quiet)*cell, oy+(r+quiet)*cell, cell, cell);
+      }
+    }
+  }
 }
 
 function canvasPngBlob(){
@@ -1016,7 +1056,7 @@ document.getElementById('btnMakeCard').onclick=()=>makeFamilyCard();
 document.getElementById('btnDownloadCard').onclick=()=>downloadFamilyCard();
 document.getElementById('btnShareCard').onclick=()=>shareFamilyCard();
 
-window.Taisui2027={branchIndex,offenses,analyzeYear,queryOne,labelOff,ZODIAC,TS,EXPLAIN,julianDay,dayPillarIndex,dayPillar,pillarFromIndex,isValidDate,CARDS,MONTH_TIPS,JIEQI_MONTHS,currentTipMeta,taipeiToday,GAN,ZHI,buildMember,drawFamilyCard,monthFocus,prefillCardMembers,readCardMembers,makeFamilyCard,PAGE_URL,MONTH_FOCUS};
+window.Taisui2027={branchIndex,offenses,analyzeYear,queryOne,labelOff,ZODIAC,TS,EXPLAIN,julianDay,dayPillarIndex,dayPillar,pillarFromIndex,isValidDate,CARDS,MONTH_TIPS,JIEQI_MONTHS,currentTipMeta,taipeiToday,GAN,ZHI,buildMember,drawFamilyCard,monthFocus,prefillCardMembers,readCardMembers,makeFamilyCard,PAGE_URL,QR_URL,drawQueryQr,MONTH_FOCUS};
 })();
 </script>
 <script data-goatcounter="https://wujitycoon.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
