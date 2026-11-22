@@ -141,11 +141,23 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   fi
   msg="quota: update $(python3 -c 'import json; d=json.load(open("quota/quota.json")); print(d["levelLabel"], str(d["percent"])+"%")') $(TZ=Asia/Taipei date +%F_%H%M)"
   git commit -m "$msg"
-  git fetch origin
-  if ! git rebase origin/main; then
-    echo "update.sh: rebase onto origin/main failed" >&2
-    exit 1
-  fi
-  git push origin HEAD
-  echo "git: committed and pushed: $msg"
+  # Sync with the remote copy of the CURRENT branch (other bots push here too), then push.
+  # Retry up to 3 times if another push lands in between.
+  branch="$(git rev-parse --abbrev-ref HEAD)"
+  for attempt in 1 2 3; do
+    git fetch origin "$branch"
+    if ! git rebase "origin/$branch"; then
+      git rebase --abort || true
+      echo "update.sh: rebase onto origin/$branch failed" >&2
+      exit 1
+    fi
+    if git push origin "HEAD:$branch"; then
+      echo "git: committed and pushed: $msg (attempt $attempt)"
+      exit 0
+    fi
+    echo "update.sh: push rejected (attempt $attempt), re-syncing" >&2
+    sleep 3
+  done
+  echo "update.sh: push failed after 3 attempts" >&2
+  exit 1
 fi
