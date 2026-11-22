@@ -7,50 +7,90 @@
 <meta name="description" content="2027 丁未羊年免費犯太歲查詢：輸入出生年即可查屬羊／牛／狗／鼠是否犯太歲，也可查日主天干。支援民俗與立春算法、全家一起查、下載安太歲行事曆。">
 <meta name="keywords" content="2027犯太歲,犯太歲查詢,屬羊,屬牛,屬狗,屬鼠,屬龍犯太歲,屬雞犯太歲,偏沖,安太歲,日主速查,天干,日柱">
 <title>2027 犯太歲查詢｜炭武吉工作室</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+
 <style>
-:root{--bg:#faf7f2;--card:#fff;--ink:#1a1a1a;--muted:#5c5c5c;--brand:#7a1f1f;--gold:#d4a017;--ok:#1b5e20;--warn:#9a3412;--line:#e8e0d4}
+:root{
+  --bg:#fff;--card:#fff;--ink:#111;--muted:#3a3a3a;--brand:#FF5A1F;--brand-ink:#111;
+  --link:#C43200;--line:#111;--warn:#9A2B00;--chip:#fff;
+  --font:"Noto Sans TC","Noto Sans CJK TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
-header{background:linear-gradient(160deg,#7a1f1f,#9b2c2c);color:#fff;padding:1.25rem 1rem 1.5rem}
-header h1{margin:0 0 .35rem;font-size:1.35rem}
-header p{margin:0;opacity:.92;font-size:.95rem}
+html,body{margin:0}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.5;font-weight:400}
+a{color:var(--link);text-underline-offset:.15em}
+a:hover{color:var(--ink)}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+header{background:#111;color:#fff;overflow:hidden}
+.ticker{background:#111;color:var(--brand);border-block:2px solid var(--brand);overflow:hidden;height:1.65rem;line-height:1.65rem;font-weight:900;font-size:.7rem;letter-spacing:.18em;white-space:nowrap}
+.ticker-track{display:inline-flex;width:max-content;animation:ticker 36s linear infinite}
+.ticker-track span{padding-right:1.5rem}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){
+  .ticker-track{animation:none}
+}
+.hero{max-width:720px;margin:0 auto;padding:.7rem 1rem .85rem}
+.hero .kicker{margin:0 0 .15rem;font-size:.8rem;font-weight:700;color:var(--brand);letter-spacing:.28em}
+header h1{margin:0;font-weight:900;font-size:clamp(2.6rem, 11vw, 5.2rem);line-height:.92;letter-spacing:-.04em;color:#fff}
+header h1 .sub{display:block;font-size:.38em;letter-spacing:.08em;font-weight:900;color:var(--brand);margin-top:.15rem}
+.lead{margin:.55rem 0 0;font-size:.92rem;font-weight:700;color:#fff;max-width:40rem;line-height:1.45}
+.hero-rule{height:6px;background:repeating-linear-gradient(90deg,var(--brand) 0 18px,#111 18px 22px)}
 main{max-width:720px;margin:0 auto;padding:1rem}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1rem;margin-bottom:1rem;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-label{display:block;font-weight:600;margin:.55rem 0 .25rem;font-size:.92rem}
-input[type=number],input[type=date],input[type=time],input[type=text],select,textarea{width:100%;padding:.65rem .75rem;border:1px solid #d6cbb8;border-radius:10px;font-size:1rem;background:#fff}
+h2{margin:0 0 .35rem;font-size:1.25rem;font-weight:900;letter-spacing:-.02em;line-height:1.2}
+.card{background:var(--card);border:2px solid var(--line);border-radius:2px;padding:1rem;margin-bottom:1rem}
+label{display:block;font-weight:900;margin:.55rem 0 .25rem;font-size:.92rem;letter-spacing:.02em}
+input[type=number],input[type=date],input[type=time],input[type=text],select,textarea{
+  width:100%;padding:.65rem .75rem;border:2px solid #111;border-radius:2px;font-size:1rem;background:#fff;color:#111;font-family:inherit;font-weight:700
+}
+input:focus,select:focus,textarea:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 2px var(--brand)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
 @media(max-width:520px){.row{grid-template-columns:1fr}}
 .seg{display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0 .8rem}
-.seg button{flex:1;min-width:8rem;padding:.6rem .7rem;border-radius:999px;border:1px solid #d6cbb8;background:#fff;font-size:.92rem;cursor:pointer}
-.seg button.active{background:var(--brand);color:#fff;border-color:var(--brand)}
-.btn{display:inline-block;width:100%;padding:.85rem 1rem;border:0;border-radius:12px;background:var(--brand);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;text-align:center;text-decoration:none}
-.btn.secondary{background:#fff;color:var(--brand);border:1.5px solid var(--brand);margin-top:.55rem}
-.btn.gold{background:var(--gold);color:#1a1a1a;margin-top:.55rem}
-.hint{font-size:.85rem;color:var(--muted);margin:.35rem 0 0}
-.result{border-left:4px solid var(--gold);padding:.75rem .9rem;background:#fff8e7;border-radius:0 10px 10px 0;margin:.6rem 0}
-.result.hit{border-left-color:var(--brand);background:#fff1f0}
-.result.ok{border-left-color:var(--ok);background:#f0fdf4}
-.result h3{margin:0 0 .35rem;font-size:1.05rem}
-.badge{display:inline-block;padding:.15rem .55rem;border-radius:999px;font-size:.78rem;font-weight:700;margin-right:.25rem}
-.badge.hit{background:#7a1f1f;color:#fff}
-.badge.ok{background:#1b5e20;color:#fff}
-.badge.info{background:#334155;color:#fff}
+.seg button{
+  appearance:none;flex:1;min-width:8rem;padding:.6rem .7rem;border-radius:2px;border:2px solid #111;
+  background:#fff;font-size:.92rem;font-weight:700;cursor:pointer;color:#111;font-family:inherit
+}
+.seg button:hover{background:#111;color:var(--brand)}
+.seg button.active{background:var(--brand);border-color:#111;color:#111;font-weight:900}
+.btn{
+  appearance:none;display:inline-block;width:100%;padding:.85rem 1rem;border:2px solid #111;border-radius:2px;
+  background:var(--brand);color:#111;font-size:1rem;font-weight:900;cursor:pointer;text-align:center;
+  text-decoration:none;font-family:inherit
+}
+.btn:hover{background:#111;color:var(--brand)}
+.btn.secondary{background:#fff;color:#111;margin-top:.55rem}
+.btn.secondary:hover{background:#111;color:var(--brand)}
+.btn.gold{background:var(--brand);color:#111;margin-top:.55rem;font-weight:900}
+.btn.gold:hover{background:#111;color:var(--brand)}
+.hint{font-size:.85rem;color:var(--muted);margin:.35rem 0 0;font-weight:700}
+.result{border:2px solid #111;border-left:8px solid var(--brand);padding:.75rem .9rem;background:#fff;border-radius:2px;margin:.6rem 0}
+.result.hit{border-left-color:var(--brand);background:#fff}
+.result.ok{border-left-color:#111;background:#fff}
+.result h3{margin:0 0 .35rem;font-size:1.2rem;font-weight:900;letter-spacing:-.02em}
+.badge{display:inline-block;padding:.15rem .55rem;border-radius:2px;font-size:.78rem;font-weight:900;margin-right:.25rem;letter-spacing:.04em;border:2px solid #111}
+.badge.hit{background:var(--brand);color:#111}
+.badge.ok{background:#111;color:#fff}
+.badge.info{background:#fff;color:#111}
 .family-list{display:flex;flex-direction:column;gap:.5rem}
 .family-item{display:grid;grid-template-columns:1fr 1.2fr auto;gap:.4rem;align-items:end}
 @media(max-width:520px){.family-item{grid-template-columns:1fr 1fr}.family-item button.fr{grid-column:1/-1}}
-.family-item button{padding:.55rem .7rem;border-radius:10px;border:1px solid #d6cbb8;background:#faf7f2;cursor:pointer}
-footer{max-width:720px;margin:0 auto;padding:0 1rem 2rem;color:var(--muted);font-size:.8rem}
-footer a{color:var(--brand)}
+.family-item button{padding:.55rem .7rem;border-radius:2px;border:2px solid #111;background:#fff;color:#111;cursor:pointer;font-weight:700;font-family:inherit}
+.family-item button:hover{background:#111;color:var(--brand)}
+footer{max-width:720px;margin:0 auto;padding:0 1rem 2rem;color:var(--muted);font-size:.82rem;font-weight:700}
+footer a{color:var(--link);font-weight:900}
+footer a:hover{color:var(--ink)}
 .sources{margin-top:.6rem}
 .sources li{margin-bottom:.25rem}
-.note{font-size:.85rem;color:var(--muted)}
-hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
-.chk{font-weight:500;margin:.7rem 0 0;display:flex;align-items:flex-start;gap:.5rem;cursor:pointer}
+.note{font-size:.85rem;color:var(--muted);font-weight:700}
+hr{border:0;border-top:2px solid var(--line);margin:1rem 0}
+.chk{font-weight:700;margin:.7rem 0 0;display:flex;align-items:flex-start;gap:.5rem;cursor:pointer}
 .chk input{width:auto;margin-top:.2rem;flex:none;accent-color:var(--brand)}
-.cta-note{font-size:.95rem;font-weight:700;margin:.9rem 0 .35rem}
-.cta-buy{display:block;width:100%;padding:1rem 1rem;border:0;border-radius:12px;background:var(--gold);color:#1a1a1a;font-size:1.08rem;font-weight:800;letter-spacing:.02em;cursor:pointer;text-align:center;text-decoration:none;margin-top:.7rem;box-shadow:0 2px 0 #b8860b}
-.cta-buy:hover{filter:brightness(1.05)}
-.card-preview{display:block;width:100%;max-width:540px;margin:.75rem auto 0;border-radius:12px;border:1px solid var(--line);background:#fff;height:auto}
+.cta-note{font-size:.95rem;font-weight:900;margin:.9rem 0 .35rem}
+.cta-buy{display:block;width:100%;padding:1rem 1rem;border:2px solid #111;border-radius:2px;background:var(--brand);color:#111;font-size:1.08rem;font-weight:900;letter-spacing:.02em;cursor:pointer;text-align:center;text-decoration:none;margin-top:.7rem;box-shadow:none;font-family:inherit}
+.cta-buy:hover{background:#111;color:var(--brand);filter:none}
+.card-preview{display:block;width:100%;max-width:540px;margin:.75rem auto 0;border-radius:2px;border:2px solid var(--line);background:#fff;height:auto}
 .card-actions{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.55rem}
 @media(max-width:520px){.card-actions{grid-template-columns:1fr}}
 #familyCardBox{margin-top:.75rem}
@@ -58,8 +98,13 @@ hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
 </head>
 <body>
 <header>
-  <h1>2027 犯太歲查詢</h1>
-  <p>丁未羊年・免費・規則公開・全家一起查</p>
+  <div class="ticker" aria-hidden="true"><div class="ticker-track"><span>2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　</span><span>2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　</span></div></div>
+  <div class="hero">
+    <p class="kicker">丁未羊年 · 免費</p>
+    <h1>2027<span class="sub">犯太歲查詢</span></h1>
+    <p class="lead">規則公開・全家一起查</p>
+  </div>
+  <div class="hero-rule" aria-hidden="true"></div>
 </header>
 <main>
   <section class="card">
@@ -92,14 +137,14 @@ hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
   </section>
 
   <section class="card" id="resultCard" hidden>
-    <h2 style="margin:0 0 .5rem;font-size:1.1rem">查詢結果</h2>
+    <h2 style="margin:0 0 .5rem">查詢結果</h2>
     <div id="resultBox"></div>
     <a class="btn gold cta-buy" id="ctaResult" href="https://payhip.com/b/WAJsu?utm_source=taisui2027&utm_medium=query_page&utm_campaign=family_card_2027&utm_content=result_cta" target="_blank" rel="noopener" data-goatcounter-bound="true" data-goatcounter-click="event/cta-payhip-taisui-result" data-goatcounter-title="犯太歲結果CTA">幫全家一次查好 2027 行動卡</a>
     <button class="btn secondary" id="btnIcs" type="button">下載 2027 安太歲行事曆（.ics）</button>
   </section>
 
   <section class="card" id="tianganCard">
-    <h2 style="margin:0 0 .35rem;font-size:1.1rem">日主速查</h2>
+    <h2 style="margin:0 0 .35rem">日主速查</h2>
     <p class="hint">輸入國曆生日，查出你的日主天干。晚上 11 點後出生的人，有的老師會提早換日，結果會一併列出。</p>
     <label for="tgDate">國曆生日</label>
     <input id="tgDate" type="date" min="1900-01-01" max="2100-12-31">
@@ -113,7 +158,7 @@ hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
   </section>
 
   <section class="card">
-    <h2 style="margin:0 0 .35rem;font-size:1.1rem">全家一起查</h2>
+    <h2 style="margin:0 0 .35rem">全家一起查</h2>
     <p class="hint">一次輸入多個出生年，適合家人一起看。</p>
     <div class="family-list" id="familyList"></div>
     <button class="btn secondary" id="btnAddFamily" type="button">＋ 再加一人</button>
@@ -122,7 +167,7 @@ hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
   </section>
 
   <section class="card" id="familyCardSection" data-gc-section="family-card">
-    <h2 style="margin:0 0 .35rem;font-size:1.1rem">全家太歲圖卡產生器</h2>
+    <h2 style="margin:0 0 .35rem">全家太歲圖卡產生器</h2>
     <p class="hint">輸入最多 6 位家人的稱呼和生肖，產生「我們家 2027 誰要注意」圖卡，可下載或傳到家族群組。免費版只顯示誰犯太歲，以及要注意的月份大方向。</p>
     <div id="cardMembers" class="family-list"></div>
     <button class="btn secondary" id="btnAddMember" type="button">＋ 再加一人</button>
@@ -138,7 +183,7 @@ hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
   </section>
 
   <section class="card">
-    <h2 style="margin:0 0 .35rem;font-size:1.1rem">2027 怎麼看？</h2>
+    <h2 style="margin:0 0 .35rem">2027 怎麼看？</h2>
     <p class="note">2027 太歲在「未」（羊）。屬<strong>羊</strong>（值）、<strong>牛</strong>（沖兼刑）、<strong>狗</strong>（刑兼破）、<strong>鼠</strong>（害）民間叫犯太歲。算法公開：地支 = (年−4) mod 12。</p>
     <p class="note">立春換入丁未：2027/2/4 09:46（台灣時間）；民俗正月初一：2027/2/6。安太歲常見日：2027/2/14；謝太歲常見日：2028/1/20。以你去的宮廟公告為準。</p>
   </section>
@@ -833,85 +878,99 @@ function drawFamilyCard(members){
   const canvas=document.getElementById('familyCardCanvas');
   const ctx=canvas.getContext('2d');
   const W=1080,H=1080;
+  const FONT='"Noto Sans TC","Noto Sans CJK TC","PingFang TC","Microsoft JhengHei",sans-serif';
   canvas.width=W; canvas.height=H;
-  ctx.fillStyle='#faf7f2';
-  ctx.fillRect(0,0,W,H);
-  // header
-  const grd=ctx.createLinearGradient(0,0,W,220);
-  grd.addColorStop(0,'#7a1f1f');
-  grd.addColorStop(1,'#9b2c2c');
-  ctx.fillStyle=grd;
-  ctx.fillRect(0,0,W,220);
-  ctx.fillStyle='#d4a017';
-  ctx.fillRect(0,220,W,8);
   ctx.fillStyle='#fff';
+  ctx.fillRect(0,0,W,H);
+  // header: black + orange kicker, no gradient, no gold bar
+  ctx.fillStyle='#111';
+  ctx.fillRect(0,0,W,248);
+  ctx.fillStyle='#FF5A1F';
+  ctx.fillRect(0,0,W,10);
   ctx.textAlign='center';
   ctx.textBaseline='alphabetic';
-  ctx.font='700 64px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
-  ctx.fillText('我們家 2027 誰要注意', W/2, 115);
-  ctx.font='400 28px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
-  ctx.globalAlpha=.92;
-  ctx.fillText('丁未羊年｜民俗整理，給家人看的一張圖', W/2, 170);
-  ctx.globalAlpha=1;
+  ctx.fillStyle='#FF5A1F';
+  ctx.font='700 28px '+FONT;
+  ctx.fillText('丁未羊年｜民俗整理，給家人看的一張圖', W/2, 64);
+  ctx.fillStyle='#fff';
+  ctx.font='900 92px '+FONT;
+  ctx.fillText('我們家 2027', W/2, 160);
+  ctx.fillStyle='#FF5A1F';
+  ctx.font='900 48px '+FONT;
+  ctx.fillText('誰要注意', W/2, 218);
+  // striped rule, same rhythm as food100 hero-rule
+  const stripeH=12, stripeY=248;
+  for(let x=0;x<W;x+=22){
+    ctx.fillStyle='#FF5A1F';
+    ctx.fillRect(x,stripeY,18,stripeH);
+    ctx.fillStyle='#111';
+    ctx.fillRect(x+18,stripeY,4,stripeH);
+  }
 
-  const top=260, bottom=H-150;
+  const top=284, bottom=H-150;
   const gap=16;
   const n=members.length;
   const rowH=Math.floor((bottom-top-(n-1)*gap)/n);
   members.forEach((m,i)=>{
     const y=top+i*(rowH+gap);
     const hit=m.offenses.length>0;
-    ctx.fillStyle=hit?'#fff1f0':'#f0fdf4';
-    roundedRect(ctx,48,y,W-96,rowH,22);
+    ctx.fillStyle='#fff';
+    roundedRect(ctx,48,y,W-96,rowH,2);
     ctx.fill();
-    ctx.strokeStyle=hit?'#7a1f1f':'#1b5e20';
-    ctx.lineWidth=3;
+    ctx.strokeStyle='#111';
+    ctx.lineWidth=4;
     ctx.stroke();
+    if(hit){
+      ctx.fillStyle='#FF5A1F';
+      ctx.fillRect(48,y,10,rowH);
+    }
     ctx.textAlign='left';
-    ctx.fillStyle='#1a1a1a';
-    const titleSize=Math.min(40, Math.max(30, Math.floor(rowH*0.28)));
-    ctx.font=`700 ${titleSize}px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`;
+    ctx.fillStyle='#111';
+    const titleSize=Math.min(48, Math.max(32, Math.floor(rowH*0.32)));
+    ctx.font=`900 ${titleSize}px ${FONT}`;
     const label=hit?m.label:'未犯太歲';
-    ctx.fillText(`${m.name}　屬${m.zodiac}`, 80, y+Math.min(58, rowH*0.42));
-    // badge
+    ctx.fillText(`${m.name}　屬${m.zodiac}`, 80, y+Math.min(62, rowH*0.42));
     const badge=label;
-    ctx.font=`700 ${Math.min(26,titleSize-8)}px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`;
+    ctx.font=`900 ${Math.min(26,titleSize-8)}px ${FONT}`;
     const bw=ctx.measureText(badge).width+28;
     const bx=W-80-bw;
     const by=y+18;
     const bh=Math.min(44, rowH*0.32);
-    ctx.fillStyle=hit?'#7a1f1f':'#1b5e20';
-    roundedRect(ctx,bx,by,bw,bh,20);
+    ctx.fillStyle=hit?'#FF5A1F':'#111';
+    roundedRect(ctx,bx,by,bw,bh,2);
     ctx.fill();
-    ctx.fillStyle='#fff';
+    ctx.strokeStyle='#111';
+    ctx.lineWidth=2;
+    ctx.stroke();
+    ctx.fillStyle=hit?'#111':'#fff';
     ctx.textAlign='center';
     ctx.textBaseline='middle';
     ctx.fillText(badge, bx+bw/2, by+bh/2);
     ctx.textBaseline='alphabetic';
     if(hit && m.focus && rowH>90){
       ctx.textAlign='left';
-      ctx.fillStyle='#5c5c5c';
+      ctx.fillStyle='#3a3a3a';
       const fs=Math.min(24, Math.max(20, Math.floor(rowH*0.16)));
-      ctx.font=`400 ${fs}px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`;
+      ctx.font=`700 ${fs}px ${FONT}`;
       const lines=wrapText(ctx, m.focus, W-180);
       lines.slice(0,3).forEach((ln,li)=>ctx.fillText(ln, 80, y+rowH-18-(lines.slice(0,3).length-1-li)*(fs+6)));
     } else if(!hit && rowH>90){
       ctx.textAlign='left';
-      ctx.fillStyle='#5c5c5c';
-      ctx.font='400 22px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+      ctx.fillStyle='#3a3a3a';
+      ctx.font='700 22px '+FONT;
       ctx.fillText('今年可當家裡的支援者，一起把該做的事提醒好。', 80, y+rowH-22);
     }
   });
 
   // footer watermark
   ctx.textAlign='center';
-  ctx.fillStyle='#7a1f1f';
-  ctx.font='600 28px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+  ctx.fillStyle='#111';
+  ctx.font='900 28px '+FONT;
   ctx.fillText('炭武吉工作室', W/2, H-88);
-  ctx.fillStyle='#8a7a68';
-  ctx.font='400 22px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+  ctx.fillStyle='#3a3a3a';
+  ctx.font='700 22px '+FONT;
   ctx.fillText(PAGE_URL, W/2, H-50);
-  ctx.font='400 18px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+  ctx.font='700 18px '+FONT;
   ctx.fillText('屬文化與心靈參考', W/2, H-22);
 }
 
@@ -940,9 +999,10 @@ async function shareFamilyCard(){
   }
   await downloadFamilyCard();
 }
-function makeFamilyCard(){
+async function makeFamilyCard(){
   const res=readCardMembers();
   if(res.error){ alert(res.error); return false; }
+  try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){}
   drawFamilyCard(res.list);
   const box=document.getElementById('familyCardBox');
   box.hidden=false;
