@@ -1,10 +1,10 @@
 {
-  "percent": 40.4,
-  "level": "green",
-  "levelLabel": "綠燈",
-  "updated": "2026-11-22",
+  "percent": 71.4,
+  "level": "yellow",
+  "levelLabel": "黃燈",
+  "updated": "2026-11-22 中午",
   "resetAt": "2026-11-26T09:10:00+08:00",
-  "note": "正常運作，可放心做研究、巡網路、試新工具",
+  "note": "只做賺錢線與重大消息；暫停一般研究與探索",
   "history": [
     {
       "updated": "2026-11-11",
@@ -125,6 +125,12 @@
       "percent": 40.4,
       "level": "green",
       "levelLabel": "綠燈"
+    },
+    {
+      "updated": "2026-11-22 中午",
+      "percent": 71.4,
+      "level": "yellow",
+      "levelLabel": "黃燈"
     }
   ]
 }
