@@ -48,6 +48,12 @@ hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
 .chk{font-weight:500;margin:.7rem 0 0;display:flex;align-items:flex-start;gap:.5rem;cursor:pointer}
 .chk input{width:auto;margin-top:.2rem;flex:none;accent-color:var(--brand)}
 .cta-note{font-size:.95rem;font-weight:700;margin:.9rem 0 .35rem}
+.cta-buy{display:block;width:100%;padding:1rem 1rem;border:0;border-radius:12px;background:var(--gold);color:#1a1a1a;font-size:1.08rem;font-weight:800;letter-spacing:.02em;cursor:pointer;text-align:center;text-decoration:none;margin-top:.7rem;box-shadow:0 2px 0 #b8860b}
+.cta-buy:hover{filter:brightness(1.05)}
+.card-preview{display:block;width:100%;max-width:540px;margin:.75rem auto 0;border-radius:12px;border:1px solid var(--line);background:#fff;height:auto}
+.card-actions{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.55rem}
+@media(max-width:520px){.card-actions{grid-template-columns:1fr}}
+#familyCardBox{margin-top:.75rem}
 </style>
 </head>
 <body>
@@ -88,8 +94,8 @@ hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
   <section class="card" id="resultCard" hidden>
     <h2 style="margin:0 0 .5rem;font-size:1.1rem">查詢結果</h2>
     <div id="resultBox"></div>
+    <a class="btn gold cta-buy" id="ctaResult" href="https://payhip.com/b/WAJsu?utm_source=taisui2027&utm_medium=query_page&utm_campaign=family_card_2027&utm_content=result_cta" target="_blank" rel="noopener" data-goatcounter-bound="true" data-goatcounter-click="event/cta-payhip-taisui-result" data-goatcounter-title="犯太歲結果CTA">幫全家一次查好 2027 行動卡</a>
     <button class="btn secondary" id="btnIcs" type="button">下載 2027 安太歲行事曆（.ics）</button>
-    <a class="btn gold" href="https://payhip.com/b/WAJsu" target="_blank" rel="noopener" data-goatcounter-bound="true" data-goatcounter-click="event/cta-payhip-taisui-result" data-goatcounter-title="犯太歲結果CTA">買完整白話行動卡 PDF（四肖合集・USD 1.99）</a>
   </section>
 
   <section class="card" id="tianganCard">
@@ -115,6 +121,22 @@ hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
     <div id="familyResult" style="margin-top:.75rem"></div>
   </section>
 
+  <section class="card" id="familyCardSection" data-gc-section="family-card">
+    <h2 style="margin:0 0 .35rem;font-size:1.1rem">全家太歲圖卡產生器</h2>
+    <p class="hint">輸入最多 6 位家人的稱呼和生肖，產生「我們家 2027 誰要注意」圖卡，可下載或傳到家族群組。免費版只顯示誰犯太歲，以及要注意的月份大方向。</p>
+    <div id="cardMembers" class="family-list"></div>
+    <button class="btn secondary" id="btnAddMember" type="button">＋ 再加一人</button>
+    <button class="btn" id="btnMakeCard" type="button" style="margin-top:.55rem">產生圖卡</button>
+    <div id="familyCardBox" hidden>
+      <canvas id="familyCardCanvas" width="1080" height="1080" class="card-preview" aria-label="我們家 2027 誰要注意"></canvas>
+      <div class="card-actions">
+        <button class="btn secondary" id="btnDownloadCard" type="button">下載圖卡</button>
+        <button class="btn secondary" id="btnShareCard" type="button">分享到手機</button>
+      </div>
+      <a class="btn gold cta-buy" id="ctaFamilyCard" href="https://payhip.com/b/WAJsu?utm_source=taisui2027&utm_medium=query_page&utm_campaign=family_card_2027&utm_content=family_card_cta" target="_blank" rel="noopener" data-goatcounter-bound="true" data-goatcounter-click="event/cta-payhip-family-card" data-goatcounter-title="圖卡下購買CTA">幫全家一次查好 2027 行動卡</a>
+    </div>
+  </section>
+
   <section class="card">
     <h2 style="margin:0 0 .35rem;font-size:1.1rem">2027 怎麼看？</h2>
     <p class="note">2027 太歲在「未」（羊）。屬<strong>羊</strong>（值）、<strong>牛</strong>（沖兼刑）、<strong>狗</strong>（刑兼破）、<strong>鼠</strong>（害）民間叫犯太歲。算法公開：地支 = (年−4) mod 12。</p>
@@ -122,7 +144,7 @@ hr{border:0;border-top:1px solid var(--line);margin:1rem 0}
   </section>
 </main>
 <footer>
-  <p>炭武吉工作室｜內容僅供參考與心安提醒，不保證任何效果。不是命理保證，也不能取代醫療、法律或財務專業意見。</p>
+  <p>炭武吉工作室｜屬文化與心靈參考，非投資或醫療建議。內容僅供參考與心安提醒，不保證任何效果。不是命理保證，也不能取代醫療、法律或財務專業意見。</p>
   <p class="sources">資料來源（查詢規則）：</p>
   <ul class="sources">
     <li><a href="https://minglimr.com/liunian" target="_blank" rel="noopener">命理先生｜2027 流年</a></li>
@@ -317,6 +339,9 @@ document.getElementById('btnQuery').onclick=()=>{
   box.innerHTML=renderQuery(q);
   document.getElementById('resultCard').hidden=false;
   document.getElementById('resultCard').scrollIntoView({behavior:'smooth',block:'start'});
+  const a=preferredAnalysis(q);
+  if(a) prefillCardMembers([{name:'我', zodiac:a.zodiac}]);
+  trackEvent('taisui-query','犯太歲查詢送出','taisui-query');
 };
 
 function icsEscape(s){return String(s).replace(/[\\;,\n]/g,m=>({'\\':'\\\\',';':'\\;',',':'\\,', '\n':'\\n'}[m]));}
@@ -376,6 +401,17 @@ document.getElementById('btnFamilyQuery').onclick=()=>{
     html+=`<div style="margin-bottom:.4rem"><b>${name}</b></div>`+renderAnalysis(a, mode==='folk'?'民俗算法':'八字算法', null);
   });
   document.getElementById('familyResult').innerHTML=html||'<p class="note">請至少填一個出生年</p>';
+  const filled=[];
+  rows.forEach(r=>{
+    const name=r.querySelector('.fn').value.trim()||'未命名';
+    const y=parseInt(r.querySelector('.fy').value,10);
+    if(!y) return;
+    const q=queryOne(y,'','',mode);
+    const a=preferredAnalysis(q);
+    if(a) filled.push({name, zodiac:a.zodiac});
+  });
+  if(filled.length) prefillCardMembers(filled);
+  if(filled.length) trackEvent('taisui-query','全家一起查送出','taisui-query');
 };
 
 // 日主速查：與 charms/rizhu-lookup/rizhu.js 同一套 JDN 公式
@@ -689,7 +725,238 @@ document.getElementById('tgLate').onchange=()=>{
 })();
 
 // export for tests
-window.Taisui2027={branchIndex,offenses,analyzeYear,queryOne,labelOff,ZODIAC,TS,EXPLAIN,julianDay,dayPillarIndex,dayPillar,pillarFromIndex,isValidDate,CARDS,MONTH_TIPS,JIEQI_MONTHS,currentTipMeta,taipeiToday,GAN,ZHI};
+
+const PAGE_URL='https://jialin3827-hue.github.io/wuji-tools/taisui2027/';
+const MONTH_FOCUS={
+  '值':'立春到元宵（2/4–2/20）是常見安太歲時段；未月（7/7–8/7）是太歲所在月，重要決定多問家人一次。',
+  '沖':'立春到元宵先看宮廟公告；未月大筆支出能等就等，變動時先留餘裕。',
+  '刑':'立春到元宵先看宮廟公告；未月簽名、轉帳前多看一次，約定寫下來。',
+  '破':'立春到元宵先看宮廟公告；未月簽名、轉帳前多看一次，事情分段完成。',
+  '害':'立春到元宵先看宮廟公告；未月把界線講清楚，少攬不屬於自己的事。'
+};
+function trackEvent(name,title,key){
+  if(typeof window.wujiTrack==='function') window.wujiTrack(name,{title:title,dedupeKey:key||name});
+}
+function preferredAnalysis(q){
+  if(!q) return null;
+  if(mode==='folk') return q.folkA;
+  return q.liA || (q.liAlt && q.liAlt.after) || q.folkA;
+}
+function monthFocus(offs){
+  const seen=new Set();
+  const lines=[];
+  for(const o of offs||[]){
+    const t=MONTH_FOCUS[o];
+    if(t && !seen.has(t)){ seen.add(t); lines.push(t); }
+  }
+  return lines[0]||'';
+}
+function buildMember(m){
+  const idx=ZODIAC.indexOf(m.zodiac);
+  if(idx<0) return null;
+  const offs=offenses(idx);
+  return {name:m.name||'未命名', zodiac:m.zodiac, idx, branch:BRANCH[idx], offenses:offs, label:labelOff(offs), focus:monthFocus(offs)};
+}
+const cardMembers=document.getElementById('cardMembers');
+function zodiacOptions(selected){
+  return ZODIAC.map(z=>`<option value="${z}"${z===selected?' selected':''}>屬${z}</option>`).join('');
+}
+function addCardRow(prefill){
+  if(cardMembers.querySelectorAll('.member-item').length>=6) return;
+  const div=document.createElement('div');
+  div.className='family-item member-item';
+  const name=prefill && prefill.name ? String(prefill.name).replace(/"/g,'') : '';
+  const z=prefill && prefill.zodiac && ZODIAC.includes(prefill.zodiac) ? prefill.zodiac : '';
+  div.innerHTML=`<div><label>稱呼</label><input type="text" class="cn" maxlength="8" placeholder="例如：爸" value="${name}"></div>
+    <div><label>生肖</label><select class="cz"><option value="">請選擇</option>${zodiacOptions(z)}</select></div>
+    <div><button type="button" class="fr">移除</button></div>`;
+  div.querySelector('.fr').onclick=()=>{div.remove(); syncAddMember();};
+  cardMembers.appendChild(div);
+  syncAddMember();
+}
+function syncAddMember(){
+  const n=cardMembers.querySelectorAll('.member-item').length;
+  document.getElementById('btnAddMember').disabled=n>=6;
+}
+function readCardMembers(){
+  const rows=[...cardMembers.querySelectorAll('.member-item')];
+  const list=[];
+  for(const r of rows){
+    const name=r.querySelector('.cn').value.trim();
+    const zodiac=r.querySelector('.cz').value;
+    if(!name && !zodiac) continue;
+    if(!zodiac) return {error:'請為每位家人選擇生肖'};
+    list.push({name:name||'未命名', zodiac});
+  }
+  if(!list.length) return {error:'請至少輸入一位家人的稱呼和生肖'};
+  if(list.length>6) return {error:'最多 6 位家人'};
+  return {list:list.map(buildMember).filter(Boolean)};
+}
+function prefillCardMembers(people){
+  const uniq=[];
+  const seen=new Set();
+  for(const p of people||[]){
+    if(!p || !ZODIAC.includes(p.zodiac)) continue;
+    const key=(p.name||'我')+'|'+p.zodiac;
+    if(seen.has(key)) continue;
+    seen.add(key);
+    uniq.push({name:p.name||'我', zodiac:p.zodiac});
+    if(uniq.length>=6) break;
+  }
+  if(!uniq.length) return;
+  cardMembers.innerHTML='';
+  uniq.forEach(addCardRow);
+}
+function wrapText(ctx,text,maxWidth){
+  const chars=Array.from(String(text||''));
+  const lines=[];
+  let line='';
+  for(const ch of chars){
+    const test=line+ch;
+    if(line && ctx.measureText(test).width>maxWidth){ lines.push(line); line=ch; }
+    else line=test;
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+function roundedRect(ctx,x,y,w,h,r){
+  const rr=Math.min(r,w/2,h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+rr,y);
+  ctx.arcTo(x+w,y,x+w,y+h,rr);
+  ctx.arcTo(x+w,y+h,x,y+h,rr);
+  ctx.arcTo(x,y+h,x,y,rr);
+  ctx.arcTo(x,y,x+w,y,rr);
+  ctx.closePath();
+}
+function drawFamilyCard(members){
+  const canvas=document.getElementById('familyCardCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=1080,H=1080;
+  canvas.width=W; canvas.height=H;
+  ctx.fillStyle='#faf7f2';
+  ctx.fillRect(0,0,W,H);
+  // header
+  const grd=ctx.createLinearGradient(0,0,W,220);
+  grd.addColorStop(0,'#7a1f1f');
+  grd.addColorStop(1,'#9b2c2c');
+  ctx.fillStyle=grd;
+  ctx.fillRect(0,0,W,220);
+  ctx.fillStyle='#d4a017';
+  ctx.fillRect(0,220,W,8);
+  ctx.fillStyle='#fff';
+  ctx.textAlign='center';
+  ctx.textBaseline='alphabetic';
+  ctx.font='700 64px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+  ctx.fillText('我們家 2027 誰要注意', W/2, 115);
+  ctx.font='400 28px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+  ctx.globalAlpha=.92;
+  ctx.fillText('丁未羊年｜民俗整理，給家人看的一張圖', W/2, 170);
+  ctx.globalAlpha=1;
+
+  const top=260, bottom=H-150;
+  const gap=16;
+  const n=members.length;
+  const rowH=Math.floor((bottom-top-(n-1)*gap)/n);
+  members.forEach((m,i)=>{
+    const y=top+i*(rowH+gap);
+    const hit=m.offenses.length>0;
+    ctx.fillStyle=hit?'#fff1f0':'#f0fdf4';
+    roundedRect(ctx,48,y,W-96,rowH,22);
+    ctx.fill();
+    ctx.strokeStyle=hit?'#7a1f1f':'#1b5e20';
+    ctx.lineWidth=3;
+    ctx.stroke();
+    ctx.textAlign='left';
+    ctx.fillStyle='#1a1a1a';
+    const titleSize=Math.min(40, Math.max(30, Math.floor(rowH*0.28)));
+    ctx.font=`700 ${titleSize}px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`;
+    const label=hit?m.label:'未犯太歲';
+    ctx.fillText(`${m.name}　屬${m.zodiac}`, 80, y+Math.min(58, rowH*0.42));
+    // badge
+    const badge=label;
+    ctx.font=`700 ${Math.min(26,titleSize-8)}px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`;
+    const bw=ctx.measureText(badge).width+28;
+    const bx=W-80-bw;
+    const by=y+18;
+    const bh=Math.min(44, rowH*0.32);
+    ctx.fillStyle=hit?'#7a1f1f':'#1b5e20';
+    roundedRect(ctx,bx,by,bw,bh,20);
+    ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText(badge, bx+bw/2, by+bh/2);
+    ctx.textBaseline='alphabetic';
+    if(hit && m.focus && rowH>90){
+      ctx.textAlign='left';
+      ctx.fillStyle='#5c5c5c';
+      const fs=Math.min(24, Math.max(20, Math.floor(rowH*0.16)));
+      ctx.font=`400 ${fs}px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`;
+      const lines=wrapText(ctx, m.focus, W-180);
+      lines.slice(0,3).forEach((ln,li)=>ctx.fillText(ln, 80, y+rowH-18-(lines.slice(0,3).length-1-li)*(fs+6)));
+    } else if(!hit && rowH>90){
+      ctx.textAlign='left';
+      ctx.fillStyle='#5c5c5c';
+      ctx.font='400 22px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+      ctx.fillText('今年可當家裡的支援者，一起把該做的事提醒好。', 80, y+rowH-22);
+    }
+  });
+
+  // footer watermark
+  ctx.textAlign='center';
+  ctx.fillStyle='#7a1f1f';
+  ctx.font='600 28px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+  ctx.fillText('炭武吉工作室', W/2, H-88);
+  ctx.fillStyle='#8a7a68';
+  ctx.font='400 22px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+  ctx.fillText(PAGE_URL, W/2, H-50);
+  ctx.font='400 18px "Noto Sans CJK TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+  ctx.fillText('屬文化與心靈參考', W/2, H-22);
+}
+
+function canvasPngBlob(){
+  const canvas=document.getElementById('familyCardCanvas');
+  return new Promise((resolve,reject)=>{
+    canvas.toBlob(b=>b?resolve(b):reject(new Error('無法產生圖檔')), 'image/png');
+  });
+}
+async function downloadFamilyCard(){
+  const blob=await canvasPngBlob();
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='family-taisui-2027.png';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+async function shareFamilyCard(){
+  const blob=await canvasPngBlob();
+  const file=new File([blob],'family-taisui-2027.png',{type:'image/png'});
+  const payload={files:[file], title:'我們家 2027 誰要注意', text:'2027 全家太歲查詢 '+PAGE_URL};
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share(payload); return; }
+    catch(err){ if(err && err.name==='AbortError') return; }
+  }
+  await downloadFamilyCard();
+}
+function makeFamilyCard(){
+  const res=readCardMembers();
+  if(res.error){ alert(res.error); return false; }
+  drawFamilyCard(res.list);
+  const box=document.getElementById('familyCardBox');
+  box.hidden=false;
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+  trackEvent('family-card','產生全家太歲圖卡','family-card');
+  return true;
+}
+addCardRow(''); addCardRow('');
+document.getElementById('btnAddMember').onclick=()=>addCardRow('');
+document.getElementById('btnMakeCard').onclick=()=>makeFamilyCard();
+document.getElementById('btnDownloadCard').onclick=()=>downloadFamilyCard();
+document.getElementById('btnShareCard').onclick=()=>shareFamilyCard();
+
+window.Taisui2027={branchIndex,offenses,analyzeYear,queryOne,labelOff,ZODIAC,TS,EXPLAIN,julianDay,dayPillarIndex,dayPillar,pillarFromIndex,isValidDate,CARDS,MONTH_TIPS,JIEQI_MONTHS,currentTipMeta,taipeiToday,GAN,ZHI,buildMember,drawFamilyCard,monthFocus,prefillCardMembers,readCardMembers,makeFamilyCard,PAGE_URL,MONTH_FOCUS};
 })();
 </script>
 <script data-goatcounter="https://wujitycoon.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
