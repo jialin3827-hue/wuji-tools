@@ -1,8 +1,8 @@
 {
-  "percent": 71.4,
+  "percent": 72.9,
   "level": "yellow",
   "levelLabel": "黃燈",
-  "updated": "2026-11-22 中午",
+  "updated": "2026-11-23",
   "resetAt": "2026-11-26T09:10:00+08:00",
   "note": "只做賺錢線與重大消息；暫停一般研究與探索",
   "history": [
@@ -129,6 +129,12 @@
     {
       "updated": "2026-11-22 中午",
       "percent": 71.4,
+      "level": "yellow",
+      "levelLabel": "黃燈"
+    },
+    {
+      "updated": "2026-11-23",
+      "percent": 72.9,
       "level": "yellow",
       "levelLabel": "黃燈"
     }
