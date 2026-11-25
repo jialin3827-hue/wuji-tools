@@ -1,8 +1,8 @@
 {
-  "percent": 85,
+  "percent": 88.2,
   "level": "red",
   "levelLabel": "紅燈",
-  "updated": "2026-11-24 中午",
+  "updated": "2026-11-25",
   "resetAt": "2026-11-26T09:10:00+08:00",
   "note": "停掉非必要排程；只保留賺錢線與必要通知",
   "history": [
@@ -153,6 +153,12 @@
     {
       "updated": "2026-11-24 中午",
       "percent": 85,
+      "level": "red",
+      "levelLabel": "紅燈"
+    },
+    {
+      "updated": "2026-11-25",
+      "percent": 88.2,
       "level": "red",
       "levelLabel": "紅燈"
     }
