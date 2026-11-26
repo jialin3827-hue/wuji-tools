@@ -23,38 +23,39 @@ header{background:var(--paper);overflow:hidden}
 .ticker-track span{padding-right:1.6rem}
 @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.ticker-track{animation:none}}
-.band{background:var(--orange);clip-path:polygon(0 1.8rem,100% 0,100% calc(100% - 3rem),0 100%);padding:2.5rem 1rem 3.6rem;border-block:0}
+.band{background:var(--orange);clip-path:polygon(0 1.8rem,100% 0,100% calc(100% - 3rem),0 100%);padding:2.2rem 1rem 3.4rem;border-block:0}
 .hero{max-width:720px;margin:0 auto}
 .kicker{margin:0 0 .45rem;font-size:.78rem;font-weight:900;letter-spacing:.28em;color:var(--ink)}
-header h1{margin:0;font-weight:900;font-size:clamp(2.35rem,10.5vw,4.4rem);line-height:1;letter-spacing:-.04em;color:var(--ink);-webkit-text-stroke:.5px var(--ink);paint-order:stroke fill}
-.h-year{display:block;font-size:.52em;letter-spacing:.02em;line-height:1;margin-bottom:.28em;-webkit-text-stroke:.4px var(--ink)}
+header h1{margin:0;font-weight:900;font-size:clamp(2.8rem,13.5vw,5.6rem);line-height:.95;letter-spacing:-.05em;color:var(--ink);-webkit-text-stroke:1px var(--ink);paint-order:stroke fill}
+.h-year{display:block;font-size:.58em;letter-spacing:.01em;line-height:1;margin-bottom:.22em;-webkit-text-stroke:.8px var(--ink)}
 .h-main{display:flex;align-items:center;gap:.22em;flex-wrap:wrap}
-.circ{display:inline-flex;align-items:center;justify-content:center;width:1.18em;height:1.18em;border:4px solid var(--ink);border-radius:50%;background:var(--paper);line-height:1;font-size:.72em;font-weight:900;flex:none;-webkit-text-stroke:0}
+.circ{display:inline-flex;align-items:center;justify-content:center;width:1.16em;height:1.16em;border:5px solid var(--ink);border-radius:50%;background:var(--paper);line-height:1;font-size:.7em;font-weight:900;flex:none;-webkit-text-stroke:0}
 .h-query{line-height:1}
-.sub{margin:.45rem 0 0;font-size:clamp(.95rem,2.8vw,1.25rem);font-weight:900;letter-spacing:.06em;line-height:1.35;color:var(--ink);-webkit-text-stroke:0}
-.art-wrap{max-width:720px;margin:-2.4rem auto 0;padding:0 1rem;position:relative;z-index:1}
-.hero-art{display:block;width:100%;max-width:34rem;margin:0 auto;pointer-events:none}
+.sub{margin:.5rem 0 0;font-size:clamp(1.05rem,3.2vw,1.4rem);font-weight:900;letter-spacing:.06em;line-height:1.35;color:var(--ink);-webkit-text-stroke:0}
+.art-wrap{width:100%;max-width:none;margin:-2.5rem 0 0;padding:0;position:relative;z-index:1}
+.hero-art{display:block;width:100%;max-width:none;margin:0;pointer-events:none}
+@media(min-width:800px){.art-wrap{max-width:620px;margin-left:auto;margin-right:auto}}
 .hero-art svg{display:block;width:100%;height:auto}
-.lead{max-width:720px;margin:.35rem auto 0;padding:0 1rem;font-size:.95rem;font-weight:700;color:var(--ink);line-height:1.5}
+.lead{max-width:720px;margin:.2rem auto 0;padding:0 1rem;font-size:.95rem;font-weight:700;color:var(--ink);line-height:1.5}
 main{max-width:720px;margin:0 auto;padding:1rem}
 h2{margin:0 0 .35rem;font-size:1.3rem;font-weight:900;letter-spacing:-.02em;line-height:1.2;color:var(--ink)}
-.card{background:#fff;border:3px solid var(--ink);border-radius:0;padding:1rem;margin-bottom:1rem}
+.card{background:#fff;border:4px solid var(--ink);border-radius:0;padding:1rem;margin-bottom:1rem}
 label{display:block;font-weight:900;margin:.55rem 0 .25rem;font-size:.92rem}
 .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem}
 @media(max-width:420px){.row{grid-template-columns:1fr 1fr}.year-field{grid-column:1 / -1}}
-select,input[type=number]{width:100%;padding:.7rem .75rem;border:3px solid var(--ink);border-radius:0;font-size:1rem;background:#fff;color:var(--ink);font-family:inherit;font-weight:700;min-height:48px}
+select,input[type=number]{width:100%;padding:.7rem .75rem;border:4px solid var(--ink);border-radius:0;font-size:1rem;background:#fff;color:var(--ink);font-family:inherit;font-weight:700;min-height:48px}
 select:focus,input:focus{outline:none;box-shadow:4px 4px 0 var(--orange)}
 .hint{margin:.45rem 0 0;font-size:.82rem;font-weight:700;color:var(--ink)}
-.btn,.btn.gold{appearance:none;display:block;width:100%;padding:.85rem 1rem;border:3px solid var(--ink);border-radius:0;background:var(--orange);color:var(--ink);font-family:inherit;font-size:1.05rem;font-weight:900;text-align:center;text-decoration:none;cursor:pointer;min-height:48px;box-shadow:4px 4px 0 var(--ink)}
+.btn,.btn.gold{appearance:none;display:block;width:100%;padding:.85rem 1rem;border:4px solid var(--ink);border-radius:0;background:var(--orange);color:var(--ink);font-family:inherit;font-size:1.05rem;font-weight:900;text-align:center;text-decoration:none;cursor:pointer;min-height:48px;box-shadow:4px 4px 0 var(--ink)}
 .btn:hover,.btn.gold:hover{background:#fff;color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
 .btn.gold{margin-top:.7rem}
-.err{display:none;margin-top:.7rem;padding:.7rem .75rem;border:3px solid var(--ink);background:#fff;font-weight:700;color:var(--ink)}
+.err{display:none;margin-top:.7rem;padding:.7rem .75rem;border:4px solid var(--ink);background:#fff;font-weight:700;color:var(--ink)}
 .err.show{display:block}
 #result{display:none}
 #result.show{display:block}
-.stars{font-size:2.1rem;letter-spacing:.12em;line-height:1.2;margin:.2rem 0 .35rem;color:var(--orange);font-weight:900;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill}
+.stars{font-size:2.2rem;letter-spacing:.12em;line-height:1.2;margin:.2rem 0 .35rem;color:var(--orange);font-weight:900;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}
 .meta{margin:0;font-weight:700;font-size:.95rem}
-.tip{margin:.8rem 0 0;padding:.8rem .85rem;border:3px solid var(--ink);background:var(--paper);font-size:1.02rem;font-weight:700}
+.tip{margin:.8rem 0 0;padding:.8rem .85rem;border:4px solid var(--ink);background:var(--paper);font-size:1.02rem;font-weight:700}
 .method{margin:.7rem 0 0;font-size:.82rem;font-weight:700;color:var(--ink)}
 .cta-note{margin:.55rem 0 0;font-size:.82rem;font-weight:700;color:var(--ink)}
 footer{max-width:720px;margin:0 auto;padding:0 1rem 2rem;color:var(--ink);font-size:.82rem;font-weight:700}
@@ -81,38 +82,39 @@ footer a{color:var(--ink);font-weight:900;white-space:nowrap}
   </div>
   <div class="art-wrap">
     <div class="hero-art" aria-hidden="true">
-      <svg viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg" focusable="false">
-        <path fill="#FFF8F2" stroke="#111" stroke-width="4" stroke-linejoin="round" d="M36 70c0-20 26-26 38-8 10-20 40-18 48 6 16-10 32 8 20 22 12 4 8 20-8 22H44c-18 2-22-16-8-22-8-6-10-14 0-20z"/>
-        <path fill="#F26522" stroke="#111" stroke-width="4" stroke-linejoin="round" d="M370 52c6-16 26-20 36-6 10-16 36-14 44 6 14-6 26 10 16 20 10 4 6 16-6 18h-76c-14 2-20-12-8-18-8-4-12-14-6-20z"/>
-        <path fill="#F26522" stroke="#111" stroke-width="4.5" stroke-linejoin="round" d="M-16 236c46-8 78 20 112 6 28-12 18-54 56-58 22-2 30 18 26 32 26-30 78-20 84 16 4 22-16 38-40 44H-16z"/>
-        <path fill="#FFF8F2" stroke="#111" stroke-width="4" stroke-linejoin="round" d="M50 216c20-10 18-34 44-30 16 2 16 24 2 30 18-4 36 10 28 26H58c-16 0-20-14-8-26z"/>
-        <path fill="#FFF8F2" stroke="#111" stroke-width="4.5" stroke-linejoin="round" d="M516 238c-56-6-78 20-122 8-40-10-28-50-72-50-24 0-32 20-26 36-20-24-66-16-70 16-2 22 16 36 40 40h250z"/>
-        <path fill="#F26522" stroke="#111" stroke-width="4" stroke-linejoin="round" d="M448 214c-18-8-16-28-40-24-14 2-16 22-2 26-16-2-32 10-24 24h74c12 0 16-16 0-26z"/>
-        <path fill="#FFF8F2" stroke="#111" stroke-width="4.5" stroke-linejoin="round" d="M128 188l22-36h232l28 36c-8 16-86 28-150 28-70 0-124-10-132-28z"/>
-        <path fill="#F26522" stroke="#111" stroke-width="3.5" stroke-linejoin="round" d="M156 160h218l-6 14H164z"/>
-        <line x1="218" y1="160" x2="218" y2="58" stroke="#111" stroke-width="6" stroke-linecap="round"/>
-        <path fill="#F26522" stroke="#111" stroke-width="4.5" stroke-linejoin="round" d="M214 62l-92 16 v90 l92-10z"/>
-        <g fill="none" stroke="#111" stroke-width="5.5" stroke-linecap="square" stroke-linejoin="miter">
-          <rect x="148" y="100" width="26" height="38"/>
-          <line x1="148" y1="119" x2="174" y2="119"/>
-          <line x1="176" y1="100" x2="208" y2="100"/>
-          <line x1="176" y1="119" x2="208" y2="119"/>
-          <line x1="176" y1="138" x2="208" y2="138"/>
-          <line x1="192" y1="100" x2="192" y2="138"/>
+      <svg viewBox="0 0 400 350" xmlns="http://www.w3.org/2000/svg" focusable="false" preserveAspectRatio="xMidYMid meet">
+        <path fill="#F26522" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M-24 350V230c50-20 90 20 120 4 28-16 10-70 62-78 30-4 40 28 34 50 36-40 110-24 120 28 6 32-24 54-58 62H-24z"/>
+        <path fill="#FFF8F2" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M18 332c28-18 28-58 70-48 24 4 22 36 2 44 28-8 56 14 42 40H36c-24 0-30-20-18-36z"/>
+        <path fill="#FFF8F2" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M420 350c-70-8-96 24-150 8-48-14-36-70-96-68-30 2-42 28-32 50-28-32-90-20-94 24-2 28 22 44 54 50h318z"/>
+        <path fill="#F26522" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M268 350c30-16 28-64 80-52 26 6 24 36 4 44 28-6 58 16 44 40H292c-22 0-32-18-24-32z"/>
+        <path fill="#F26522" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M28 70c2-22 28-28 42-8 10-22 44-20 52 6 16-10 34 10 22 24 12 4 8 22-8 24H36c-20 2-24-18-8-24-8-6-12-16 0-22z"/>
+        <path fill="#FFF8F2" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M300 42c6-18 28-22 40-6 10-18 40-16 48 6 14-6 28 10 18 22 10 4 6 18-6 20h-82c-16 2-22-14-8-20-8-4-14-16-10-22z"/>
+        <path fill="#FFF8F2" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M48 230l28-46h250l34 46c-10 20-96 36-168 36-78 0-136-12-144-36z"/>
+        <path fill="#F26522" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M82 196h230l-8 18H92z"/>
+        <line x1="160" y1="196" x2="160" y2="22" stroke="#111" stroke-width="6" stroke-linecap="round"/>
+        <path fill="#FFF8F2" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M163 26L10 208l153-16z"/>
+        <g fill="#111">
+          <rect x="88" y="132" width="32" height="54" rx="2"/>
+          <rect x="95" y="139" width="18" height="17" fill="#FFF8F2"/>
+          <rect x="95" y="162" width="18" height="17" fill="#FFF8F2"/>
+          <rect x="124" y="132" width="38" height="11"/>
+          <rect x="124" y="153" width="38" height="11"/>
+          <rect x="124" y="175" width="38" height="11"/>
+          <rect x="137" y="132" width="11" height="54"/>
         </g>
-        <path fill="#F26522" stroke="#111" stroke-width="3.5" stroke-linejoin="round" d="M286 132c-18-10-36 0-32 16 10-4 22-2 32-6z"/>
-        <ellipse cx="318" cy="148" rx="44" ry="28" fill="#FFF8F2" stroke="#111" stroke-width="4.5"/>
-        <path fill="#FFF8F2" stroke="#111" stroke-width="4" stroke-linejoin="round" d="M300 128c-16-36-58-40-72-12 10-6 36-4 56 16 6 6 16 8 16-4z"/>
-        <path fill="#FFF8F2" stroke="#111" stroke-width="4" stroke-linejoin="round" d="M316 122c-6-36-44-44-58-18 12-6 34 2 50 20 4 6 12 8 8-2z"/>
-        <ellipse cx="356" cy="128" rx="12" ry="17" fill="#F26522" stroke="#111" stroke-width="3.5" transform="rotate(26 356 128)"/>
-        <ellipse cx="362" cy="132" rx="24" ry="19" fill="#FFF8F2" stroke="#111" stroke-width="4.5"/>
-        <circle cx="372" cy="128" r="4.4" fill="#111"/>
-        <ellipse cx="384" cy="136" rx="9" ry="7" fill="#FFF8F2" stroke="#111" stroke-width="3"/>
-        <circle cx="388" cy="135" r="1.8" fill="#111"/>
-        <path fill="#FFF8F2" stroke="#111" stroke-width="3.5" stroke-linejoin="round" d="M348 168c6 14 0 28-12 32-8 0-12-8-8-14 4-8 10-12 8-20z"/>
-        <path fill="#F26522" stroke="#111" stroke-width="3" stroke-linejoin="round" d="M332 196h16l2 8h-18z"/>
-        <path fill="#FFF8F2" stroke="#111" stroke-width="3.5" stroke-linejoin="round" d="M300 170c-4 16 6 28 18 30 8-2 8-10 4-16-4-8-10-12-10-20z"/>
-        <path fill="#F26522" stroke="#111" stroke-width="3" stroke-linejoin="round" d="M306 196h16l1 8h-18z"/>
+        <path fill="#F26522" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M228 148c-22-12-44 2-38 20 12-4 26-2 38-8z"/>
+        <ellipse cx="262" cy="178" rx="72" ry="46" fill="#FFF8F2" stroke="#111" stroke-width="6"/>
+        <path fill="#FFF8F2" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M248 142c-22-48-78-52-96-14 14-8 50-4 74 22 8 8 22 10 22-8z"/>
+        <path fill="#FFF8F2" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M268 134c-8-48-60-58-78-22 16-8 46 4 66 26 6 8 16 10 12-4z"/>
+        <ellipse cx="314" cy="148" rx="16" ry="24" fill="#F26522" stroke="#111" stroke-width="6" transform="rotate(28 314 148)"/>
+        <ellipse cx="322" cy="154" rx="36" ry="28" fill="#FFF8F2" stroke="#111" stroke-width="6"/>
+        <circle cx="336" cy="148" r="7" fill="#111"/>
+        <ellipse cx="354" cy="162" rx="14" ry="11" fill="#FFF8F2" stroke="#111" stroke-width="6"/>
+        <circle cx="360" cy="160" r="3.2" fill="#111"/>
+        <path fill="#FFF8F2" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M300 208c8 22-2 42-20 48-12 0-18-12-12-20 6-12 14-16 10-28z"/>
+        <path fill="#F26522" stroke="#111" stroke-width="5" stroke-linejoin="round" d="M274 250h24l3 12H272z"/>
+        <path fill="#FFF8F2" stroke="#111" stroke-width="6" stroke-linejoin="round" d="M236 210c-6 24 8 42 26 46 12-2 12-14 6-22-6-12-14-16-14-28z"/>
+        <path fill="#F26522" stroke="#111" stroke-width="5" stroke-linejoin="round" d="M244 250h24l2 12H242z"/>
       </svg>
     </div>
     <p class="lead">輸入生日，看 2027 年的星等和一句行動建議。不公布名次，也不存你的資料。</p>
