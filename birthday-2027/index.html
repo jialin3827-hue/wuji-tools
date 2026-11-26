@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<script src="../wuji-util.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="2027 丁未年免費生日查詢：輸入月日（年份可選填），顯示星等與一句行動建議。不公布名次。屬文化與心靈參考。">
+<title>2027 生日查詢｜炭武吉工作室</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff;--card:#fff;--ink:#111;--muted:#3a3a3a;--brand:#FF5A1F;--link:#C43200;--line:#111;
+  --font:"Noto Sans TC","Noto Sans CJK TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.5;font-weight:400}
+a{color:var(--link);text-underline-offset:.15em}
+a:hover{color:var(--ink)}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+header{background:#111;color:#fff;overflow:hidden}
+.ticker{background:#111;color:var(--brand);border-block:2px solid var(--brand);overflow:hidden;height:1.65rem;line-height:1.65rem;font-weight:900;font-size:.7rem;letter-spacing:.18em;white-space:nowrap}
+.ticker-track{display:inline-flex;width:max-content;animation:ticker 36s linear infinite}
+.ticker-track span{padding-right:1.5rem}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.ticker-track{animation:none}}
+.hero{max-width:720px;margin:0 auto;padding:.7rem 1rem .85rem}
+.hero .kicker{margin:0 0 .15rem;font-size:.8rem;font-weight:700;color:var(--brand);letter-spacing:.28em}
+header h1{margin:0;font-weight:900;font-size:clamp(2.4rem,10vw,4.6rem);line-height:.92;letter-spacing:-.04em;color:#fff}
+header h1 .sub{display:block;font-size:.36em;letter-spacing:.08em;font-weight:900;color:var(--brand);margin-top:.15rem}
+.lead{margin:.55rem 0 0;font-size:.92rem;font-weight:700;color:#fff;max-width:40rem;line-height:1.45}
+.hero-rule{height:6px;background:repeating-linear-gradient(90deg,var(--brand) 0 18px,#111 18px 22px)}
+main{max-width:720px;margin:0 auto;padding:1rem}
+h2{margin:0 0 .35rem;font-size:1.25rem;font-weight:900;letter-spacing:-.02em;line-height:1.2}
+.card{background:var(--card);border:2px solid var(--line);border-radius:2px;padding:1rem;margin-bottom:1rem}
+label{display:block;font-weight:900;margin:.55rem 0 .25rem;font-size:.92rem}
+.row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem}
+@media(max-width:420px){.row{grid-template-columns:1fr 1fr}.year-field{grid-column:1 / -1}}
+select,input[type=number]{width:100%;padding:.7rem .75rem;border:2px solid #111;border-radius:2px;font-size:1rem;background:#fff;color:#111;font-family:inherit;font-weight:700;min-height:48px}
+select:focus,input:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 2px var(--brand)}
+.hint{margin:.45rem 0 0;font-size:.82rem;font-weight:700;color:var(--muted)}
+.btn{appearance:none;display:block;width:100%;padding:.85rem 1rem;border:2px solid #111;border-radius:2px;background:#111;color:#fff;font-family:inherit;font-size:1.05rem;font-weight:900;text-align:center;text-decoration:none;cursor:pointer;min-height:48px}
+.btn:hover{background:var(--brand);color:#111}
+.btn.gold{background:var(--brand);color:#111;margin-top:.7rem}
+.btn.gold:hover{background:#111;color:var(--brand)}
+.err{display:none;margin-top:.7rem;padding:.7rem .75rem;border:2px solid var(--brand);background:#fff5f0;font-weight:700;color:#9A2B00}
+.err.show{display:block}
+#result{display:none}
+#result.show{display:block}
+.stars{font-size:2rem;letter-spacing:.12em;line-height:1.2;margin:.2rem 0 .35rem;color:var(--brand);font-weight:900}
+.stars .empty{color:#ddd}
+.meta{margin:0;font-weight:700;font-size:.95rem}
+.tip{margin:.8rem 0 0;padding:.8rem .85rem;border:2px dashed #111;font-size:1.02rem;font-weight:700}
+.method{margin:.7rem 0 0;font-size:.82rem;font-weight:700;color:var(--muted)}
+.cta-note{margin:.55rem 0 0;font-size:.82rem;font-weight:700;color:var(--muted)}
+footer{max-width:720px;margin:0 auto;padding:0 1rem 2rem;color:var(--muted);font-size:.82rem;font-weight:700}
+footer a{color:var(--link);font-weight:900;white-space:nowrap}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+<header>
+  <div class="ticker" aria-hidden="true"><div class="ticker-track"><span>2027 生日查詢　·　免費　·　不公布名次　·　屬文化與心靈參考　·　2027 生日查詢　·　免費　·　不公布名次　·　屬文化與心靈參考　·　</span><span>2027 生日查詢　·　免費　·　不公布名次　·　屬文化與心靈參考　·　2027 生日查詢　·　免費　·　不公布名次　·　屬文化與心靈參考　·　</span></div></div>
+  <div class="hero">
+    <p class="kicker">炭武吉工作室</p>
+    <h1>2027 生日查詢<span class="sub">丁未羊年　星等與行動建議</span></h1>
+    <p class="lead">輸入生日，看 2027 年的星等和一句行動建議。不公布名次，也不存你的資料。</p>
+  </div>
+  <div class="hero-rule"></div>
+</header>
+<main>
+  <section class="card" id="queryCard">
+    <h2>查你的 2027</h2>
+    <form id="queryForm" novalidate>
+      <div class="row">
+        <div>
+          <label for="month">月</label>
+          <select id="month" name="month" required>
+            <option value="">選擇</option>
+          </select>
+        </div>
+        <div>
+          <label for="day">日</label>
+          <select id="day" name="day" required>
+            <option value="">選擇</option>
+          </select>
+        </div>
+        <div class="year-field">
+          <label for="year">年（可選填）</label>
+          <input id="year" name="year" type="number" inputmode="numeric" min="1924" max="2026" placeholder="例如 1990" autocomplete="bday-year">
+        </div>
+      </div>
+      <p class="hint">月、日必填。填了年份，會依民俗生肖（農曆正月初一為界）計算；沒填則依星座估算。</p>
+      <div style="margin-top:.85rem">
+        <button type="submit" class="btn" id="queryBtn">查詢 2027</button>
+      </div>
+      <div class="err" id="errorBox" role="alert"></div>
+    </form>
+  </section>
+
+  <section class="card" id="result" aria-live="polite">
+    <h2 id="resultTitle">你的 2027 星等</h2>
+    <div class="stars" id="starRow" aria-hidden="true"></div>
+    <p class="meta" id="resultMeta"></p>
+    <p class="tip" id="resultTip"></p>
+    <p class="method" id="resultMethod"></p>
+    <a class="btn gold" id="ctaBuy"
+       href="https://payhip.com/b/iXgoD?utm_source=birthday2027&amp;utm_medium=query_page&amp;utm_campaign=gaiyun_2027&amp;utm_content=result_cta"
+       target="_blank" rel="noopener noreferrer"
+       data-goatcounter-click="event/cta-payhip-birthday-2027"
+       data-goatcounter-title="生日查詢改運卡CTA">下載 2027 丁未改運卡</a>
+    <p class="cta-note">內含落地生財、慎言查證、細水長流三張行動卡，以及黃金護身寶鏡圖。售價 USD 2.19。屬文化與心靈參考。</p>
+  </section>
+</main>
+<footer>
+  <p>屬文化與心靈參考</p>
+  <p>炭武吉工作室｜內容僅供參考與心安提醒，不保證任何效果，也不是投資或醫療建議。</p>
+  <p><a href="../">回工具箱</a>　·　<a href="../taisui2027/">2027 犯太歲查詢</a></p>
+</footer>
+<script src="rating.js"></script>
+<script>
+(function(){
+  var monthEl=document.getElementById('month');
+  var dayEl=document.getElementById('day');
+  var yearEl=document.getElementById('year');
+  var form=document.getElementById('queryForm');
+  var err=document.getElementById('errorBox');
+  var result=document.getElementById('result');
+  var R=window.Birthday2027;
+
+  function fillMonths(){
+    for(var i=1;i<=12;i++){
+      var o=document.createElement('option');
+      o.value=String(i); o.textContent=i+' 月';
+      monthEl.appendChild(o);
+    }
+  }
+  function fillDays(){
+    var keep=dayEl.value;
+    var m=Number(monthEl.value)||1;
+    var y=yearEl.value===''?null:Number(yearEl.value);
+    var max=R.daysInMonth(monthEl.value?m:1, (y&&Number.isInteger(y))?y:null);
+    if(!monthEl.value) max=31;
+    dayEl.innerHTML='<option value="">選擇</option>';
+    for(var i=1;i<=max;i++){
+      var o=document.createElement('option');
+      o.value=String(i); o.textContent=i+' 日';
+      dayEl.appendChild(o);
+    }
+    if(keep && Number(keep)<=max) dayEl.value=keep;
+  }
+  function starText(n){
+    var s='';
+    for(var i=1;i<=5;i++) s += i<=n ? '★' : '☆';
+    return s;
+  }
+  function showError(msgs){
+    err.textContent=msgs.join(' ');
+    err.classList.add('show');
+    result.classList.remove('show');
+  }
+  function clearError(){ err.textContent=''; err.classList.remove('show'); }
+
+  fillMonths();
+  fillDays();
+  monthEl.addEventListener('change', fillDays);
+  yearEl.addEventListener('change', fillDays);
+  yearEl.addEventListener('input', fillDays);
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    clearError();
+    var out=R.rate(yearEl.value, monthEl.value, dayEl.value);
+    if(!out.ok){ showError(out.errors); return; }
+
+    document.getElementById('starRow').textContent=starText(out.stars);
+    var who='';
+    if(out.mode==='zodiac'){
+      who='屬'+out.zodiac+'　'+out.month+'/'+out.day+(out.year?('　'+out.year+' 年生'):'');
+    }else{
+      who=out.sign+'　'+out.month+'/'+out.day;
+    }
+    document.getElementById('resultMeta').textContent=who+'｜'+out.stars+' 顆星｜'+out.label;
+    document.getElementById('resultTip').textContent='行動建議：'+out.tip;
+    document.getElementById('resultMethod').textContent=(out.method||'')+(out.note?' '+out.note:'')+' 本頁不公布名次。';
+    result.classList.add('show');
+    result.scrollIntoView({behavior:'smooth', block:'start'});
+
+    if(typeof window.wujiTrack==='function'){
+      window.wujiTrack('event/query-birthday-2027',{
+        title:'生日查詢',
+        dedupeKey:'query-'+Date.now()+'-'+out.month+'-'+out.day+'-'+(out.year||'na')
+      });
+    }
+  });
+})();
+</script>
+<script data-goatcounter="https://wujitycoon.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
