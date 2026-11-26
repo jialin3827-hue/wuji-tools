@@ -11,48 +11,50 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#fff;--card:#fff;--ink:#111;--muted:#3a3a3a;--brand:#FF5A1F;--link:#C43200;--line:#111;
+  --bg:#FBF6EE;--card:#FFFCF7;--header:#FFE8D2;--ticker:#FFD9B0;
+  --ink:#5C2A0C;--muted:#7A4A28;--accent:#A33B16;--brand:#E85D04;--gold:#F5A524;
+  --link:#B33A12;--line:#E8D5BE;--btn-ink:#3A1608;
   --font:"Noto Sans TC","Noto Sans CJK TC","PingFang TC","Microsoft JhengHei",sans-serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.5;font-weight:400}
 a{color:var(--link);text-underline-offset:.15em}
-a:hover{color:var(--ink)}
+a:hover{color:var(--accent)}
 :focus-visible{outline:3px solid var(--brand);outline-offset:2px}
-header{background:#111;color:#fff;overflow:hidden}
-.ticker{background:#111;color:var(--brand);border-block:2px solid var(--brand);overflow:hidden;height:1.65rem;line-height:1.65rem;font-weight:900;font-size:.7rem;letter-spacing:.18em;white-space:nowrap}
+header{background:var(--header);color:var(--ink);overflow:hidden}
+.ticker{background:var(--ticker);color:var(--ink);border-block:1px solid var(--line);overflow:hidden;height:1.65rem;line-height:1.65rem;font-weight:900;font-size:.7rem;letter-spacing:.18em;white-space:nowrap}
 .ticker-track{display:inline-flex;width:max-content;animation:ticker 36s linear infinite}
 .ticker-track span{padding-right:1.5rem}
 @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.ticker-track{animation:none}}
-.hero{max-width:720px;margin:0 auto;padding:.7rem 1rem .85rem}
-.hero .kicker{margin:0 0 .15rem;font-size:.8rem;font-weight:700;color:var(--brand);letter-spacing:.28em}
-header h1{margin:0;font-weight:900;font-size:clamp(2.4rem,10vw,4.6rem);line-height:.92;letter-spacing:-.04em;color:#fff}
-header h1 .sub{display:block;font-size:.36em;letter-spacing:.08em;font-weight:900;color:var(--brand);margin-top:.15rem}
-.lead{margin:.55rem 0 0;font-size:.92rem;font-weight:700;color:#fff;max-width:40rem;line-height:1.45}
-.hero-rule{height:6px;background:repeating-linear-gradient(90deg,var(--brand) 0 18px,#111 18px 22px)}
+.hero{max-width:720px;margin:0 auto;padding:.85rem 1rem 1rem}
+.hero .kicker{margin:0 0 .2rem;font-size:.8rem;font-weight:700;color:var(--accent);letter-spacing:.28em}
+header h1{margin:0;font-weight:900;font-size:clamp(2.4rem,10vw,4.6rem);line-height:1.15;letter-spacing:-.03em;color:var(--ink);display:flex;flex-direction:column;align-items:flex-start;gap:.28em}
+header h1 .sub{display:block;font-size:.36em;letter-spacing:.06em;font-weight:900;color:var(--accent);line-height:1.35;margin-top:0}
+.lead{margin:.6rem 0 0;font-size:.92rem;font-weight:700;color:var(--ink);max-width:40rem;line-height:1.45}
+.hero-rule{height:4px;background:repeating-linear-gradient(90deg,var(--brand) 0 18px,var(--header) 18px 22px)}
 main{max-width:720px;margin:0 auto;padding:1rem}
-h2{margin:0 0 .35rem;font-size:1.25rem;font-weight:900;letter-spacing:-.02em;line-height:1.2}
-.card{background:var(--card);border:2px solid var(--line);border-radius:2px;padding:1rem;margin-bottom:1rem}
+h2{margin:0 0 .35rem;font-size:1.25rem;font-weight:900;letter-spacing:-.02em;line-height:1.2;color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:1rem;margin-bottom:1rem}
 label{display:block;font-weight:900;margin:.55rem 0 .25rem;font-size:.92rem}
 .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem}
 @media(max-width:420px){.row{grid-template-columns:1fr 1fr}.year-field{grid-column:1 / -1}}
-select,input[type=number]{width:100%;padding:.7rem .75rem;border:2px solid #111;border-radius:2px;font-size:1rem;background:#fff;color:#111;font-family:inherit;font-weight:700;min-height:48px}
-select:focus,input:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 2px var(--brand)}
+select,input[type=number]{width:100%;padding:.7rem .75rem;border:1px solid var(--line);border-radius:8px;font-size:1rem;background:#fff;color:var(--ink);font-family:inherit;font-weight:700;min-height:48px}
+select:focus,input:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 2px rgba(232,93,4,.28)}
 .hint{margin:.45rem 0 0;font-size:.82rem;font-weight:700;color:var(--muted)}
-.btn{appearance:none;display:block;width:100%;padding:.85rem 1rem;border:2px solid #111;border-radius:2px;background:#111;color:#fff;font-family:inherit;font-size:1.05rem;font-weight:900;text-align:center;text-decoration:none;cursor:pointer;min-height:48px}
-.btn:hover{background:var(--brand);color:#111}
-.btn.gold{background:var(--brand);color:#111;margin-top:.7rem}
-.btn.gold:hover{background:#111;color:var(--brand)}
-.err{display:none;margin-top:.7rem;padding:.7rem .75rem;border:2px solid var(--brand);background:#fff5f0;font-weight:700;color:#9A2B00}
+.btn{appearance:none;display:block;width:100%;padding:.85rem 1rem;border:1px solid transparent;border-radius:8px;background:var(--brand);color:var(--btn-ink);font-family:inherit;font-size:1.05rem;font-weight:900;text-align:center;text-decoration:none;cursor:pointer;min-height:48px}
+.btn:hover{background:#F06A16;color:var(--btn-ink)}
+.btn.gold{background:var(--gold);color:var(--btn-ink);margin-top:.7rem;border-color:#E8C56A}
+.btn.gold:hover{background:#E89B0C;color:var(--btn-ink)}
+.err{display:none;margin-top:.7rem;padding:.7rem .75rem;border:1px solid #F0B090;background:#FFF5F0;font-weight:700;color:#9A2B00}
 .err.show{display:block}
 #result{display:none}
 #result.show{display:block}
 .stars{font-size:2rem;letter-spacing:.12em;line-height:1.2;margin:.2rem 0 .35rem;color:var(--brand);font-weight:900}
-.stars .empty{color:#ddd}
+.stars .empty{color:#E8C9A8}
 .meta{margin:0;font-weight:700;font-size:.95rem}
-.tip{margin:.8rem 0 0;padding:.8rem .85rem;border:2px dashed #111;font-size:1.02rem;font-weight:700}
+.tip{margin:.8rem 0 0;padding:.8rem .85rem;border:1px dashed #E8C9A8;background:#FFF8F0;font-size:1.02rem;font-weight:700}
 .method{margin:.7rem 0 0;font-size:.82rem;font-weight:700;color:var(--muted)}
 .cta-note{margin:.55rem 0 0;font-size:.82rem;font-weight:700;color:var(--muted)}
 footer{max-width:720px;margin:0 auto;padding:0 1rem 2rem;color:var(--muted);font-size:.82rem;font-weight:700}
