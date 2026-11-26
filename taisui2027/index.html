@@ -13,84 +13,87 @@
 
 <style>
 :root{
-  --bg:#fff;--card:#fff;--ink:#111;--muted:#3a3a3a;--brand:#FF5A1F;--brand-ink:#111;
-  --link:#C43200;--line:#111;--warn:#9A2B00;--chip:#fff;
-  --font:"Noto Sans TC","Noto Sans CJK TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --bg:#FFF8F2;--card:#fff;--ink:#111;--muted:#333;--brand:#F26522;--brand-ink:#111;
+  --link:#111;--line:#111;--warn:#111;--chip:#fff;--paper:#FFF8F2;
+  --font:system-ui,"PingFang TC","Noto Sans TC","Noto Sans CJK TC","Microsoft JhengHei","Heiti TC",sans-serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.5;font-weight:400}
-a{color:var(--link);text-underline-offset:.15em}
-a:hover{color:var(--ink)}
-:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
-header{background:#111;color:#fff;overflow:hidden}
-.ticker{background:#111;color:var(--brand);border-block:2px solid var(--brand);overflow:hidden;height:1.65rem;line-height:1.65rem;font-weight:900;font-size:.7rem;letter-spacing:.18em;white-space:nowrap}
+a{color:var(--ink);font-weight:900;text-underline-offset:.15em}
+a:hover{background:var(--brand)}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+header{background:var(--paper);overflow:hidden}
+.ticker{background:var(--brand);color:var(--ink);border-block:3px solid var(--ink);overflow:hidden;height:1.7rem;line-height:1.55rem;font-weight:900;font-size:.72rem;letter-spacing:.14em;font-style:italic;white-space:nowrap}
 .ticker-track{display:inline-flex;width:max-content;animation:ticker 36s linear infinite}
-.ticker-track span{padding-right:1.5rem}
+.ticker-track span{padding-right:1.6rem}
 @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){
   .ticker-track{animation:none}
 }
-.hero{max-width:720px;margin:0 auto;padding:.7rem 1rem .85rem}
-.hero .kicker{margin:0 0 .15rem;font-size:.8rem;font-weight:700;color:var(--brand);letter-spacing:.28em}
-header h1{margin:0;font-weight:900;font-size:clamp(2.6rem, 11vw, 5.2rem);line-height:.92;letter-spacing:-.04em;color:#fff}
-header h1 .sub{display:block;font-size:.38em;letter-spacing:.08em;font-weight:900;color:var(--brand);margin-top:.15rem}
-.lead{margin:.55rem 0 0;font-size:.92rem;font-weight:700;color:#fff;max-width:40rem;line-height:1.45}
-.hero-rule{height:6px;background:repeating-linear-gradient(90deg,var(--brand) 0 18px,#111 18px 22px)}
+.band{background:var(--brand);clip-path:polygon(0 1.4rem,100% 0,100% calc(100% - 1.6rem),0 100%);padding:1.6rem 1rem 2.2rem}
+.hero{max-width:720px;margin:0 auto;padding:0}
+.hero .kicker{margin:0 0 .2rem;font-size:.8rem;font-weight:900;color:var(--ink);letter-spacing:.28em}
+header h1{margin:0;font-weight:900;font-size:clamp(2.8rem, 12vw, 5.4rem);line-height:.92;letter-spacing:-.04em;color:var(--ink)}
+header h1 .sub{display:block;font-size:.38em;letter-spacing:.06em;font-weight:900;color:var(--ink);margin-top:.18rem}
+.lead{margin:.5rem 0 0;font-size:clamp(1.02rem,3vw,1.3rem);font-weight:900;color:var(--ink);max-width:40rem;line-height:1.35}
+.hero-art{display:block;width:100%;height:72px;margin:-1.5rem 0 0;pointer-events:none}
+@media(min-width:800px){.hero-art{height:96px}}
+.hero-rule{display:none}
 main{max-width:720px;margin:0 auto;padding:1rem}
-h2{margin:0 0 .35rem;font-size:1.25rem;font-weight:900;letter-spacing:-.02em;line-height:1.2}
-.card{background:var(--card);border:2px solid var(--line);border-radius:2px;padding:1rem;margin-bottom:1rem}
-label{display:block;font-weight:900;margin:.55rem 0 .25rem;font-size:.92rem;letter-spacing:.02em}
+h2{margin:0 0 .35rem;font-size:1.3rem;font-weight:900;letter-spacing:-.02em;line-height:1.2;color:var(--ink)}
+.card{background:var(--card);border:4px solid var(--line);border-radius:0;padding:1rem;margin-bottom:1rem}
+label{display:block;font-weight:900;margin:.55rem 0 .25rem;font-size:.92rem}
 input[type=number],input[type=date],input[type=time],input[type=text],select,textarea{
-  width:100%;padding:.65rem .75rem;border:2px solid #111;border-radius:2px;font-size:1rem;background:#fff;color:#111;font-family:inherit;font-weight:700
+  width:100%;padding:.7rem .75rem;border:4px solid #111;border-radius:0;font-size:1rem;background:#fff;color:#111;font-family:inherit;font-weight:700;min-height:48px
 }
-input:focus,select:focus,textarea:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 2px var(--brand)}
+input:focus,select:focus,textarea:focus{border-color:#111;outline:none;box-shadow:4px 4px 0 var(--brand)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
 @media(max-width:520px){.row{grid-template-columns:1fr}}
 .seg{display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0 .8rem}
 .seg button{
-  appearance:none;flex:1;min-width:8rem;padding:.6rem .7rem;border-radius:2px;border:2px solid #111;
+  appearance:none;flex:1;min-width:8rem;padding:.6rem .7rem;border-radius:0;border:4px solid #111;
   background:#fff;font-size:.92rem;font-weight:700;cursor:pointer;color:#111;font-family:inherit
 }
-.seg button:hover{background:#111;color:var(--brand)}
+.seg button:hover{background:var(--brand)}
 .seg button.active{background:var(--brand);border-color:#111;color:#111;font-weight:900}
 .btn{
-  appearance:none;display:inline-block;width:100%;padding:.85rem 1rem;border:2px solid #111;border-radius:2px;
+  appearance:none;display:inline-block;width:100%;padding:.85rem 1rem;border:4px solid #111;border-radius:0;
   background:var(--brand);color:#111;font-size:1rem;font-weight:900;cursor:pointer;text-align:center;
-  text-decoration:none;font-family:inherit
+  text-decoration:none;font-family:inherit;min-height:48px;box-shadow:4px 4px 0 #111
 }
-.btn:hover{background:#111;color:var(--brand)}
+.btn:hover{background:#fff;color:#111;box-shadow:4px 4px 0 #111}
 .btn.secondary{background:#fff;color:#111;margin-top:.55rem}
-.btn.secondary:hover{background:#111;color:var(--brand)}
+.btn.secondary:hover{background:var(--brand)}
 .btn.gold{background:var(--brand);color:#111;margin-top:.55rem;font-weight:900}
-.btn.gold:hover{background:#111;color:var(--brand)}
+.btn.gold:hover{background:#fff}
 .hint{font-size:.85rem;color:var(--muted);margin:.35rem 0 0;font-weight:700}
-.result{border:2px solid #111;border-left:8px solid var(--brand);padding:.75rem .9rem;background:#fff;border-radius:2px;margin:.6rem 0}
+.result{border:4px solid #111;border-left:8px solid var(--brand);padding:.75rem .9rem;background:#fff;border-radius:0;margin:.6rem 0}
 .result.hit{border-left-color:var(--brand);background:#fff}
 .result.ok{border-left-color:#111;background:#fff}
 .result h3{margin:0 0 .35rem;font-size:1.2rem;font-weight:900;letter-spacing:-.02em}
-.badge{display:inline-block;padding:.15rem .55rem;border-radius:2px;font-size:.78rem;font-weight:900;margin-right:.25rem;letter-spacing:.04em;border:2px solid #111}
+.badge{display:inline-block;padding:.15rem .55rem;border-radius:0;font-size:.78rem;font-weight:900;margin-right:.25rem;letter-spacing:.04em;border:3px solid #111}
 .badge.hit{background:var(--brand);color:#111}
 .badge.ok{background:#111;color:#fff}
 .badge.info{background:#fff;color:#111}
 .family-list{display:flex;flex-direction:column;gap:.5rem}
 .family-item{display:grid;grid-template-columns:1fr 1.2fr auto;gap:.4rem;align-items:end}
 @media(max-width:520px){.family-item{grid-template-columns:1fr 1fr}.family-item button.fr{grid-column:1/-1}}
-.family-item button{padding:.55rem .7rem;border-radius:2px;border:2px solid #111;background:#fff;color:#111;cursor:pointer;font-weight:700;font-family:inherit}
-.family-item button:hover{background:#111;color:var(--brand)}
-footer{max-width:720px;margin:0 auto;padding:0 1rem 2rem;color:var(--muted);font-size:.82rem;font-weight:700}
-footer a{color:var(--link);font-weight:900}
-footer a:hover{color:var(--ink)}
+.family-item button{padding:.55rem .7rem;border-radius:0;border:4px solid #111;background:#fff;color:#111;cursor:pointer;font-weight:700;font-family:inherit}
+.family-item button:hover{background:var(--brand)}
+footer{max-width:720px;margin:0 auto;padding:0 1rem 2rem;color:var(--ink);font-size:.82rem;font-weight:700}
+footer a{color:var(--ink);font-weight:900;white-space:nowrap}
+footer a:hover{background:var(--brand)}
 .sources{margin-top:.6rem}
 .sources li{margin-bottom:.25rem}
-.note{font-size:.85rem;color:var(--muted);font-weight:700}
-hr{border:0;border-top:2px solid var(--line);margin:1rem 0}
+.note{font-size:.85rem;color:var(--ink);font-weight:700}
+hr{border:0;border-top:3px solid var(--line);margin:1rem 0}
 .chk{font-weight:700;margin:.7rem 0 0;display:flex;align-items:flex-start;gap:.5rem;cursor:pointer}
 .chk input{width:auto;margin-top:.2rem;flex:none;accent-color:var(--brand)}
 .cta-note{font-size:.95rem;font-weight:900;margin:.9rem 0 .35rem}
-.cta-buy{display:block;width:100%;padding:1rem 1rem;border:2px solid #111;border-radius:2px;background:var(--brand);color:#111;font-size:1.08rem;font-weight:900;letter-spacing:.02em;cursor:pointer;text-align:center;text-decoration:none;margin-top:.7rem;box-shadow:none;font-family:inherit}
-.cta-buy:hover{background:#111;color:var(--brand);filter:none}
-.card-preview{display:block;width:100%;max-width:540px;margin:.75rem auto 0;border-radius:2px;border:2px solid var(--line);background:#fff;height:auto}
+.cta-buy{display:block;width:100%;padding:1rem 1rem;border:4px solid #111;border-radius:0;background:var(--brand);color:#111;font-size:1.08rem;font-weight:900;letter-spacing:.02em;cursor:pointer;text-align:center;text-decoration:none;margin-top:.7rem;box-shadow:4px 4px 0 #111;font-family:inherit}
+.cta-buy:hover{background:#fff;color:#111;filter:none}
+.card-preview{display:block;width:100%;max-width:540px;margin:.75rem auto 0;border-radius:0;border:4px solid var(--line);background:var(--paper);height:auto}
 .card-actions{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.55rem}
 @media(max-width:520px){.card-actions{grid-template-columns:1fr}}
 #familyCardBox{margin-top:.75rem}
@@ -99,12 +102,19 @@ hr{border:0;border-top:2px solid var(--line);margin:1rem 0}
 <body>
 <header>
   <div class="ticker" aria-hidden="true"><div class="ticker-track"><span>2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　</span><span>2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　2027 犯太歲查詢　·　免費　·　規則公開　·　全家一起查　·　屬文化與心靈參考　·　</span></div></div>
-  <div class="hero">
-    <p class="kicker">丁未羊年 · 免費</p>
-    <h1>2027<span class="sub">犯太歲查詢</span></h1>
-    <p class="lead">規則公開・全家一起查</p>
+  <div class="band">
+    <div class="hero">
+      <p class="kicker">丁未羊年 · 免費</p>
+      <h1>2027<span class="sub">犯太歲查詢</span></h1>
+      <p class="lead">規則公開・全家一起查</p>
+    </div>
   </div>
-  <div class="hero-rule" aria-hidden="true"></div>
+  <svg class="hero-art" viewBox="0 0 400 90" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <path fill="#F26522" stroke="#111" stroke-width="5" stroke-linejoin="round" d="M-20 90V52c50-12 90 12 120 2 28-10 10-40 62-45 30-2 40 16 34 29 36-23 110-14 120 16 6 18-24 31-58 36H-20z"/>
+    <path fill="#FFF8F2" stroke="#111" stroke-width="5" stroke-linejoin="round" d="M18 82c28-10 28-34 70-28 24 2 22 21 2 26 28-5 56 8 42 24H36c-24 0-30-12-18-22z"/>
+    <path fill="#FFF8F2" stroke="#111" stroke-width="5" stroke-linejoin="round" d="M420 90c-70-5-96 14-150 4-48-8-36-40-96-39-30 1-42 16-32 29-28-18-90-12-94 14-2 16 22 25 54 29h318z"/>
+    <path fill="#F26522" stroke="#111" stroke-width="5" stroke-linejoin="round" d="M268 90c30-10 28-38 80-30 26 4 24 21 4 26 28-4 58 10 44 24H292c-22 0-32-10-24-20z"/>
+  </svg>
 </header>
 <main>
   <section class="card">
@@ -882,32 +892,27 @@ function drawFamilyCard(members){
   const W=1080,H=1080;
   const FONT='"Noto Sans TC","Noto Sans CJK TC","PingFang TC","Microsoft JhengHei",sans-serif';
   canvas.width=W; canvas.height=H;
-  ctx.fillStyle='#fff';
+  ctx.fillStyle='#FFF8F2';
   ctx.fillRect(0,0,W,H);
-  // header: black + orange kicker, no gradient, no gold bar
-  ctx.fillStyle='#111';
+  ctx.strokeStyle='#111';
+  ctx.lineWidth=16;
+  ctx.strokeRect(8,8,W-16,H-16);
+  // header: 洋流橘底黑字
+  ctx.fillStyle='#F26522';
   ctx.fillRect(0,0,W,248);
-  ctx.fillStyle='#FF5A1F';
-  ctx.fillRect(0,0,W,10);
+  ctx.fillStyle='#111';
+  ctx.fillRect(0,248,W,8);
   ctx.textAlign='center';
   ctx.textBaseline='alphabetic';
-  ctx.fillStyle='#FF5A1F';
+  ctx.fillStyle='#111';
   ctx.font='700 28px '+FONT;
   ctx.fillText('丁未羊年｜民俗整理，給家人看的一張圖', W/2, 64);
-  ctx.fillStyle='#fff';
+  ctx.fillStyle='#111';
   ctx.font='900 92px '+FONT;
   ctx.fillText('我們家 2027', W/2, 160);
-  ctx.fillStyle='#FF5A1F';
+  ctx.fillStyle='#111';
   ctx.font='900 48px '+FONT;
   ctx.fillText('誰要注意', W/2, 218);
-  // striped rule, same rhythm as food100 hero-rule
-  const stripeH=12, stripeY=248;
-  for(let x=0;x<W;x+=22){
-    ctx.fillStyle='#FF5A1F';
-    ctx.fillRect(x,stripeY,18,stripeH);
-    ctx.fillStyle='#111';
-    ctx.fillRect(x+18,stripeY,4,stripeH);
-  }
 
   const top=284, bottom=H-220;
   const gap=16;
@@ -917,14 +922,14 @@ function drawFamilyCard(members){
     const y=top+i*(rowH+gap);
     const hit=m.offenses.length>0;
     ctx.fillStyle='#fff';
-    roundedRect(ctx,48,y,W-96,rowH,2);
+    roundedRect(ctx,48,y,W-96,rowH,0);
     ctx.fill();
     ctx.strokeStyle='#111';
-    ctx.lineWidth=4;
+    ctx.lineWidth=6;
     ctx.stroke();
     if(hit){
-      ctx.fillStyle='#FF5A1F';
-      ctx.fillRect(48,y,10,rowH);
+      ctx.fillStyle='#F26522';
+      ctx.fillRect(48,y,12,rowH);
     }
     ctx.textAlign='left';
     ctx.fillStyle='#111';
@@ -938,8 +943,8 @@ function drawFamilyCard(members){
     const bx=W-80-bw;
     const by=y+18;
     const bh=Math.min(44, rowH*0.32);
-    ctx.fillStyle=hit?'#FF5A1F':'#111';
-    roundedRect(ctx,bx,by,bw,bh,2);
+    ctx.fillStyle=hit?'#F26522':'#111';
+    roundedRect(ctx,bx,by,bw,bh,0);
     ctx.fill();
     ctx.strokeStyle='#111';
     ctx.lineWidth=2;
@@ -951,14 +956,14 @@ function drawFamilyCard(members){
     ctx.textBaseline='alphabetic';
     if(hit && m.focus && rowH>90){
       ctx.textAlign='left';
-      ctx.fillStyle='#3a3a3a';
+      ctx.fillStyle='#333';
       const fs=Math.min(24, Math.max(20, Math.floor(rowH*0.16)));
       ctx.font=`700 ${fs}px ${FONT}`;
       const lines=wrapText(ctx, m.focus, W-180);
       lines.slice(0,3).forEach((ln,li)=>ctx.fillText(ln, 80, y+rowH-18-(lines.slice(0,3).length-1-li)*(fs+6)));
     } else if(!hit && rowH>90){
       ctx.textAlign='left';
-      ctx.fillStyle='#3a3a3a';
+      ctx.fillStyle='#333';
       ctx.font='700 22px '+FONT;
       ctx.fillText('今年可當家裡的支援者，一起把該做的事提醒好。', 80, y+rowH-22);
     }
@@ -974,7 +979,7 @@ function drawFamilyCard(members){
   ctx.fillStyle='#111';
   ctx.font='900 28px '+FONT;
   ctx.fillText('炭武吉工作室', 48, H-148);
-  ctx.fillStyle='#3a3a3a';
+  ctx.fillStyle='#333';
   ctx.font='700 22px '+FONT;
   const urlMax=qrX-24-48;
   const urlLines=wrapText(ctx, PAGE_URL, urlMax);
