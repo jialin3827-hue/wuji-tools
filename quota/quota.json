@@ -1,8 +1,8 @@
 {
-  "percent": 15.4,
+  "percent": 18.6,
   "level": "green",
   "levelLabel": "綠燈",
-  "updated": "2026-11-26 中午",
+  "updated": "2026-11-27 08:06",
   "resetAt": "2026-12-03T09:10:00+08:00",
   "note": "正常運作，可放心做研究、巡網路、試新工具",
   "history": [
@@ -177,6 +177,12 @@
     {
       "updated": "2026-11-26 中午",
       "percent": 15.4,
+      "level": "green",
+      "levelLabel": "綠燈"
+    },
+    {
+      "updated": "2026-11-27 08:06",
+      "percent": 18.6,
       "level": "green",
       "levelLabel": "綠燈"
     }
